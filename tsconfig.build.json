@@ -2,6 +2,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
+    // research/ imports with explicit .ts extensions so tsx can run it
+    // directly; that option is illegal alongside emit, and this config
+    // builds src only.
+    "allowImportingTsExtensions": false,
     "declaration": true,
     "outDir": "dist"
   },
