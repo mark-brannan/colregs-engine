@@ -29,6 +29,27 @@ jobs:
       # the emitted ESM, would pass typecheck and tests and break consumers.
       - run: npm run build
 
+  # The exhaustive conformance harness (research/conformance/): every record
+  # in the partitioned fact space, engine against an independent reference
+  # reading of the predicate semantics. It exits non-zero only on a
+  # conformance mismatch or on a findings register that this run would
+  # rewrite; data findings are printed, not failed. Separate from `test`
+  # because it is minutes rather than a second, and a red conformance job
+  # should be legible without reading a test log.
+  conformance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run conformance
+      # A run that rewrote the register has already failed above; this
+      # catches anything else the harness touched in the worktree.
+      - run: git diff --exit-code -- research/conformance/findings
+
   # The single required status check, shared across repositories: the
   # `gate` job of mark-brannan/.github's reusable ci-gate workflow, which fails
   # unless every result in `needs` is green. The reported context is
@@ -38,7 +59,7 @@ jobs:
   # evaluate when a dependency failed or was skipped, so it reports an explicit
   # pass or fail of its own rather than inheriting the skip.
   ci-gate:
-    needs: [test]
+    needs: [test, conformance]
     if: always()
     # It reads nothing and writes nothing; the results go in as an input.
     permissions: {}
