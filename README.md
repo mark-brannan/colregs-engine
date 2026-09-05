@@ -12,9 +12,9 @@ works out how the surviving entries interact: a display can include another,
 replace it, rule it out, or exempt the vessel from showing anything. What
 comes out is the set of complete lawful displays.
 
-**Note:** The engine is being built inside
-[searoom](https://github.com/mark-brannan/searoom) first and will be
-extracted here once it earns a second consumer.
+The evaluator now lives here, in `src/`, extracted from searoom on
+2026-09-05; [searoom](https://github.com/mark-brannan/searoom) will consume
+it as a package once it's published.
 
 ## Constraints
 
@@ -25,7 +25,7 @@ which is what the next section is about.
   Timing, freshness and hysteresis belong to whatever calls this.
 - **Finite input.** Partition the numeric facts at the thresholds the rules
   actually compare against (7, 12, 20, 50 and 100 m, plus the tow, gear and
-  speed constants) and the whole fact space is around 10⁷ records. Minutes
+  speed constants) and the whole fact space is around 5 × 10⁶ records. Minutes
   of CPU.
 - **No choosing.** Where several displays are lawful, all of them come back.
   A function that picks one can't be checked against the data.
