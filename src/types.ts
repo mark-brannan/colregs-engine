@@ -34,6 +34,13 @@ export interface Display {
 }
 
 export interface Evaluation {
+  /**
+   * The colregs release this answer was computed against, read at import
+   * time from the resolved package. An applicability answer is a function of
+   * the data as much as of the facts; without this, "the answer changed"
+   * cannot be told apart from "the data changed".
+   */
+  colregs: { version: string };
   /** Entries whose predicate matched, in data order (the fixture contract). */
   applied: string[];
   /** Applied entries relieved by a rel:exempts entry, with the exempting id. */

@@ -23,6 +23,12 @@ import type {
   Predicate,
 } from './types';
 import { validateFacts } from './facts.js';
+// Read at import time, from the colregs release actually resolved here.
+// An evaluation carries it so "the answer changed" can be read as "the data
+// changed" without re-deriving which data was in play.
+import colregsPackage from 'colregs/package.json' with { type: 'json' };
+
+const COLREGS_VERSION: string = colregsPackage.version;
 
 // facts.json: "'ram_underwater' ... is a refinement of 'ram', not a peer of
 // it, and predicates written for 'ram' also read it."
@@ -438,6 +444,7 @@ export function evaluate(
   }
 
   return {
+    colregs: { version: COLREGS_VERSION },
     applied: applied.map((e) => e.id),
     exempted,
     excluded,
