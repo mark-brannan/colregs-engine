@@ -12,7 +12,7 @@ works out how the surviving entries interact: a display can include another,
 replace it, rule it out, or exempt the vessel from showing anything. What
 comes out is the set of complete lawful displays.
 
-**Status: name staked, not yet started.** The engine is being built inside
+**Note:** The engine is being built inside
 [searoom](https://github.com/mark-brannan/searoom) first and will be
 extracted here once it earns a second consumer.
 
