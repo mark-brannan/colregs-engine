@@ -1,6 +1,6 @@
 // Public API of the colregs-engine package.
 
-export { appliedEntries, evaluate, predicateMatches, resolveModality } from './evaluate';
+export { appliedEntries, evaluate, predicateMatches, resolveModality } from './evaluate.js';
 export type {
   ApplicabilityData,
   Arc,
