@@ -2,6 +2,7 @@
 
 Written 2026-09-04. Verified as existing via web search that day; not all
 read. Companion: [formal-methods-glossary.md](formal-methods-glossary.md).
+Mostly formal methods, plus a marine-incident-analysis section below.
 
 ## COLREGS formalisation
 
@@ -17,6 +18,16 @@ read. Companion: [formal-methods-glossary.md](formal-methods-glossary.md).
   <https://arxiv.org/pdf/2402.05662>
 - Sreedharan, Ramachandran, Røsæg, Rokseth — *Safety Assurances in Autonomous Vessels* (ER 2024). Digital-twin virtual testing against COLREG, not model checking — different tradeoff worth contrasting with the above.
   <https://link.springer.com/chapter/10.1007/978-3-031-75599-6_22>
+
+## Marine incident analysis
+
+Not formal-methods work — real-world collision forensics, included because
+the failure modes it documents (radar misinterpretation, mismatched turn
+decisions, ambiguous give-way/stand-on roles) are exactly what the COLREGS
+formalisation papers above are trying to model and catch.
+
+- Garzke, Simpson — *The Loss of Andrea Doria: A Marine Forensic Analysis* (Marine Technology Society Journal 46(6), 2012). Reconstructs the 1956 Andrea Doria–Stockholm collision from radar, navigation, and rules-of-the-road evidence.
+  <https://www.ingentaconnect.com/content/mts/mtsj/2012/00000046/00000006/art00008> · <https://onepetro.org/JSPD/article/26/02/98/172277/The-Loss-of-Andrea-Doria-A-Marine-Forensic>
 
 ## Tools
 
