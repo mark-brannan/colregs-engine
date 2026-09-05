@@ -22,7 +22,7 @@
     "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "colregs": "github:mark-brannan/colregs#a04377336da92043e34e986741f78dc9307dab9c"
+    "colregs": "github:mark-brannan/colregs#afc4d536482d71eb70349d6e55fd5d0b081464a1"
   },
   "devDependencies": {
     "typescript": "^5.7.2",

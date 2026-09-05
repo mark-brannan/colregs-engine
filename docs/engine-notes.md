@@ -74,3 +74,15 @@ they can be reviewed as decisions, not archaeology. Each is tested in
 If any of these turn out to disagree with the data's intent, that is a
 colregs conversation (an issue with the failing fact record), not a
 quiet app-side patch.
+
+8. **Part B entries are out of this evaluator's domain.** colregs'
+   `applicability.json` also carries two-subject Part B entries
+   (`subjects: 2`, a `category` and an `effect` describing which steering
+   rules apply, no `lights`) alongside the single-subject lights entries
+   this evaluator was built for. They describe two-vessel steering
+   obligations (give-way/stand-on, Part B Section I/II/III scope), not
+   lights and shapes, and have no `lights` clause to display. The lights
+   evaluator filters them out at the top of `appliedEntries`/`evaluate`
+   (`isLightsEntry`, keyed on `subjects !== 2`) before predicate matching
+   ever runs. Part B steering gets its own data model and evaluator in a
+   later phase of the [research programme](https://github.com/mark-brannan/colregs-engine/issues/1).
