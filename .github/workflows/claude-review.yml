@@ -28,13 +28,18 @@ permissions:
 
 jobs:
   review:
-    # Pinned to a reviewed commit rather than @main -- flagged by CodeRabbit
-    # (2026-09-05) with zizmor's unpinned-uses backing it: @main lets a
-    # future push to mark-brannan/.github change what runs here, with
-    # CLAUDE_CODE_OAUTH_TOKEN/pull-requests:write/id-token:write, and no
-    # corresponding commit in this repo. Bump deliberately when the shared
-    # workflow changes.
-    uses: mark-brannan/.github/.github/workflows/claude-review.yml@bdaa39fa178205a1657cb30e590637df4c73c72e
+    # @main, deliberately -- same-owner trust, matching ci-gate.yml and
+    # every other caller of this workflow. CodeRabbit flagged this as
+    # unpinned (2026-09-05, zizmor's unpinned-uses); considered and
+    # reverted (2026-09-05): the threat that lint guards against is a
+    # compromised upstream *maintainer*, which doesn't apply when the
+    # upstream is your own repo -- anyone able to push a bad commit here
+    # could push directly to this repo too. Pinning would only buy
+    # protection against MISTAKES in the shared workflow, at the cost of
+    # a manual pin-bump PR per caller for every future fix -- the exact
+    # propagation tax centralizing into mark-brannan/.github was meant to
+    # remove.
+    uses: mark-brannan/.github/.github/workflows/claude-review.yml@main
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     with:
