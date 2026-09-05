@@ -1,11 +1,16 @@
 # colregs-engine
 
-Applicability evaluator over the
-[colregs](https://github.com/mark-brannan/colregs) data package: predicates
-over a fact record → applicable entries → relations resolved (`includes`,
-`conditional_includes`, `in_lieu_of`, `excludes`, `exempts`) → the set of
-complete lawful displays. Alternatives stay unresolved: every lawful option
-is returned; the engine never picks one.
+Describe a vessel — how long it is, what it is doing, whether it is under
+way — and this library tells you every set of lights and shapes that vessel
+may lawfully show under the COLREGS. Where the rules permit a choice, it
+returns all the options; choosing between them is the skipper's job.
+
+The rules themselves live as data in the
+[colregs](https://github.com/mark-brannan/colregs) package. This is the part
+that reads them: it tests each entry's conditions against the vessel you
+described, then resolves how the surviving entries interact — one display
+includes another, replaces it, rules it out, or exempts the vessel
+altogether — and returns the complete displays that come out the far end.
 
 **Status: name staked, not yet started.** The engine is being built inside
 [searoom](https://github.com/mark-brannan/searoom) first and will be
@@ -13,9 +18,9 @@ extracted here once it earns a second consumer.
 
 ## What the engine is required to be
 
-The constraints below are not house style. They are what makes the engine
-verifiable rather than merely tested, and they are load-bearing for the
-plan in the next section.
+These four constraints are not house style. They are what lets us check the
+engine exhaustively rather than sample it with a few tests, so they are
+load-bearing for the plan in the next section.
 
 - **A pure, total function.** Facts in, set of lawful displays out. No I/O,
   no clock, no state. Timing, freshness and hysteresis belong to whatever
@@ -33,8 +38,9 @@ plan in the next section.
 
 ## Verification
 
-The intent is that "does the engine agree with the data?" is answered by
-proof or exhaustion, never by a sample. The ladder, roughly in order:
+"Does the engine agree with the rules?" should be answered by checking every
+case, or by proving it — not by trying a few and hoping. Each rung below is
+a stronger form of that answer than the one before:
 
 0. **Fixture replay** — the package's `fixtures/applicability-fixtures.json`
    replayed verbatim. The floor, not the ceiling.
