@@ -11,7 +11,7 @@
 //
 // Run: npm run generate
 
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { compile, type JSONSchema } from 'json-schema-to-typescript';
 
@@ -53,6 +53,22 @@ const colregsVersion: string = JSON.parse(
 const files = readdirSync(SCHEMA_DIR)
   .filter((f) => f.endsWith('.schema.json'))
   .sort();
+
+// A schema colregs removes must take its generated module with it, or
+// generate:check passes with a stale file the barrel no longer references —
+// an exact mirror only if nothing is left behind. fact-record.ts is a
+// separate generator's output (generate-fact-record.ts, from facts.json,
+// not schema/) and index.ts is rewritten below either way.
+const currentStems = new Set(
+  files.map((f) => basename(f, '.schema.json')),
+);
+const KEEP = new Set(['fact-record.ts', 'index.ts']);
+for (const existing of readdirSync(OUT_DIR)) {
+  if (!existing.endsWith('.ts') || KEEP.has(existing)) continue;
+  if (!currentStems.has(basename(existing, '.ts'))) {
+    unlinkSync(join(OUT_DIR, existing));
+  }
+}
 
 const modules: { module: string; root: string }[] = [];
 

@@ -78,6 +78,8 @@ Both are also checked at runtime, so a record that arrives as JSON or
 through a cast is rejected too:
 
 ```ts
+import type { FactRecord } from 'colregs-engine';
+
 evaluate(applicability, { propulsion: 'sail' } as unknown as FactRecord);
 // Error: unknown fact key 'propulsion'; did you mean 'fact:propulsion'? …
 ```
@@ -88,9 +90,12 @@ nothing. The two must not look alike. `appliedEntries(data, facts)` returns
 just the matching entry ids, without composing displays, and validates on
 the same terms.
 
-Every result carries `colregs.version`, the release of the data package it
-was evaluated against — an answer is a function of the data as much as of
-the facts.
+Every result carries `colregs.version`, the release of colregs resolved by
+this package at import time — an answer is a function of the data as much
+as of the facts. It names the engine's own dependency, not a stamp on the
+`data` argument: colregs' schema carries no version field, so nothing here
+can detect a caller who imports applicability data from somewhere other
+than the colregs release actually installed.
 
 There are two entry points:
 

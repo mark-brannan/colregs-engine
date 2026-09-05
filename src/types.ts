@@ -35,10 +35,13 @@ export interface Display {
 
 export interface Evaluation {
   /**
-   * The colregs release this answer was computed against, read at import
-   * time from the resolved package. An applicability answer is a function of
-   * the data as much as of the facts; without this, "the answer changed"
-   * cannot be told apart from "the data changed".
+   * The colregs release resolved by this package, read at import time. An
+   * applicability answer is a function of the data as much as of the facts;
+   * without this, "the answer changed" cannot be told apart from "the data
+   * changed". Names the engine's own dependency, not a stamp on the `data`
+   * argument — colregs' schema carries no version field, so a caller who
+   * evaluates against applicability data from some other release goes
+   * undetected.
    */
   colregs: { version: string };
   /** Entries whose predicate matched, in data order (the fixture contract). */
