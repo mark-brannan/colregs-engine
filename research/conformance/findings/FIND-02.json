@@ -1,0 +1,27 @@
+{
+  "id": "FIND-02",
+  "check": "consistency-conflicting-shall",
+  "description": "entries 26c-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation",
+  "cites": [
+    "26(c)(i)",
+    "30(a)"
+  ],
+  "records": 114048,
+  "facts": {
+    "fact:activity": "activity:fishing",
+    "fact:composite_unit": true,
+    "fact:gear_extent_m": 149,
+    "fact:length_m": 6,
+    "fact:making_way": true,
+    "fact:max_speed_kn": 6,
+    "fact:near_channel": true,
+    "fact:non_displacement": true,
+    "fact:obstruction_exists": true,
+    "fact:position": "position:anchored",
+    "fact:propulsion": "propulsion:power",
+    "fact:tow_length_m": 199,
+    "fact:wig": true,
+    "fact:wig_near_surface": true
+  },
+  "prose": "a 6 m vessel, anchored, engaged in fishing (a composite unit, operating in non-displacement mode, a wing-in-ground craft, near the surface, near a narrow channel, with an obstruction to the passage of another vessel, 6 kn max speed, 199 m tow, 149 m gear extent)."
+}
