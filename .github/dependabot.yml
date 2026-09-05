@@ -1,3 +1,4 @@
+# No package.json here, so github-actions is the only ecosystem to bump.
 version: 2
 
 updates:
