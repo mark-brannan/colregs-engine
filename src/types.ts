@@ -1,88 +1,17 @@
-// The engine's types.
+// The engine's own output vocabulary — Display, DisplayLight, Evaluation.
 //
-// The colregs data shapes are NOT written here. They are generated from
-// colregs' published JSON Schema into src/generated/ (`npm run generate`)
-// and re-exported below under the names the engine and its consumers use.
-// Hand-transcribing them is how `Entry` came to omit relations the data
-// already carried; a schema change must break this build, not a consumer.
+// These mirror nothing in colregs. They are this implementation's answers,
+// and they are what `colregs-engine` promises to keep stable.
 //
-// What is written here is the engine's own output vocabulary — Display,
-// DisplayLight, Evaluation. Those are not mirrors of anything in colregs;
-// they are this implementation's answers, and they belong to it.
+// The colregs data shapes are not written here either: they are generated
+// from colregs' JSON Schema and live behind `colregs-engine/schema`
+// (src/schema.ts). This module re-exports them for internal use and for the
+// tests, which read applicability.json directly.
 
-import type {
-  ApplicabilityData,
-  LightsData,
-  RulesData,
-} from './generated/index.js';
-import type {
-  LightRef,
-  Modality,
-  PredicateValue,
-  When,
-} from './generated/applicability.js';
+import type { Modality } from './generated/applicability.js';
+import type { LightSpec } from './schema.js';
 
-/** A value a fact record may carry. */
-export type { FactValue } from './generated/applicability-fixtures.js';
-
-export type {
-  ApplicabilityData,
-  ApplicabilityFixtures,
-  DeprecatedIdentifiers,
-  FactsData,
-  GeometryData,
-  ImagesData,
-  LightsData,
-  RulesData,
-  SituationFixtures,
-} from './generated/index.js';
-
-export type {
-  ConditionalInclude,
-  EntryId,
-  EntryIdList,
-  Modality,
-  ModalityBy,
-} from './generated/applicability.js';
-
-/** One entry of data/applicability.json: predicate -> lights, with modality. */
-export type Entry = ApplicabilityData['entries'][number];
-
-/** A predicate: fact key -> constraint. Every key must match (AND). */
-export type Predicate = When;
-
-/** One constraint within a predicate. */
-export type Constraint = PredicateValue;
-
-/** The numeric-gate arm of a constraint (`{ gte: 50 }`, `{ lt: 7 }`, …). */
-export type NumericConstraint = Exclude<
-  PredicateValue,
-  string | boolean | string[]
->;
-
-/** One light as an entry's `lights` clause references it. */
-export type LightSpec = LightRef;
-
-/** One light definition from data/lights.json. */
-export type LightDef = LightsData['lights'][string];
-
-/** A light's horizontal arc of visibility. */
-export type Arc = NonNullable<LightDef['arc']>;
-
-/** One rule paragraph from data/rules.json. */
-export type Paragraph = RulesData['paragraphs'][string];
-
-/**
- * What the user has asserted about one vessel at one moment. Generated from
- * colregs data/facts.json: a key outside the vocabulary, or a value outside
- * an enumerated key's own values, is a compile error rather than a record
- * that silently matches nothing.
- */
-export type {
-  FactKey,
-  FactRecord,
-  FactValues,
-} from './generated/fact-record.js';
+export * from './schema.js';
 
 /** One light as it appears in a resolved display, with its provenance. */
 export interface DisplayLight {

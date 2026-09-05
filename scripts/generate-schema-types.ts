@@ -90,9 +90,10 @@ for (const file of files) {
   modules.push({ module: stem, root });
 }
 
-// Barrel. Each schema gets a namespace (several schemas define their own
-// `When` / `PredicateValue`, so a flat re-export would collide), and every
-// root type is re-exported by name.
+// Barrel. Each schema gets a type-only namespace (several schemas define
+// their own `When` / `PredicateValue`, so a flat re-export would collide;
+// `export type *` keeps the emitted JS empty), and every root type is
+// re-exported by name.
 const barrel = [
   BANNER.replace('%VERSION%', colregsVersion).replace(
     ' schema/%FILE%',
@@ -101,7 +102,7 @@ const barrel = [
   '',
   ...modules.map(
     ({ module }) =>
-      `export * as ${camel(module)} from './${module}.js';`,
+      `export type * as ${camel(module)} from './${module}.js';`,
   ),
   '',
   ...modules.map(

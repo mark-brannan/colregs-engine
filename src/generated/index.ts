@@ -6,15 +6,15 @@
  * build if this file and the pinned schema disagree.
  */
 
-export * as applicabilityFixtures from './applicability-fixtures.js';
-export * as applicability from './applicability.js';
-export * as deprecatedIdentifiers from './deprecated-identifiers.js';
-export * as facts from './facts.js';
-export * as geometry from './geometry.js';
-export * as images from './images.js';
-export * as lights from './lights.js';
-export * as rules from './rules.js';
-export * as situationFixtures from './situation-fixtures.js';
+export type * as applicabilityFixtures from './applicability-fixtures.js';
+export type * as applicability from './applicability.js';
+export type * as deprecatedIdentifiers from './deprecated-identifiers.js';
+export type * as facts from './facts.js';
+export type * as geometry from './geometry.js';
+export type * as images from './images.js';
+export type * as lights from './lights.js';
+export type * as rules from './rules.js';
+export type * as situationFixtures from './situation-fixtures.js';
 
 export type { ApplicabilityFixtures } from './applicability-fixtures.js';
 export type { ApplicabilityData } from './applicability.js';
