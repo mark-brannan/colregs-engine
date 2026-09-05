@@ -1,0 +1,9 @@
+# No package.json here, so github-actions is the only ecosystem to bump.
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
