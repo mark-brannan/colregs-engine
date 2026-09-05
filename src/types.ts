@@ -41,7 +41,7 @@ export interface Evaluation {
    * changed". Names the engine's own dependency, not a stamp on the `data`
    * argument — colregs' schema carries no version field, so a caller who
    * evaluates against applicability data from some other release goes
-   * undetected.
+   * undetected. Tracked upstream: colregs#48.
    */
   colregs: { version: string };
   /** Entries whose predicate matched, in data order (the fixture contract). */

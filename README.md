@@ -95,7 +95,8 @@ this package at import time — an answer is a function of the data as much
 as of the facts. It names the engine's own dependency, not a stamp on the
 `data` argument: colregs' schema carries no version field, so nothing here
 can detect a caller who imports applicability data from somewhere other
-than the colregs release actually installed.
+than the colregs release actually installed. Tracked upstream:
+[colregs#48](https://github.com/mark-brannan/colregs/issues/48).
 
 There are two entry points:
 
