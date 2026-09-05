@@ -1,124 +1,17 @@
-// Types over the colregs data files. The package is data-only (no runtime,
-// no types), so the shapes are declared here, against the published schema.
+// The engine's own output vocabulary — Display, DisplayLight, Evaluation.
+//
+// These mirror nothing in colregs. They are this implementation's answers,
+// and they are what `colregs-engine` promises to keep stable.
+//
+// The colregs data shapes are not written here either: they are generated
+// from colregs' JSON Schema and live behind `colregs-engine/schema`
+// (src/schema.ts). This module re-exports them for internal use and for the
+// tests, which read applicability.json directly.
 
-export type FactValue = string | number | boolean;
+import type { Modality } from './generated/applicability.js';
+import type { LightSpec } from './schema.js';
 
-/** A fact record: what the user has asserted about one vessel at one moment. */
-export type FactRecord = Record<string, FactValue>;
-
-export interface NumericConstraint {
-  gte?: number;
-  gt?: number;
-  lte?: number;
-  lt?: number;
-}
-
-export type Constraint = FactValue | FactValue[] | NumericConstraint;
-
-export type Predicate = Record<string, Constraint>;
-
-export type Modality =
-  | 'shall'
-  | 'may'
-  | 'shall-if-practicable'
-  | 'conditional'
-  | 'exempt';
-
-export interface LightSpec {
-  light: string;
-  color?: string;
-  character?: string;
-  count?: number;
-  arrangement?: string;
-  position?: string;
-  combined?: boolean;
-  intensity?: string;
-  modality?: string;
-  note?: string;
-}
-
-export interface ModalityBy {
-  when: Predicate;
-  modality: Modality;
-}
-
-export interface ConditionalInclude {
-  when?: Predicate;
-  one_of?: string[];
-  'rel:includes'?: string[];
-  cite?: string;
-}
-
-export interface Entry {
-  id: string;
-  jurisdiction: string;
-  cite: string;
-  when: Predicate;
-  lights: LightSpec[];
-  modality: Modality;
-  modality_by?: ModalityBy[];
-  'rel:includes'?: string[];
-  'rel:conditional_includes'?: ConditionalInclude[];
-  'rel:in_lieu_of'?: string[];
-  'rel:excludes'?: string[];
-  'rel:exempts'?: string[];
-  images?: string[];
-  notes?: string;
-}
-
-export interface ApplicabilityData {
-  known_omissions: { cite: string; what: string; why: string }[];
-  entries: Entry[];
-}
-
-export interface Arc {
-  from_deg: number;
-  to_deg: number;
-}
-
-export interface LightDef {
-  name: string;
-  cite: string;
-  color: string | null;
-  character: string;
-  arc_deg: number | null;
-  arc: Arc | null;
-  composite?: boolean;
-  components?: string[];
-  side?: string;
-  rule21: boolean;
-  note?: string;
-}
-
-export interface LightsData {
-  lights: Record<string, LightDef>;
-  visibility: {
-    cite: string;
-    bands: {
-      cite: string;
-      when: Predicate;
-      ranges_nm?: Record<string, number>;
-      overrides_nm?: Record<string, number>;
-      refines?: string;
-    }[];
-  };
-}
-
-export interface Paragraph {
-  path: string;
-  rule: string;
-  rule_title: string;
-  jurisdiction: string;
-  text: string;
-}
-
-export interface RulesData {
-  source: string;
-  source_url: string;
-  retrieved: string;
-  gaps: { path: string; reason: string }[];
-  paragraphs: Record<string, Paragraph>;
-}
+export * from './schema.js';
 
 /** One light as it appears in a resolved display, with its provenance. */
 export interface DisplayLight {
@@ -141,6 +34,16 @@ export interface Display {
 }
 
 export interface Evaluation {
+  /**
+   * The colregs release resolved by this package, read at import time. An
+   * applicability answer is a function of the data as much as of the facts;
+   * without this, "the answer changed" cannot be told apart from "the data
+   * changed". Names the engine's own dependency, not a stamp on the `data`
+   * argument — colregs' schema carries no version field, so a caller who
+   * evaluates against applicability data from some other release goes
+   * undetected.
+   */
+  colregs: { version: string };
   /** Entries whose predicate matched, in data order (the fixture contract). */
   applied: string[];
   /** Applied entries relieved by a rel:exempts entry, with the exempting id. */
