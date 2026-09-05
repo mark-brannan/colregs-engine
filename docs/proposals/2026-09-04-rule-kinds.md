@@ -4,9 +4,19 @@ Draft for Mark, 2026-09-04. Not implemented. Approved parts become
 ADR-0005 in the `colregs` data repo (amending REQ-PART-4) and `docs/model.md`
 here.
 
-**Ink and pencil.** Ink is decided; sessions may build on it. Pencil is
-marked `✎` and states what would settle it. A pencilled word is used
-consistently so renaming it later is a find-and-replace.
+**Ink and pencil.** Every decision here carries a confidence level, and the
+level is the rule for reopening it. See `docs/conventions.md`.
+
+- **Ink** — change only on significant evidence. A session may *argue* for
+  a change, citing the evidence, and Mark decides. It never edits ink on its
+  own.
+- **Pencil** `✎` — iterate freely, over many sessions. A session may change
+  it, must log what and why, and states what would settle it.
+- **Open** `?` — no position yet. Anyone may propose one; a proposal moves
+  it to pencil.
+
+A pencilled word is used consistently so renaming it later is a
+find-and-replace.
 
 ## 1. What this is for
 
