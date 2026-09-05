@@ -17,6 +17,11 @@ jobs:
         with:
           node-version: 22
       - run: npm ci
+      # The data types in src/generated/ are compiled from colregs' JSON
+      # Schema and checked in. If the pinned schema and the checked-in types
+      # disagree, the engine is typed against a shape the data no longer has:
+      # fail here rather than let a consumer discover it.
+      - run: npm run generate:check
       - run: npm run typecheck
       - run: npm test
       # tsconfig.build.json (declaration emit, src-only) is otherwise never

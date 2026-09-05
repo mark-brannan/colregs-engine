@@ -19,12 +19,17 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "generate": "tsx scripts/generate-schema-types.ts",
+    "generate:check": "npm run generate && git add --intent-to-add -- src/generated && git diff --exit-code -- src/generated"
   },
   "dependencies": {
     "colregs": "github:mark-brannan/colregs#a04377336da92043e34e986741f78dc9307dab9c"
   },
   "devDependencies": {
+    "json-schema-to-typescript": "16.0.0",
+    "prettier": "3.6.2",
+    "tsx": "4.23.13",
     "typescript": "^5.7.2",
     "vitest": "^3.2.7"
   }

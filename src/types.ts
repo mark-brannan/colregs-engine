@@ -1,124 +1,80 @@
-// Types over the colregs data files. The package is data-only (no runtime,
-// no types), so the shapes are declared here, against the published schema.
+// The engine's types.
+//
+// The colregs data shapes are NOT written here. They are generated from
+// colregs' published JSON Schema into src/generated/ (`npm run generate`)
+// and re-exported below under the names the engine and its consumers use.
+// Hand-transcribing them is how `Entry` came to omit relations the data
+// already carried; a schema change must break this build, not a consumer.
+//
+// What is written here is the engine's own output vocabulary — Display,
+// DisplayLight, Evaluation. Those are not mirrors of anything in colregs;
+// they are this implementation's answers, and they belong to it.
 
-export type FactValue = string | number | boolean;
+import type {
+  ApplicabilityData,
+  LightsData,
+  RulesData,
+} from './generated/index.js';
+import type {
+  LightRef,
+  Modality,
+  PredicateValue,
+  When,
+} from './generated/applicability.js';
+import type { FactValue } from './generated/applicability-fixtures.js';
+
+/** A value a fact record may carry. */
+export type { FactValue } from './generated/applicability-fixtures.js';
+
+export type {
+  ApplicabilityData,
+  ApplicabilityFixtures,
+  DeprecatedIdentifiers,
+  FactsData,
+  GeometryData,
+  ImagesData,
+  LightsData,
+  RulesData,
+  SituationFixtures,
+} from './generated/index.js';
+
+export type {
+  ConditionalInclude,
+  EntryId,
+  EntryIdList,
+  Modality,
+  ModalityBy,
+} from './generated/applicability.js';
+
+/** One entry of data/applicability.json: predicate -> lights, with modality. */
+export type Entry = ApplicabilityData['entries'][number];
+
+/** A predicate: fact key -> constraint. Every key must match (AND). */
+export type Predicate = When;
+
+/** One constraint within a predicate. */
+export type Constraint = PredicateValue;
+
+/** The numeric-gate arm of a constraint (`{ gte: 50 }`, `{ lt: 7 }`, …). */
+export type NumericConstraint = Exclude<
+  PredicateValue,
+  string | boolean | string[]
+>;
+
+/** One light as an entry's `lights` clause references it. */
+export type LightSpec = LightRef;
+
+/** One light definition from data/lights.json. */
+export type LightDef = LightsData['lights'][string];
+
+/** A light's horizontal arc of visibility. */
+export type Arc = NonNullable<LightDef['arc']>;
+
+/** One rule paragraph from data/rules.json. */
+export type Paragraph = RulesData['paragraphs'][string];
 
 /** A fact record: what the user has asserted about one vessel at one moment. */
 export type FactRecord = Record<string, FactValue>;
-
-export interface NumericConstraint {
-  gte?: number;
-  gt?: number;
-  lte?: number;
-  lt?: number;
-}
-
-export type Constraint = FactValue | FactValue[] | NumericConstraint;
-
-export type Predicate = Record<string, Constraint>;
-
-export type Modality =
-  | 'shall'
-  | 'may'
-  | 'shall-if-practicable'
-  | 'conditional'
-  | 'exempt';
-
-export interface LightSpec {
-  light: string;
-  color?: string;
-  character?: string;
-  count?: number;
-  arrangement?: string;
-  position?: string;
-  combined?: boolean;
-  intensity?: string;
-  modality?: string;
-  note?: string;
-}
-
-export interface ModalityBy {
-  when: Predicate;
-  modality: Modality;
-}
-
-export interface ConditionalInclude {
-  when?: Predicate;
-  one_of?: string[];
-  'rel:includes'?: string[];
-  cite?: string;
-}
-
-export interface Entry {
-  id: string;
-  jurisdiction: string;
-  cite: string;
-  when: Predicate;
-  lights: LightSpec[];
-  modality: Modality;
-  modality_by?: ModalityBy[];
-  'rel:includes'?: string[];
-  'rel:conditional_includes'?: ConditionalInclude[];
-  'rel:in_lieu_of'?: string[];
-  'rel:excludes'?: string[];
-  'rel:exempts'?: string[];
-  images?: string[];
-  notes?: string;
-}
-
-export interface ApplicabilityData {
-  known_omissions: { cite: string; what: string; why: string }[];
-  entries: Entry[];
-}
-
-export interface Arc {
-  from_deg: number;
-  to_deg: number;
-}
-
-export interface LightDef {
-  name: string;
-  cite: string;
-  color: string | null;
-  character: string;
-  arc_deg: number | null;
-  arc: Arc | null;
-  composite?: boolean;
-  components?: string[];
-  side?: string;
-  rule21: boolean;
-  note?: string;
-}
-
-export interface LightsData {
-  lights: Record<string, LightDef>;
-  visibility: {
-    cite: string;
-    bands: {
-      cite: string;
-      when: Predicate;
-      ranges_nm?: Record<string, number>;
-      overrides_nm?: Record<string, number>;
-      refines?: string;
-    }[];
-  };
-}
-
-export interface Paragraph {
-  path: string;
-  rule: string;
-  rule_title: string;
-  jurisdiction: string;
-  text: string;
-}
-
-export interface RulesData {
-  source: string;
-  source_url: string;
-  retrieved: string;
-  gaps: { path: string; reason: string }[];
-  paragraphs: Record<string, Paragraph>;
-}
 
 /** One light as it appears in a resolved display, with its provenance. */
 export interface DisplayLight {
