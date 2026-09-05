@@ -71,10 +71,37 @@ Rule 26(a) says a fishing vessel shows only the lights in that Rule, so the
 ordinary anchor lights are struck and reported as excluded. The aground
 signal of Rule 30(d) still stands.
 
-Fact keys and values are the identifiers in colregs' `data/facts.json`. A
-key the data does not know is ignored, not rejected, so a typo yields an
-empty result rather than an error (see #11). `appliedEntries(data, facts)`
-returns just the matching entry ids, without composing displays.
+Fact keys and values are the identifiers in colregs' `data/facts.json`, and
+the types are generated from it: `{ propulsion: 'sail' }` does not compile,
+because the key is not namespaced and the value is not one Rule 3(c) knows.
+Both are also checked at runtime, so a record that arrives as JSON or
+through a cast is rejected too:
+
+```ts
+evaluate(applicability, { propulsion: 'sail' } as unknown as FactRecord);
+// Error: unknown fact key 'propulsion'; did you mean 'fact:propulsion'? …
+```
+
+That is a change of behaviour: such a record used to evaluate to one empty
+display, which is also the honest answer for a vessel that lawfully shows
+nothing. The two must not look alike. `appliedEntries(data, facts)` returns
+just the matching entry ids, without composing displays, and validates on
+the same terms.
+
+Every result carries `colregs.version`, the release of the data package it
+was evaluated against — an answer is a function of the data as much as of
+the facts.
+
+There are two entry points:
+
+- `colregs-engine` — `evaluate`, `appliedEntries`, and the engine's own
+  output vocabulary: `Evaluation`, `Display`, `DisplayLight`, `FactRecord`,
+  `Modality`. This is what most consumers want, and it does not move when
+  colregs releases data.
+- `colregs-engine/schema` — the colregs data shapes, generated from that
+  package's JSON Schema: `Entry`, `Predicate`, `LightSpec`, `LightDef`,
+  `ApplicabilityData` and the rest. Import these only if you read the data
+  files yourself; they change when the data changes.
 
 The composition decisions the engine makes on top of the data are recorded
 in [docs/engine-notes.md](docs/engine-notes.md).
