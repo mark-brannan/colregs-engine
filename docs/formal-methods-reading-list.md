@@ -44,3 +44,5 @@ formalisation papers above are trying to model and catch.
 - Fulton, Mitsch, Quesel, Völp, Platzer — *KeYmaera X: An Axiomatic Tactical Theorem Prover for Hybrid Systems* (CADE 2015). <https://keymaerax.org/> · <https://www.cs.cmu.edu/~smitsch/pdf/keymaerax.pdf>
 - Platzer — *Logical Foundations of Cyber-Physical Systems* (book behind KeYmaera X).
 - Jackson — *Software Abstractions* (Alloy).
+- Avižienis, Laprie, Randell, Landwehr — *Basic Concepts and Taxonomy of Dependable and Secure Computing* (IEEE TDSC 1(1), 2004). The fault/error/failure vocabulary; see glossary entry.
+  <https://doi.org/10.1109/TDSC.2004.2>

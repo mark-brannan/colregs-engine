@@ -14,7 +14,19 @@ meet them. Companion: [formal-methods-reading-list.md](formal-methods-reading-li
   which language, which tool, which tradeoff.
 - **Specification (spec).** A precise statement of what a system must do,
   separate from any code that does it. `docs/requirements.md` in colregs is a
-  prose spec; a TLA+ module or a Rocq theorem is a formal one.
+  prose spec; a TLA+ module or a Rocq theorem is a formal one. Our specs
+  use MUST / SHOULD / MAY in the sense of RFC 2119 and RFC 8174; the
+  Convention's own "shall" and "may" in the data are a different vocabulary,
+  deliberately kept apart. [normative-language.md](normative-language.md)
+  records that decision and where COLREGS will surprise an RFC reader.
+- **Dependability taxonomy.** Fault → error → failure is the standard chain:
+  a fault is the underlying defect, an error is the incorrect state it
+  causes, a failure is the externally visible deviation from spec.
+  Avižienis, Laprie, Randell and Landwehr's *Basic Concepts and Taxonomy of
+  Dependable and Secure Computing* (IEEE TDSC 1(1), 2004) is the reference
+  for this vocabulary and for attributes like safety, reliability and
+  availability — useful for naming what a counterexample or a real
+  collision actually is. <https://doi.org/10.1109/TDSC.2004.2>
 - **Formal methods.** Any technique that turns "we tested it" into "we
   showed it mathematically". Three families: **model checking** (explore
   every state of a small model), **SMT/SAT solving** (ask a solver whether a
