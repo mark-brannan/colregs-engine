@@ -22,11 +22,12 @@ meet them. Companion: [formal-methods-reading-list.md](formal-methods-reading-li
   <https://www.w3.org/wiki/RfcKeywords>.
 - **Dependability taxonomy.** Fault → error → failure is the standard chain:
   a fault is the underlying defect, an error is the incorrect state it
-  causes, a failure is the externally visible deviation from spec. Randell
-  and Avižienis's *Basic Concepts and Taxonomy of Dependable and Secure
-  Computing* (IEEE TDSC 1(1), 2004) is the reference for this vocabulary and
-  for attributes like safety, reliability and availability — useful for
-  naming what a counterexample or a real collision actually is.
+  causes, a failure is the externally visible deviation from spec.
+  Avižienis, Laprie, Randell and Landwehr's *Basic Concepts and Taxonomy of
+  Dependable and Secure Computing* (IEEE TDSC 1(1), 2004) is the reference
+  for this vocabulary and for attributes like safety, reliability and
+  availability — useful for naming what a counterexample or a real
+  collision actually is. <https://doi.org/10.1109/TDSC.2004.2> ·
   <https://www.cs.ucdavis.edu/~su/teaching/ecs289h-2013/reference1.pdf>
 - **Formal methods.** Any technique that turns "we tested it" into "we
   showed it mathematically". Three families: **model checking** (explore
