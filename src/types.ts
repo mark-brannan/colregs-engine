@@ -13,6 +13,63 @@ import type { LightSpec } from './schema.js';
 
 export * from './schema.js';
 
+import type {
+  ApplicabilityData as SchemaApplicabilityData,
+  ConditionalInclude as SchemaConditionalInclude,
+  Constraint as SchemaConstraint,
+  Entry as SchemaEntry,
+} from './schema.js';
+
+// colregs' own schema (schema/applicability.schema.json's predicateValue)
+// doesn't define `not` or `any_of` yet -- these anticipate a colregs schema
+// revision colregs-engine#9 / #13 got ahead of. No lights entry uses either
+// shape today; the test suite exercises them with literal `when` data
+// copied from real Part B entries rather than through generated fixtures.
+// The overrides below layer these forms onto the generated shapes, the
+// same way this file already layers Display/Evaluation on top of them.
+
+/** `{ not: C }` on a fact's constraint: the fact is present and does not
+ * satisfy C. An absent fact never satisfies `not` either. */
+export interface NotConstraint {
+  not: Constraint;
+}
+
+/** `{ any_of: [C, ...] }` on a fact's constraint: the fact satisfies at
+ * least one C. */
+export interface AnyOfConstraint {
+  any_of: Constraint[];
+}
+
+/** A fact's constraint: colregs' own predicateValue shapes, plus the
+ * not/any_of forms above. */
+export type Constraint = SchemaConstraint | NotConstraint | AnyOfConstraint;
+
+/** `"any_of": [W, ...]` as a *key* of a `when` (not a fact's constraint):
+ * predicate-level disjunction -- at least one sub-`when` W must hold. Its
+ * value is structurally a Predicate[], not a Constraint, so callers cast
+ * through `unknown` at that one key the way predicateMatches does. */
+export type Predicate = Record<string, Constraint>;
+
+export interface ModalityBy {
+  when: Predicate;
+  modality: Modality;
+}
+
+export interface ConditionalInclude extends Omit<SchemaConditionalInclude, 'when'> {
+  when?: Predicate;
+}
+
+export interface Entry
+  extends Omit<SchemaEntry, 'when' | 'modality_by' | 'rel:conditional_includes'> {
+  when: Predicate;
+  modality_by?: ModalityBy[];
+  'rel:conditional_includes'?: ConditionalInclude[];
+}
+
+export interface ApplicabilityData extends Omit<SchemaApplicabilityData, 'entries'> {
+  entries: Entry[];
+}
+
 /** One light as it appears in a resolved display, with its provenance. */
 export interface DisplayLight {
   spec: LightSpec;

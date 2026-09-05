@@ -10,6 +10,7 @@
 // alternative is returned (REQ-MODEL-8 / REQ-CONS-3).
 
 import type {
+  AnyOfConstraint,
   ApplicabilityData,
   Constraint,
   Display,
@@ -19,6 +20,7 @@ import type {
   FactRecord,
   FactValue,
   Modality,
+  NotConstraint,
   NumericConstraint,
   Predicate,
 } from './types';
@@ -52,8 +54,26 @@ function isNumericConstraint(c: Constraint): c is NumericConstraint {
   );
 }
 
+function isNotConstraint(c: Constraint): c is NotConstraint {
+  return typeof c === 'object' && c !== null && !Array.isArray(c) && 'not' in c;
+}
+
+function isAnyOfConstraint(c: Constraint): c is AnyOfConstraint {
+  return (
+    typeof c === 'object' &&
+    c !== null &&
+    !Array.isArray(c) &&
+    'any_of' in c &&
+    Array.isArray((c as AnyOfConstraint).any_of)
+  );
+}
+
 function valueMatches(value: unknown, constraint: Constraint): boolean {
-  if (value === undefined) return false; // an absent fact never satisfies
+  if (value === undefined) return false; // an absent fact never satisfies, `not` included
+  if (isNotConstraint(constraint)) return !valueMatches(value, constraint.not);
+  if (isAnyOfConstraint(constraint)) {
+    return constraint.any_of.some((c) => valueMatches(value, c));
+  }
   if (isNumericConstraint(constraint)) {
     if (typeof value !== 'number') return false;
     if (constraint.gte !== undefined && !(value >= constraint.gte)) return false;
@@ -77,10 +97,18 @@ function factValue(facts: FactRecord, key: string): FactValue | undefined {
   return (facts as Record<string, FactValue | undefined>)[key];
 }
 
+/** `"any_of": [W, ...]` as a key of `when` is predicate-level disjunction,
+ * not a fact constraint -- its value is a Predicate[], which is not a
+ * Constraint, so it is cast through `unknown` at this one site rather than
+ * routed through valueMatches. */
 export function predicateMatches(when: Predicate, facts: FactRecord): boolean {
-  return Object.entries(when).every(([key, constraint]) =>
-    valueMatches(factValue(facts, key), constraint),
-  );
+  return Object.entries(when).every(([key, constraint]) => {
+    if (key === 'any_of') {
+      const options = constraint as unknown as Predicate[];
+      return options.some((w) => predicateMatches(w, facts));
+    }
+    return valueMatches(factValue(facts, key), constraint);
+  });
 }
 
 export function resolveModality(entry: Entry, facts: FactRecord): Modality {
@@ -342,6 +370,12 @@ export function evaluate(
   const groupChoiceCounts = groups.map((g) =>
     g.optional ? g.options.length + 1 : g.options.length,
   );
+
+  // #9: `1 << binaryCount` coerces to signed 32-bit and silently drops
+  // displays past this bound instead of failing loudly (REQ-MODEL-8).
+  if (binaryCount > 30) {
+    throw new Error(`display enumeration: ${binaryCount} binary choices exceeds the 30-bit bound`);
+  }
 
   const totalCombos =
     (1 << binaryCount) * groupChoiceCounts.reduce((a, b) => a * b, 1);
