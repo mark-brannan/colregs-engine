@@ -39,11 +39,15 @@ before.
 
 0. Fixture replay: the package's `fixtures/applicability-fixtures.json`,
    verbatim. The least it should pass.
-1. Exhaustive conformance, in CI. For every record in the partitioned fact
-   space, engine output equals the set of entries whose conditions hold. The
-   same run looks for conflicting `shall` entries, records that end up with
-   no obligation at all, and entries that never fire. Whatever it finds gets
-   printed as a readable vessel and saved as a fixture.
+1. Exhaustive conformance, in CI. `npm run conformance` walks all 5,930,496
+   records of the partitioned fact space and checks that engine output equals
+   the set of entries whose conditions hold, against a second reading of the
+   predicate semantics written independently of `src/`. The same run looks for
+   conflicting `shall` entries, records that end up with no obligation at all,
+   entries and branches that never fire, and cites that don't resolve to a
+   paragraph. Whatever it finds is printed as a readable vessel and saved as a
+   fixture in [`research/conformance/`](research/conformance/), which explains
+   how to run it and how a finding is triaged.
 2. The same properties handed to a solver: Z3 over the applicability table,
    Alloy for the encounter sectors. This is for anyone who distrusts "we ran
    a lot of tests", which is a reasonable thing to distrust.

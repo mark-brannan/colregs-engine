@@ -53,6 +53,8 @@ export interface Entry {
   id: string;
   jurisdiction: string;
   cite: string;
+  /** 2 marks a Part B two-vessel steering entry (no `lights`); absent/1 is a lights entry. */
+  subjects?: number;
   when: Predicate;
   lights: LightSpec[];
   modality: Modality;

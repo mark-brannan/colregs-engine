@@ -130,11 +130,23 @@ function displayLights(node: Node): DisplayLight[] {
   }));
 }
 
+/**
+ * Part B entries (colregs `subjects: 2`, `category`+`effect`, no `lights`)
+ * describe two-vessel steering obligations, not lights and shapes. They are
+ * out of this evaluator's domain (docs/engine-notes.md note 8): the lights
+ * evaluator only ever considers single-subject lights entries.
+ */
+function isLightsEntry(e: Entry): boolean {
+  return e.subjects !== 2;
+}
+
 /** The predicate layer alone: entries whose `when` matches, without the
  * relation/display composition that follows. Factored out of `evaluate` so
  * a caller can inspect just this layer's result. */
 function appliedEntryList(data: ApplicabilityData, facts: FactRecord): Entry[] {
-  return data.entries.filter((e) => predicateMatches(e.when, facts));
+  return data.entries
+    .filter(isLightsEntry)
+    .filter((e) => predicateMatches(e.when, facts));
 }
 
 /** Ids of the entries whose predicate matches `facts` — the same set
