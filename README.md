@@ -1,72 +1,64 @@
 # colregs-engine
 
-Describe a vessel — how long it is, what it is doing, whether it is under
-way — and this library tells you every set of lights and shapes that vessel
-may lawfully show under the COLREGS. Where the rules permit a choice, it
-returns all the options; choosing between them is the skipper's job.
+You describe a vessel: how long, what it's doing, whether it's under way. It
+gives back every set of lights and shapes that vessel may lawfully show
+under the COLREGS. Where the rules allow a choice you get all the options;
+picking one is up to the skipper.
 
 The rules themselves live as data in the
 [colregs](https://github.com/mark-brannan/colregs) package. This is the part
-that reads them: it tests each entry's conditions against the vessel you
-described, then resolves how the surviving entries interact — one display
-includes another, replaces it, rules it out, or exempts the vessel
-altogether — and returns the complete displays that come out the far end.
+that reads them. It checks each entry's conditions against your vessel, then
+works out how the surviving entries interact: a display can include another,
+replace it, rule it out, or exempt the vessel from showing anything. What
+comes out is the set of complete lawful displays.
 
 **Status: name staked, not yet started.** The engine is being built inside
 [searoom](https://github.com/mark-brannan/searoom) first and will be
 extracted here once it earns a second consumer.
 
-## What the engine is required to be
+## Constraints
 
-These four constraints are not house style. They are what lets us check the
-engine exhaustively rather than sample it with a few tests, so they are
-load-bearing for the plan in the next section.
+These exist so the engine can be checked exhaustively instead of sampled,
+which is what the next section is about.
 
-- **A pure, total function.** Facts in, set of lawful displays out. No I/O,
-  no clock, no state. Timing, freshness and hysteresis belong to whatever
-  consumes this, never to it.
-- **A finite input space.** The fact record is enumerable: after
-  partitioning the numeric facts at the thresholds the data's predicates
-  actually compare against (7, 12, 20, 50, 100 m and the tow, gear and
-  speed constants), the whole space is on the order of 10⁷ records —
-  minutes of CPU, not a sampling problem.
-- **Non-committal on alternatives.** Where the rules permit a choice, the
-  engine returns all of it. Picking is a human's job, and a function that
-  picks is a function whose output can't be checked against the data.
-- **Traceable.** Every entry in an output cites the paragraph that put it
-  there. A result you can't trace to a paragraph is not a result.
+- **Pure and total.** Facts in, displays out. No I/O, no clock, no state.
+  Timing, freshness and hysteresis belong to whatever calls this.
+- **Finite input.** Partition the numeric facts at the thresholds the rules
+  actually compare against (7, 12, 20, 50 and 100 m, plus the tow, gear and
+  speed constants) and the whole fact space is around 10⁷ records. Minutes
+  of CPU.
+- **No choosing.** Where several displays are lawful, all of them come back.
+  A function that picks one can't be checked against the data.
+- **Traceable.** Every entry in an output cites the paragraph it came from.
 
 ## Verification
 
 "Does the engine agree with the rules?" should be answered by checking every
-case, or by proving it — not by trying a few and hoping. Each rung below is
-a stronger form of that answer than the one before:
+case, or by proving it. Each step below is a stronger answer than the one
+before.
 
-0. **Fixture replay** — the package's `fixtures/applicability-fixtures.json`
-   replayed verbatim. The floor, not the ceiling.
-1. **Exhaustive conformance in CI** — for every record in the partitioned
-   fact space, engine output equals the set of entries whose predicate
-   holds. Same run checks consistency (no conflicting `shall` entries, no
-   record left with no obligation) and coverage (no entry that never
-   fires). Counterexamples render as readable vessels and land as fixtures.
-2. **The same properties, stated to a solver** — Z3 over the applicability
-   table, Alloy for the encounter-sector partition. For readers who
-   reasonably distrust "we ran a lot of tests".
-3. **A Rocq lemma that threshold-partitioned enumeration is complete** —
-   which turns step 1 from a large test into a proof.
-4. **Optionally, a verified evaluator** — the core in Gallina, proved total
-   and deterministic, extracted and run as a second implementation against
-   step 1's harness. Decided after step 3, on whether the toolchain cost
-   earns its keep.
+0. Fixture replay: the package's `fixtures/applicability-fixtures.json`,
+   verbatim. The least it should pass.
+1. Exhaustive conformance, in CI. For every record in the partitioned fact
+   space, engine output equals the set of entries whose conditions hold. The
+   same run looks for conflicting `shall` entries, records that end up with
+   no obligation at all, and entries that never fire. Whatever it finds gets
+   printed as a readable vessel and saved as a fixture.
+2. The same properties handed to a solver: Z3 over the applicability table,
+   Alloy for the encounter sectors. This is for anyone who distrusts "we ran
+   a lot of tests", which is a reasonable thing to distrust.
+3. A Rocq proof that partitioning at the thresholds misses nothing, which
+   promotes step 1 from a big test to an actual proof.
+4. Maybe a verified evaluator: the core written in Gallina, proved total and
+   deterministic, extracted, then run as a second implementation against
+   step 1's harness. Worth deciding once step 3 lands.
 
-Steering-rule work — Part B, three-vessel cycles, the temporal and
-kinematic models — is tracked with the rest of the programme in
-[colregs-engine#1](https://github.com/mark-brannan/colregs-engine/issues/1),
-not here.
+Steering rules are a separate problem — Part B, three-vessel cycles, timing
+and kinematics — and they're tracked with the rest of the programme in
+[colregs-engine#1](https://github.com/mark-brannan/colregs-engine/issues/1).
 
-Background for readers new to the tooling:
-[glossary](docs/formal-methods-glossary.md) ·
-[reading list](docs/formal-methods-reading-list.md).
+New to the tooling? There's a [glossary](docs/formal-methods-glossary.md) and
+a [reading list](docs/formal-methods-reading-list.md).
 
 ## Licence
 
