@@ -17,10 +17,12 @@ import type {
   Entry,
   Evaluation,
   FactRecord,
+  FactValue,
   Modality,
   NumericConstraint,
   Predicate,
 } from './types';
+import { validateFacts } from './facts.js';
 
 // facts.json: "'ram_underwater' ... is a refinement of 'ram', not a peer of
 // it, and predicates written for 'ram' also read it."
@@ -64,9 +66,14 @@ function valueMatches(value: unknown, constraint: Constraint): boolean {
   );
 }
 
+/** A predicate names its keys as data, so they are read as data too. */
+function factValue(facts: FactRecord, key: string): FactValue | undefined {
+  return (facts as Record<string, FactValue | undefined>)[key];
+}
+
 export function predicateMatches(when: Predicate, facts: FactRecord): boolean {
   return Object.entries(when).every(([key, constraint]) =>
-    valueMatches(facts[key], constraint),
+    valueMatches(factValue(facts, key), constraint),
   );
 }
 
@@ -89,7 +96,7 @@ export function resolveModality(entry: Entry, facts: FactRecord): Modality {
 function oneOfAvailable(ref: Entry, facts: FactRecord): boolean {
   return Object.entries(ref.when).every(([key, constraint]) => {
     if (AXIS_FACTS.has(key)) return true;
-    return valueMatches(facts[key], constraint);
+    return valueMatches(factValue(facts, key), constraint);
   });
 }
 
@@ -138,18 +145,29 @@ function appliedEntryList(data: ApplicabilityData, facts: FactRecord): Entry[] {
 }
 
 /** Ids of the entries whose predicate matches `facts` — the same set
- * `evaluate(...).applied` returns, without running display composition. */
+ * `evaluate(...).applied` returns, without running display composition.
+ * Validates `facts` on the same terms evaluate() does. */
 export function appliedEntries(
   data: ApplicabilityData,
   facts: FactRecord,
 ): string[] {
+  validateFacts(facts);
   return appliedEntryList(data, facts).map((e) => e.id);
 }
 
+/**
+ * Evaluates `facts` against `data`, returning every lawful display.
+ *
+ * Throws if `facts` carries a key or value outside colregs' vocabulary: an
+ * empty result must mean "this vessel shows nothing", never "you misspelt
+ * something".
+ */
 export function evaluate(
   data: ApplicabilityData,
   facts: FactRecord,
 ): Evaluation {
+  validateFacts(facts);
+
   const byId = new Map(data.entries.map((e) => [e.id, e]));
   const applied = appliedEntryList(data, facts);
   const appliedIds = new Set(applied.map((e) => e.id));

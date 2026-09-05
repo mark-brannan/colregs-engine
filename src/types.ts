@@ -21,7 +21,6 @@ import type {
   PredicateValue,
   When,
 } from './generated/applicability.js';
-import type { FactValue } from './generated/applicability-fixtures.js';
 
 /** A value a fact record may carry. */
 export type { FactValue } from './generated/applicability-fixtures.js';
@@ -73,8 +72,17 @@ export type Arc = NonNullable<LightDef['arc']>;
 /** One rule paragraph from data/rules.json. */
 export type Paragraph = RulesData['paragraphs'][string];
 
-/** A fact record: what the user has asserted about one vessel at one moment. */
-export type FactRecord = Record<string, FactValue>;
+/**
+ * What the user has asserted about one vessel at one moment. Generated from
+ * colregs data/facts.json: a key outside the vocabulary, or a value outside
+ * an enumerated key's own values, is a compile error rather than a record
+ * that silently matches nothing.
+ */
+export type {
+  FactKey,
+  FactRecord,
+  FactValues,
+} from './generated/fact-record.js';
 
 /** One light as it appears in a resolved display, with its provenance. */
 export interface DisplayLight {

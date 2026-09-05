@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json';
-import { evaluate } from '../src/evaluate';
+import { appliedEntries, evaluate } from '../src/evaluate';
 import type { ApplicabilityData, FactRecord } from '../src/types';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
@@ -226,7 +226,13 @@ describe('lawful display composition', () => {
 
   it('every evaluation terminates with at least one display', () => {
     // sweep the axis product at representative lengths
-    const propulsions = ['propulsion:power', 'propulsion:sail', 'propulsion:oars'];
+    // `as const`: FactRecord's value types are unions of colregs' own
+    // values now, so a widened string[] no longer satisfies them.
+    const propulsions = [
+      'propulsion:power',
+      'propulsion:sail',
+      'propulsion:oars',
+    ] as const;
     const activities = [
       'activity:none',
       'activity:fishing',
@@ -241,13 +247,13 @@ describe('lawful display composition', () => {
       'activity:mine',
       'activity:pilot',
       'activity:diving',
-    ];
+    ] as const;
     const positions = [
       'position:underway',
       'position:anchored',
       'position:aground',
       'position:moored',
-    ];
+    ] as const;
     for (const p of propulsions)
       for (const a of activities)
         for (const pos of positions)
@@ -264,5 +270,59 @@ describe('lawful display composition', () => {
               });
               expect(e.displays.length).toBeGreaterThan(0);
             }
+  });
+});
+
+describe('fact-record validation', () => {
+  // The failure this replaces: an un-namespaced key matched nothing, and the
+  // caller got an empty display set — the same answer a vessel that lawfully
+  // shows nothing gets. The cast is the test: the literal is a compile error
+  // now, and `as unknown as FactRecord` is how it reaches the runtime check.
+  it('an un-namespaced key throws, naming the key', () => {
+    const bad = { propulsion: 'sail' } as unknown as FactRecord;
+    expect(() => evaluate(applicability, bad)).toThrow(
+      /unknown fact key 'propulsion'/,
+    );
+  });
+
+  it('suggests the namespaced key it meant', () => {
+    const bad = { propulsion: 'sail' } as unknown as FactRecord;
+    expect(() => evaluate(applicability, bad)).toThrow(
+      /did you mean 'fact:propulsion'/,
+    );
+  });
+
+  it('a value outside an axis throws, naming key and value', () => {
+    const bad = {
+      'fact:propulsion': 'propulsion:nuclear',
+    } as unknown as FactRecord;
+    expect(() => evaluate(applicability, bad)).toThrow(
+      /'fact:propulsion' does not accept "propulsion:nuclear"/,
+    );
+  });
+
+  it('an un-namespaced axis value suggests the namespaced one', () => {
+    const bad = { 'fact:propulsion': 'sail' } as unknown as FactRecord;
+    expect(() => evaluate(applicability, bad)).toThrow(
+      /did you mean 'propulsion:sail'/,
+    );
+  });
+
+  it('a scalar given the wrong type throws, naming the expected type', () => {
+    const bad = { 'fact:length_m': '11.6' } as unknown as FactRecord;
+    expect(() => evaluate(applicability, bad)).toThrow(
+      /'fact:length_m' expects a number, got string/,
+    );
+  });
+
+  it('appliedEntries validates on the same terms', () => {
+    const bad = { propulsion: 'sail' } as unknown as FactRecord;
+    expect(() => appliedEntries(applicability, bad)).toThrow(
+      /unknown fact key 'propulsion'/,
+    );
+  });
+
+  it('a valid record still evaluates', () => {
+    expect(() => evaluate(applicability, sloop12)).not.toThrow();
   });
 });

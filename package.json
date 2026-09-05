@@ -20,7 +20,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "tsc -p tsconfig.build.json",
-    "generate": "tsx scripts/generate-schema-types.ts",
+    "generate": "tsx scripts/generate-schema-types.ts && tsx scripts/generate-fact-record.ts",
     "generate:check": "npm run generate && git add --intent-to-add -- src/generated && git diff --exit-code -- src/generated"
   },
   "dependencies": {
