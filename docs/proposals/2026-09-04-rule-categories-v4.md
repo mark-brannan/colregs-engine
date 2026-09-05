@@ -223,6 +223,27 @@ unverified. Settled by reading the cases. Nothing in §4 depends on it.
 **Ink:** 2(b)'s override is scoped to level-1/2 invariant violations, not
 a licence to drop any rule.
 
+**Illustrations** `✎ not computed` — one per query result, to fix the
+meaning, not the numbers:
+
+- **R0 / not-flagged.** Power vessel, 12 kn; another on the starboard bow
+  at 3 nm, steady bearing. Give-way under Rule 15; a 30° starboard
+  alteration now passes 1 nm astern whatever she does. No banner.
+- **R1 / model-rule-conflict.** Narrow channel, own vessel on the
+  starboard side per Rule 9; a vessel cuts the bend and is head-on. Rule 14
+  says starboard; the bank is 100 m to starboard. Every compliant plan
+  grounds or collides; a port alteration, breaching 14(a), passes
+  starboard-to-starboard. Banner; one advisory. Under the
+  *other-complies* assumption this is R0, because she turns too.
+- **R2 / no-robust-policy-in-model.** Tanker, 15 kn; a small craft emerges
+  from behind an anchored ship 300 m ahead, crossing. Stopping distance
+  over 1 nm, turning circle 500 m. Every plan in the model collides.
+  Banner; empty advisory list. The craft may stop; the model didn't
+  consider it.
+- **inconclusive-in-model.** The channel case again, but the escape lies
+  between the solver's time steps, or the other vessel's dynamics class is
+  not modelled. Neither certified. No banner; the failed assumption named.
+
 ## 5. Tractability inside R0 and R1 `✎ whole section`
 
 Two questions stacked: does a solution exist (formal: §4 answers it) and
