@@ -19,12 +19,15 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "conformance": "tsx research/conformance/run.ts"
   },
   "dependencies": {
     "colregs": "github:mark-brannan/colregs#afc4d536482d71eb70349d6e55fd5d0b081464a1"
   },
   "devDependencies": {
+    "@types/node": "^26.4.1",
+    "tsx": "^4.23.13",
     "typescript": "^5.7.2",
     "vitest": "^3.2.7"
   }
