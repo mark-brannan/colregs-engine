@@ -28,6 +28,10 @@ formalisation papers above are trying to model and catch.
 
 - Garzke, Simpson — *The Loss of Andrea Doria: A Marine Forensic Analysis* (Marine Technology Society Journal 46(6), 2012). Reconstructs the 1956 Andrea Doria–Stockholm collision from radar, navigation, and rules-of-the-road evidence.
   <https://www.ingentaconnect.com/content/mts/mtsj/2012/00000046/00000006/art00008> · <https://onepetro.org/JSPD/article/26/02/98/172277/The-Loss-of-Andrea-Doria-A-Marine-Forensic>
+- Halpern — *Strangers on the Horizon: Titanic and Californian – A Forensic Approach* (2019). Navigational reconstruction of the Titanic–Californian near-encounter — lookout, distress-signal, and stand-on/give-way failures. No open PDF; book only.
+  <https://www.amazon.com/STRANGERS-HORIZON-Californian-Forensic-Approach/dp/1702121984>
+- IMO GISIS Marine Casualties and Incidents module — not a paper but a source class: the mandatory-reporting database of marine safety investigation reports (SOLAS/MARPOL/LL). Ground truth for real COLREGS-relevant incidents, ongoing rather than one-off.
+  <https://www.imo.org/en/OurWork/IIIS/Pages/Marine-Safety-Investigation-reports.aspx>
 
 ## Tools
 
