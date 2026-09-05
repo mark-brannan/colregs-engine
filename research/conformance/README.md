@@ -74,6 +74,14 @@ Two implementations that agree are worth more than one implementation that
 passes its own tests. Where they disagree, the harness fails rather than
 picking a winner.
 
+It covers more of the schema than `src/evaluate.ts` does: `not` and both
+`any_of` forms are implemented here and not there. No lights entry uses
+either shape today — they appear only in the `subjects: 2` Part B entries
+this evaluator filters out — so the agreement over the whole space is real
+but says nothing about those forms. The first lights entry to use one will
+be a conformance failure, which is the behaviour to want from a check like
+this.
+
 ## The checks
 
 **conformance** — for every record, the engine's applied-entry set equals the
