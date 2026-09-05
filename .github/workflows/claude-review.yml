@@ -10,6 +10,10 @@ name: Claude PR Review
 # then `gh secret set CLAUDE_CODE_OAUTH_TOKEN -R mark-brannan/colregs-engine`).
 # Until it exists the review skips with a warning rather than failing every
 # pull request.
+#
+# Fork pull requests are excluded (the shared workflow skips them): a fork
+# can't read this repo's secret, so a review there would only fail red for
+# no reason. There's no separate least-privilege path for fork diffs today.
 
 on:
   pull_request:
@@ -24,7 +28,13 @@ permissions:
 
 jobs:
   review:
-    uses: mark-brannan/.github/.github/workflows/claude-review.yml@main
+    # Pinned to a reviewed commit rather than @main -- flagged by CodeRabbit
+    # (2026-09-05) with zizmor's unpinned-uses backing it: @main lets a
+    # future push to mark-brannan/.github change what runs here, with
+    # CLAUDE_CODE_OAUTH_TOKEN/pull-requests:write/id-token:write, and no
+    # corresponding commit in this repo. Bump deliberately when the shared
+    # workflow changes.
+    uses: mark-brannan/.github/.github/workflows/claude-review.yml@bdaa39fa178205a1657cb30e590637df4c73c72e
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     with:
