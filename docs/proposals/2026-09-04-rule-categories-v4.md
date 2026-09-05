@@ -9,6 +9,13 @@ in `colregs-engine`. Supersedes v3. Reviews of v1–v3 are in
 significant evidence, Mark decides; **pencil** `✎` iterates freely and names
 what settles it; **open** `?` has no position yet.
 
+**Applied after codex's v4 review** (approve with changes, under terms that
+required a paste-ready fix per finding): Rules 5 and 7(a) say "shall" and
+are `conduct`, monitored over a trace; `care` is 2(a) alone. R1 is restated
+as a model finding that bears on 2(b), not a legal classification, with the
+adversary quantified over strategies. `inconclusive-in-model` is a query
+result, not a region.
+
 **What changed from v3**, after codex (redesign) and Gemini (approve with
 changes) reviewed it:
 
@@ -77,8 +84,8 @@ norm reads and what it produces. The verification column is pencil.
 | `display` | 20(a),(d)–(e), 21–31 | one vessel's facts | signals + modality | yes | enumeration → Z3 → Rocq (existing ladder) |
 | `classification` | 7(d), 12, 13(a)–(c), 14, 15 | relative geometry, 13(d) history | encounter type, risk of collision | yes | Alloy partition |
 | `precedence` | 18(a)–(f), 8(f), 9(b)–(d), 10(i)–(j) | two vessels' facts + encounter type | give-way / stand-on / shall-not-impede / none | yes | Alloy or Z3: never both stand-on |
-| `conduct` | 6, 7(b)–(c), 8(a)–(e), 9(a),(e)–(g), 10(a)–(h),(k)–(l), 16, 17, 19(b)–(e) | encounter + role + phase + kinematics | obligated or prohibited action | as a monitor over a trace | TLA+, STL |
-| `care` | 2(a), 5, 7(a) | anything | factors only | no | not verifiable; represented, never evaluated |
+| `conduct` | 5, 6, 7(a)–(c), 8(a)–(e), 9(a),(e)–(g), 10(a)–(h),(k)–(l), 16, 17, 19(b)–(e) | encounter + role + phase + kinematics + observation record | obligated or prohibited action | as a monitor over a trace | TLA+, STL |
+| `care` | 2(a) | anything | residual responsibility | no | represented, never independently evaluated |
 | `meta` | 2(b) | the region state (§4) | banner + advisories | computed, §4 | game solver + human review |
 | `?` | Part D (32–37) | event-triggered | — | — | blocked on REQ-PART-3's ADR |
 
@@ -110,7 +117,8 @@ and history. Kinematic state is a new fact class, not a change to the
 existing one.
 
 **Ink:** the engine evaluates `scope`, `display`, `classification`,
-`precedence`; monitors `conduct`; never evaluates `care`.
+`precedence`; monitors `conduct`; represents but never independently
+evaluates `care`.
 
 ## 3. Invariants, in levels `✎ levels`
 
@@ -139,19 +147,22 @@ information: full (v1 assumption; partial information is the known next
 step and may move the region more than anything else); other-vessel
 admissible set *A*.
 
-**Ink, the ontology.** Let *Safe* mean no level-1/2 violation within *T*.
-For a situation *s*:
+**Ink, the ontology.** Let `Safe(s, σown, σother)` mean no level-1/2
+violation within *T*, and *A* the declared set of admissible other-vessel
+strategies. For a situation *s*:
 
 | region | definition | meaning |
 |---|---|---|
-| **R0 rules-suffice** | ∃ compliant own strategy ∀ *A*: Safe | the rules work here |
-| **R1 departure-required** | ¬R0 ∧ ∃ non-compliant own strategy ∀ *A*: Safe | Rule 2(b) territory: breaking a rule is the *only* way out |
-| **R2 unwinnable-in-model** | ¬R0 ∧ ¬(∃ any own strategy ∀ *A*: Safe) | no escape the model can see; Mark's tier 4, or a model artifact |
+| **R0 rules-suffice** | ∃ compliant σown ∀ σother ∈ A: Safe | a compliant robust policy exists in this model |
+| **R1 departure-required-in-model** | ¬R0 ∧ ∃ σown ∀ σother ∈ A: Safe | every robust safe policy breaches at least one Rules 4–19 constraint |
+| **R2 unwinnable-in-model** | ¬∃ σown ∀ σother ∈ A: Safe | no robust safe policy exists in this model; Mark's tier 4, or a model artifact |
 
-"Compliant" means within Rules 4–19 with 2(b) excluded, or the definition
-is circular. R1 is the Rule 2 region proper. R2 is carved off so the two
-are never confused: in R1 the tools can say *what* the escape is; in R2 they
-can only say the model found none.
+"Compliant" means satisfying the encoded Rules 4–19 constraints; Rule 2
+is not in that predicate, or the definition is circular. R1 is a model
+finding that supplies evidence relevant to Rule 2(b), not a legal
+classification. In R1 the tools can say *what* the escape is and which
+paragraphs it breaches; in R2 they can only say no robust escape was
+certified.
 
 `✎ adversary and horizon` — *A* is computed two ways from the start:
 other vessel rule-compliant (the rules' own failures) and arbitrary within
@@ -174,12 +185,13 @@ pair and under partial information that may not scale. Settled by the
 first two-vessel computation's cost.
 
 **Ink, outputs in the region.** The engine queries the region grid the
-solver produced. When *s* is in R1 or R2 it returns:
+solver produced. A query returns exactly one certified result: R0
+(`not-flagged`), R1, R2, or `inconclusive-in-model`; only certified R1 and
+R2 raise the Rule 2 banner. In R1 or R2 the engine returns:
 
 1. a Rule 2 banner, citing 2(b), with a status that says what the model
-   knows and nothing more: `model-rule-conflict` (R1: no compliant policy
-   is safe, an escape exists), `no-robust-policy-in-model` (R2), or
-   `inconclusive-in-model` (the solver did not certify either way);
+   knows and nothing more: `model-rule-conflict` (R1) or
+   `no-robust-policy-in-model` (R2);
 2. the rule-derived obligations, unchanged, so the reader sees what the
    rules said;
 3. **advisories**, in R1: the safe escapes the grid holds, ranked best
