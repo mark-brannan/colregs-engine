@@ -1,0 +1,31 @@
+{
+  "name": "colregs-engine",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "COLREGS navigation-lights applicability evaluator: predicates -> applied entries -> lawful displays",
+  "license": "Apache-2.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "colregs": "github:mark-brannan/colregs#a04377336da92043e34e986741f78dc9307dab9c"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.7"
+  }
+}
