@@ -27,8 +27,7 @@ meet them. Companion: [formal-methods-reading-list.md](formal-methods-reading-li
   Dependable and Secure Computing* (IEEE TDSC 1(1), 2004) is the reference
   for this vocabulary and for attributes like safety, reliability and
   availability — useful for naming what a counterexample or a real
-  collision actually is. <https://doi.org/10.1109/TDSC.2004.2> ·
-  <https://www.cs.ucdavis.edu/~su/teaching/ecs289h-2013/reference1.pdf>
+  collision actually is. <https://doi.org/10.1109/TDSC.2004.2>
 - **Formal methods.** Any technique that turns "we tested it" into "we
   showed it mathematically". Three families: **model checking** (explore
   every state of a small model), **SMT/SAT solving** (ask a solver whether a

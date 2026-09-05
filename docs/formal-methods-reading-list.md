@@ -45,4 +45,4 @@ formalisation papers above are trying to model and catch.
 - Platzer — *Logical Foundations of Cyber-Physical Systems* (book behind KeYmaera X).
 - Jackson — *Software Abstractions* (Alloy).
 - Avižienis, Laprie, Randell, Landwehr — *Basic Concepts and Taxonomy of Dependable and Secure Computing* (IEEE TDSC 1(1), 2004). The fault/error/failure vocabulary; see glossary entry.
-  <https://doi.org/10.1109/TDSC.2004.2> · <https://www.cs.ucdavis.edu/~su/teaching/ecs289h-2013/reference1.pdf>
+  <https://doi.org/10.1109/TDSC.2004.2>
