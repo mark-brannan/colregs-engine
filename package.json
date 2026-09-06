@@ -1,10 +1,17 @@
 {
   "name": "colregs-engine",
-  "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "COLREGS navigation-lights applicability evaluator: predicates -> applied entries -> lawful displays",
+  "description": "Evaluation engine for structured COLREGS 72 data and national amalgamations",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mark-brannan/colregs-engine.git"
+  },
+  "homepage": "https://github.com/mark-brannan/colregs-engine#readme",
+  "bugs": {
+    "url": "https://github.com/mark-brannan/colregs-engine/issues"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -25,6 +32,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build",
     "conformance": "tsx research/conformance/run.ts",
     "generate": "tsx scripts/generate-schema-types.ts && tsx scripts/generate-fact-record.ts",
     "generate:check": "npm run generate && git add --intent-to-add -- src/generated && git diff --exit-code -- src/generated"
