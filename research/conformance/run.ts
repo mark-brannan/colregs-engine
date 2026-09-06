@@ -388,7 +388,7 @@ sortedFindings.forEach((f, i) => {
 // reproduce most findings (FIND-01/02/03 each need 114,048 of the full
 // 5.9M records), so every sampled run would spuriously warn on every
 // existing ruling.
-if (!sampleSize) {
+if (!sampleArg) {
   const liveFindingKeys = new Set(sortedFindings.map((f) => `${f.check}::${f.groupKey}`));
   for (const key of Object.keys(TRIAGE)) {
     if (!liveFindingKeys.has(key)) {
@@ -429,7 +429,8 @@ overwrites.
   const rows = findings
     .map((f) => {
       const t = triageFor(f);
-      const escape = (s: string) => s.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+      const escape = (s: string) =>
+        s.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\r\n?|\n/g, '<br>');
       return `| ${f.id} | ${f.check} | ${f.count} | ${escape(f.description)} | ${f.cites.join('; ') || '-'} | ${t.status} | ${t.note ? escape(t.note) : '-'} |`;
     })
     .join('\n');

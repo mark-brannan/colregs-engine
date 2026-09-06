@@ -160,9 +160,10 @@ derived/hand-maintained split [#15](https://github.com/mark-brannan/colregs-engi
 used for `AXIS_FACTS`/`REFINEMENTS`, for the same reason: a run owns what it
 can regenerate and nothing else. To climb a finding up the ladder, edit
 `triage.json` and rerun `npm run conformance` — hand-editing the register or
-a `FIND-nn.json` directly is pointless, the next run overwrites it. A stale
-ruling (its key no longer matches any finding) prints a warning instead of
-being silently dropped.
+a `FIND-nn.json` directly is pointless, the next run overwrites it. On a full
+run, a stale ruling (its key no longer matches any finding) prints a warning
+instead of being silently dropped; a `--sample` run skips that check, since a
+partial pass over the fact space won't reproduce most findings.
 
 ## Files
 
