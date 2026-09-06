@@ -39,7 +39,7 @@
     "z3": "tsx research/z3/run.ts"
   },
   "dependencies": {
-    "colregs": "github:mark-brannan/colregs#a04377336da92043e34e986741f78dc9307dab9c"
+    "colregs": "^0.2.0"
   },
   "devDependencies": {
     "@types/node": "22.20.1",

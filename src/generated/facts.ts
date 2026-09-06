@@ -1,12 +1,31 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.1.2 schema/facts.schema.json
+ * Source: colregs@0.2.0 schema/facts.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
 
 export type FactValue = string;
+/**
+ * This interface was referenced by `undefined`'s JSON-Schema definition
+ * via the `patternProperty` "^fact:[a-z0-9_]+$".
+ */
+export type Constraint =
+  | FactValue
+  | boolean
+  | number
+  | FactValue[]
+  | NumericGate
+  | {
+      not: Constraint;
+    }
+  | {
+      /**
+       * @minItems 1
+       */
+      any_of: Constraint[];
+    };
 export type FactKey = string;
 
 /**
@@ -81,6 +100,48 @@ export interface FactsData {
       actuable?: boolean;
     };
   };
+  derived?: {
+    note?: string;
+    /**
+     * This interface was referenced by `undefined`'s JSON-Schema definition
+     * via the `patternProperty` "^fact:[a-z0-9_]+$".
+     */
+    [k: string]:
+      | {
+          type: 'number' | 'boolean' | 'enum';
+          derived: true;
+          cite: string;
+          unit?: string;
+          /**
+           * @minItems 1
+           */
+          values?: FactValue[];
+          cites?: {
+            [k: string]: string;
+          };
+          actuable: false;
+          signalk?: string | null;
+          note?: string;
+          /**
+           * @minItems 1
+           */
+          decode: {
+            when: {
+              [k: string]: Constraint;
+            };
+            value: FactValue | boolean | number;
+            cite?: string;
+            note?: string;
+          }[];
+          undecodable?: {
+            case: string;
+            why: string;
+            cite?: string;
+          }[];
+        }
+      | string
+      | undefined;
+  };
   actuable_subset?: {
     note?: string;
     fields?: FactKey[];
@@ -107,6 +168,26 @@ export interface FactsData {
   };
   situation?: {
     note?: string;
+    constants?: {
+      note?: string;
+      /**
+       * This interface was referenced by `undefined`'s JSON-Schema definition
+       * via the `patternProperty` "^(?!note$)[a-z][a-z0-9_]*$".
+       */
+      [k: string]:
+        | {
+            value: number;
+            unit?: string;
+            fact: string;
+            status: 'ink' | 'pencil' | 'open';
+            cite: string | null;
+            cite_pending: string | null;
+            note?: string;
+            settled_by?: string;
+          }
+        | string
+        | undefined;
+    };
     status?: 'ink' | 'pencil' | 'open';
     adr?: string;
     requirements?: string[];
@@ -124,6 +205,7 @@ export interface FactsData {
         kin: string;
         geo: string;
         hist: string;
+        env: string;
       };
       bare_key?: string;
       directional_note?: string;
@@ -142,6 +224,7 @@ export interface FactsData {
         note?: string;
         [k: string]: SituationFact | string | undefined;
       };
+      consistency?: {};
     };
     history: {
       note?: string;
@@ -164,8 +247,13 @@ export interface FactsData {
         };
         pair: {
           geo?: string;
+          env?: string;
         };
       };
+    };
+    environment: {
+      note?: string;
+      [k: string]: SituationFact | string | undefined;
     };
   };
 }
@@ -187,6 +275,9 @@ export interface NumericGate {
  *
  * This interface was referenced by `undefined`'s JSON-Schema definition
  * via the `patternProperty` "^hist:[a-z0-9_]+$".
+ *
+ * This interface was referenced by `undefined`'s JSON-Schema definition
+ * via the `patternProperty` "^env:[a-z0-9_]+$".
  */
 export interface SituationFact {
   type: 'number' | 'boolean' | 'enum' | 'position';
