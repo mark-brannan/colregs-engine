@@ -27,21 +27,41 @@ import { validateFacts } from './facts.js';
 // An evaluation carries it so "the answer changed" can be read as "the data
 // changed" without re-deriving which data was in play.
 import colregsPackage from 'colregs/package.json' with { type: 'json' };
+import factsData from 'colregs/data/facts.json' with { type: 'json' };
 
 const COLREGS_VERSION: string = colregsPackage.version;
 
-// facts.json: "'ram_underwater' ... is a refinement of 'ram', not a peer of
-// it, and predicates written for 'ram' also read it."
-const REFINEMENTS: Record<string, string> = {
+// AXIS_FACTS: facts.json's mechanical signal for "situational classification
+// key" is structural, not prose. Every key under `axes` is a
+// mutually-exclusive-choice enum (fact:propulsion, fact:activity,
+// fact:position today); every key under `modifiers` is a boolean that
+// refines one of those axes (fact:making_way refines
+// fact:position=position:underway) and is treated the same way by
+// oneOfAvailable below — both are the situation a `one_of` alternative's own
+// axes get to override, unlike a scalar or a plain (non-axis) boolean.
+// Deriving this from facts.json at import time means a new axis or modifier
+// colregs adds is picked up automatically instead of needing a matching
+// hand-edit here.
+export const AXIS_FACTS = new Set<string>([
+  ...Object.keys(factsData.axes),
+  ...Object.keys(factsData.modifiers ?? {}),
+]);
+
+// REFINEMENTS: facts.json does NOT encode value-level refinement (e.g.
+// 'activity:ram_underwater' refining 'activity:ram') in any structured
+// field -- only in prose, in the `axes["fact:activity"].note` string, in
+// colregs' README ("Predicate semantics"), and in docs/identifiers.md. The
+// schema's only structured `refines` field lives under `modifiers` and
+// encodes a different relation (a modifier refining one axis *value*, not
+// one enum value refining a peer value in the same axis). There is no
+// naming convention safe to key off either -- 'activity:trawling' is not a
+// refinement of 'activity:fishing' despite the same "compound name" shape.
+// So this table is deliberately still hand-maintained; the accompanying
+// test pins it (and AXIS_FACTS) against facts.json so a future refinement
+// colregs adds shows up as a failing test rather than a silent gap.
+export const REFINEMENTS: Record<string, string> = {
   'activity:ram_underwater': 'activity:ram',
 };
-
-const AXIS_FACTS = new Set([
-  'fact:propulsion',
-  'fact:activity',
-  'fact:position',
-  'fact:making_way',
-]);
 
 function isNumericConstraint(c: Constraint): c is NumericConstraint {
   return (
