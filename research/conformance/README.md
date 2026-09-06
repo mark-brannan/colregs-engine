@@ -80,15 +80,14 @@ Two implementations that agree are worth more than one implementation that
 passes its own tests. Where they disagree, the harness fails rather than
 picking a winner.
 
-It covers more of the predicate language than `src/evaluate.ts` does: `not`
-and both `any_of` forms are implemented here and not there. Neither exists
-in the pinned colregs (0.1.2) schema; they arrive in a later release,
-together with the two-subject Part B steering entries that use them. So the
-agreement over the whole space is real but says nothing about those forms.
-When the pin moves, the first entry to use one will be a conformance
-failure, which is the behaviour to want from a check like this — and the
-Part B entries will need filtering out of the lights evaluation, in the
-engine and here alike, before the run is meaningful again.
+Both implement `not` and both `any_of` forms (the engine since #13), but
+nothing in the pinned colregs (0.1.2) exercises them: neither is in that
+release's schema, and they arrive later, together with the two-subject
+Part B steering entries that use them. So the agreement over the whole
+space is real but says nothing about those forms. When the pin moves,
+those entries are where the two readings first meet — and, carrying no
+`lights` clause, the Part B entries will need filtering out of the lights
+evaluation, in the engine and here alike, before the run is meaningful.
 
 ## The checks
 
