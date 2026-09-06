@@ -1,44 +1,77 @@
 // The P1.3 consistency and coverage properties, restated as solver queries
 // over the definitions encode.ts emits.
 //
-// Each query is a set of assertions plus the answer the enumeration
-// (research/conformance/) already gives. run.ts fails when Z3 and that
-// expectation disagree, because a disagreement is the most valuable thing
-// this harness can produce: the enumeration walks one representative per
-// threshold interval, the solver walks the reals, and they should still
-// agree on every one of these.
+// Each query is a set of assertions plus the answer expected of it. The
+// expectations are NOT in this file: they live in expectations.json, marked
+// pencil, each carrying the date it was observed and `triaged: false`. That
+// separation is deliberate. FIND-01, FIND-02 and FIND-03 are observations
+// from one enumeration run, not rulings; when a maintainer triages them the
+// change should be a data edit, not a code edit.
 //
-// Where the enumeration found a real conflict, the expectation is `sat` and
-// the query carries the finding id it corresponds to. Those carve-outs are
-// named here, not filtered out --- a query whose expectation is `sat`
-// still runs, still gets its model decoded, and still gets that model
-// replayed through the engine.
+// run.ts reports when Z3 and the recorded expectation disagree. A
+// disagreement is the most valuable thing this harness can produce -- the
+// enumeration walks one representative per threshold interval, the solver
+// walks the reals -- and is never to be resolved by editing expectations.json
+// to match the run.
 
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import type { ApplicabilityData, Entry } from '../../src/types.js';
 import { APPLIES, BRANCH, SHALL, UNRESOLVED, sym } from './encode.js';
 
 export type Expectation = 'sat' | 'unsat';
 
+export type Property =
+  | 'conflicting-shall'
+  | 'no-obligation'
+  | 'entry-fires'
+  | 'unresolved-conditional'
+  | 'branch-reachable';
+
+/** One `queries` record in expectations.json. Prose fields are carried
+ * through to the run log verbatim; this file never restates them. */
+export interface RecordedExpectation {
+  expect: Expectation;
+  triaged: boolean;
+  observed_on: string;
+  observed_by: string;
+  finding?: string;
+  observed: string;
+  would_settle: string;
+}
+
+export interface Expectations {
+  status: string;
+  defaults: Record<string, Expectation | string>;
+  queries: Record<string, RecordedExpectation>;
+}
+
+const EXPECTATIONS_PATH = fileURLToPath(new URL('./expectations.json', import.meta.url));
+
+export function loadExpectations(path: string = EXPECTATIONS_PATH): Expectations {
+  const parsed = JSON.parse(readFileSync(path, 'utf8')) as Expectations;
+  if (parsed.status !== 'pencil') {
+    // Not a hard failure of the run, but the README's claim about this file
+    // and the file itself must not drift apart silently.
+    throw new Error(
+      `${path} is marked "${parsed.status}"; research/z3/README.md documents it as pencil. Update both or neither.`,
+    );
+  }
+  return parsed;
+}
+
 export interface Query {
   id: string;
   /** Which P1.3 property this is an instance of. */
-  property:
-    | 'conflicting-shall'
-    | 'no-obligation'
-    | 'entry-fires'
-    | 'unresolved-conditional'
-    | 'branch-reachable';
+  property: Property;
   /** One line, for the SMT-LIB file and the run log. */
   title: string;
   /** SMT-LIB assertions, without the surrounding push/check-sat/pop. */
   asserts: string[];
   expect: Expectation;
-  /**
-   * Set when `expect` is 'sat' because the enumeration found a real
-   * finding here --- the carve-out, named and linked rather than skipped.
-   */
-  carveOut?: { finding: string; why: string };
-  /** What the decoded model must satisfy when the engine replays it. */
+  /** Present when expectations.json names this query explicitly. */
+  recorded?: RecordedExpectation;
+  /** What the decoded model must satisfy when the evaluators replay it. */
   check: ModelCheck;
 }
 
@@ -49,40 +82,9 @@ export type ModelCheck =
   | { kind: 'entry-unresolved'; id: string }
   | { kind: 'branch-first-match'; id: string; index: number };
 
-/** The two conflicting-shall carve-outs the enumeration found, keyed by the
- * ordered entry pair. Anything else that comes back `sat` is new. */
-export const CONFLICT_CARVE_OUTS: Record<string, { finding: string; why: string }> = {
-  '26b-id,30a': {
-    finding: 'FIND-01',
-    why:
-      "26(b)(i) (a vessel fishing, not trawling, showing red-over-white) and 30(a) " +
-      "(anchor lights) both resolve to 'shall' for a vessel that is fishing while " +
-      'anchored, and 26(b)(i) rel:excludes 30(a). A real contradiction in the data, ' +
-      'awaiting human triage.',
-  },
-  '26c-id,30a': {
-    finding: 'FIND-02',
-    why:
-      "26(c)(i) (a vessel trawling) and 30(a) both resolve to 'shall' for a vessel " +
-      'trawling while anchored, with the same rel:excludes contradiction as FIND-01.',
-  },
-};
-
-/** The one carve-out for "every satisfiable record carries an obligation":
- * a moored vessel. Rule 30 covers anchored and aground; the data has no
- * entry whose `when` admits `position:moored`, so a moored vessel has no
- * lawful display at all. */
-export const NO_OBLIGATION_CARVE_OUT = {
-  finding: 'FIND-03',
-  why:
-    'A vessel with fact:position = position:moored matches no entry, so the data ' +
-    'prescribes no display for it. Rule 30 speaks of vessels at anchor and aground; ' +
-    'whether a moored vessel is out of scope or a gap is a human call.',
-};
-
-/** Ordered pairs of entries where one rel:excludes the other --- the only
- * pairs a conflicting-shall query has to consider, exactly as run.ts's
- * `excludingPairs` computes them. */
+/** Ordered pairs of entries where one rel:excludes the other -- the only
+ * pairs a conflicting-shall query has to consider, exactly as
+ * research/conformance/run.ts pairs them. */
 export function excludingPairs(entries: Entry[]): [string, string][] {
   const out: [string, string][] = [];
   for (let i = 0; i < entries.length; i++) {
@@ -97,78 +99,93 @@ export function excludingPairs(entries: Entry[]): [string, string][] {
   return out;
 }
 
-export function buildQueries(data: ApplicabilityData): Query[] {
+export function buildQueries(data: ApplicabilityData, expectations: Expectations): Query[] {
   const queries: Query[] = [];
 
-  // (a) No two conflicting `shall` entries can hold simultaneously.
+  const resolve = (id: string, property: Property): Pick<Query, 'expect' | 'recorded'> => {
+    const recorded = expectations.queries[id];
+    if (recorded) return { expect: recorded.expect, recorded };
+    const fallback = expectations.defaults[property];
+    if (fallback !== 'sat' && fallback !== 'unsat') {
+      throw new Error(
+        `expectations.json has no default for property "${property}" (query ${id})`,
+      );
+    }
+    return { expect: fallback };
+  };
+
+  // (a) No two entries where one rel:excludes the other can both resolve to
+  // `shall` for the same record.
   for (const [a, b] of excludingPairs(data.entries)) {
-    const carveOut = CONFLICT_CARVE_OUTS[`${a},${b}`];
+    const id = `CONFLICT/${a}+${b}`;
     queries.push({
-      id: `CONFLICT/${a}+${b}`,
+      id,
       property: 'conflicting-shall',
       title: `${a} and ${b} both resolve to 'shall' (one rel:excludes the other)`,
       asserts: [SHALL(a), SHALL(b)],
-      expect: carveOut ? 'sat' : 'unsat',
-      carveOut,
+      ...resolve(id, 'conflicting-shall'),
       check: { kind: 'both-shall', a, b },
     });
   }
 
   // (b) No satisfiable record with zero obligations. Asked twice: once as
-  // stated, which is `sat` because of FIND-03, and once with the carve-out
-  // subtracted, which must be `unsat`. The second query is what makes the
-  // exception a bounded, checkable claim rather than a filter.
+  // stated, and once with fact:position = position:moored ruled out. The
+  // second is what makes the exception a bounded, checkable claim rather
+  // than a filter -- if some other record with no obligation exists, that
+  // query comes back sat and the solver hands us the record.
   const nothingApplies = data.entries.map((e) => `(not ${APPLIES(e.id)})`);
   queries.push({
     id: 'NO-OBLIGATION/any',
     property: 'no-obligation',
     title: 'some record makes no entry apply at all',
     asserts: nothingApplies,
-    expect: 'sat',
-    carveOut: NO_OBLIGATION_CARVE_OUT,
+    ...resolve('NO-OBLIGATION/any', 'no-obligation'),
     check: { kind: 'no-entries-apply' },
   });
   queries.push({
     id: 'NO-OBLIGATION/not-moored',
     property: 'no-obligation',
-    title: 'some NON-moored record makes no entry apply at all',
+    title: 'some record with fact:position other than position:moored makes no entry apply',
     asserts: [...nothingApplies, `(not (= ${sym('fact:position')} ${sym('position:moored')}))`],
-    expect: 'unsat',
+    ...resolve('NO-OBLIGATION/not-moored', 'no-obligation'),
     check: { kind: 'no-entries-apply' },
   });
 
-  // (c) Every entry is satisfiable --- the never-fires check.
+  // (c) Every entry is satisfiable -- the never-fires check.
   for (const e of data.entries) {
+    const id = `FIRES/${e.id}`;
     queries.push({
-      id: `FIRES/${e.id}`,
+      id,
       property: 'entry-fires',
       title: `entry ${e.id} (${e.cite}) can apply to some record`,
       asserts: [APPLIES(e.id)],
-      expect: 'sat',
+      ...resolve(id, 'entry-fires'),
       check: { kind: 'entry-applies', id: e.id },
     });
   }
 
-  // The two consistency checks run.ts also reports: an applied conditional
-  // entry no modality_by branch resolves, and a branch that is never the
-  // first match.
+  // The two consistency checks research/conformance/run.ts also reports: an
+  // applied conditional entry no modality_by branch resolves, and a branch
+  // that is never the first match.
   for (const e of data.entries) {
     if (e.modality !== 'conditional') continue;
+    const unresolvedId = `UNRESOLVED/${e.id}`;
     queries.push({
-      id: `UNRESOLVED/${e.id}`,
+      id: unresolvedId,
       property: 'unresolved-conditional',
       title: `entry ${e.id} applies but no modality_by branch matches`,
       asserts: [UNRESOLVED(e.id)],
-      expect: 'unsat',
+      ...resolve(unresolvedId, 'unresolved-conditional'),
       check: { kind: 'entry-unresolved', id: e.id },
     });
     (e.modality_by ?? []).forEach((b, i) => {
+      const branchId = `BRANCH/${e.id}:${i}`;
       queries.push({
-        id: `BRANCH/${e.id}:${i}`,
+        id: branchId,
         property: 'branch-reachable',
         title: `entry ${e.id}'s modality_by[${i}] (-> ${b.modality}) can be the first match`,
         asserts: [BRANCH(e.id, i)],
-        expect: 'sat',
+        ...resolve(branchId, 'branch-reachable'),
         check: { kind: 'branch-first-match', id: e.id, index: i },
       });
     });
@@ -178,18 +195,24 @@ export function buildQueries(data: ApplicabilityData): Query[] {
 }
 
 /** The queries as one runnable SMT-LIB script: `z3 applicability.smt2`
- * prints an `echo`ed header and a `sat`/`unsat` for each. */
+ * prints an `echo`ed header and a `sat`/`unsat` for each. Written out by
+ * run.ts so the theory can be handed to any other solver unchanged. */
 export function queriesToSmtLib(queries: Query[]): string {
   const lines: string[] = [
     '',
     ';; ---------------------------------------------------------------',
-    ';; Queries --- each block echoes its id, its expected answer and',
-    ';; (where the expectation is sat) the finding that explains it.',
+    ';; Queries --- each block echoes its id, the expectation recorded in',
+    ';; expectations.json, and (where one is recorded) the finding id.',
+    ';; An expectation marked [untriaged] is an observation from one',
+    ';; enumeration run, not a ruling.',
     ';; ---------------------------------------------------------------',
   ];
   for (const q of queries) {
+    const tag = q.recorded
+      ? ` | ${q.recorded.finding ?? 'recorded'}${q.recorded.triaged ? '' : ' [untriaged]'}`
+      : '';
     lines.push('');
-    lines.push(`(echo "${q.id} | expect ${q.expect}${q.carveOut ? ` | ${q.carveOut.finding}` : ''} | ${q.title.replace(/"/g, "'")}")`);
+    lines.push(`(echo "${q.id} | expect ${q.expect}${tag} | ${q.title.replace(/"/g, "'")}")`);
     lines.push('(push 1)');
     for (const a of q.asserts) lines.push(`(assert ${a})`);
     lines.push('(check-sat)');
