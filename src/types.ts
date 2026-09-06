@@ -20,13 +20,15 @@ import type {
   Entry as SchemaEntry,
 } from './schema.js';
 
-// colregs' own schema (schema/applicability.schema.json's predicateValue)
-// doesn't define `not` or `any_of` yet -- these anticipate a colregs schema
-// revision colregs-engine#9 / #13 got ahead of. No lights entry uses either
-// shape today; the test suite exercises them with literal `when` data
-// copied from real Part B entries rather than through generated fixtures.
-// The overrides below layer these forms onto the generated shapes, the
-// same way this file already layers Display/Evaluation on top of them.
+// colregs@0.2.0's own schema (schema/applicability.schema.json's
+// predicateValue) now defines `not` and `any_of` natively on
+// SchemaConstraint (colregs-engine#9 / #13 anticipated this ahead of the
+// schema revision that added it). NotConstraint/AnyOfConstraint below are
+// now redundant with what SchemaConstraint already carries -- kept as an
+// explicit union member rather than folded away, so this file's own
+// documentation of the not/any_of shapes stays next to their behavior
+// (see evaluate.ts's isNotConstraint/isAnyOfConstraint) instead of being
+// implicit in a schema import.
 
 /** `{ not: C }` on a fact's constraint: the fact is present and does not
  * satisfy C. An absent fact never satisfies `not` either. */

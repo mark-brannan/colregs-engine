@@ -55,6 +55,18 @@ function triageFor(f: Pick<Finding, 'check' | 'groupKey'>): { status: TriageStat
 const entries: Entry[] = data.entries;
 const byId = new Map<string, Entry>(entries.map((e) => [e.id, e]));
 
+// colregs 0.2.0 (REQ-CAT-1) added two-subject scope/precedence/etc. entries
+// that read a situation, not a fact record -- src/evaluate.ts's `applied`
+// never contains them (isDisplay filter there and in reference.ts), so any
+// coverage bookkeeping keyed off "was this ever in an applied set" has to
+// look at the same subset here, or every one of them reports as
+// never-fired by construction rather than by any real gap in the fact
+// space.
+function isDisplay(e: Entry): boolean {
+  return (e.category ?? 'display') === 'display';
+}
+const displayEntries = entries.filter(isDisplay);
+
 /** Ordered pairs of entries where one `rel:excludes` the other. The
  * consistency (i) check only has to look at these, not at every pair of
  * applied `shall` entries — 5.9M records times a quadratic scan is the
@@ -135,7 +147,7 @@ const modalityByBranchTaken = new Map<string, Set<number>>();
 // carrier entry id -> ref id -> ever chosen
 const oneOfEverChosen = new Set<string>();
 
-for (const e of entries) {
+for (const e of displayEntries) {
   if (e.modality === 'conditional' && e.modality_by) {
     modalityByBranchTaken.set(e.id, new Set());
   }
@@ -290,7 +302,7 @@ console.log(`unresolved-conditional records: ${unresolvedConditionalCount}`);
 // ---------------------------------------------------------------------
 // Coverage: never-fired entries, dead modality_by branches, dead one_of options
 // ---------------------------------------------------------------------
-const neverFired = entries.filter((e) => !everApplied.has(e.id));
+const neverFired = displayEntries.filter((e) => !everApplied.has(e.id));
 for (const e of neverFired) {
   record('coverage-entry-never-fires', e.id, `entry ${e.id} never applies across the enumerated fact space`, [e.cite], {});
 }

@@ -3,7 +3,7 @@
   "check": "consistency-no-obligation",
   "description": "record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:moored",
   "cites": [],
-  "records": 114048,
+  "records": 190080,
   "status": "human-reviewed",
   "note": "facts.json derives the position enum from Rule 3(i) (\"not at anchor, not made fast to the shore, not aground\"), so position:moored is the shore-fast case, for which COLREGS prescribes no lights. Correct gap, needs an expected-empty carve-out rather than a fix. Open question: SignalK's `moored` conflates shore-fast with a mooring buoy, which is arguably \"at anchor\" -- a decoding-layer ambiguity, not an applicability-data one.",
   "facts": {
