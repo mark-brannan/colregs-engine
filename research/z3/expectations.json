@@ -1,0 +1,66 @@
+{
+  "$schema-note": "Hand-maintained. Read by research/z3/queries.ts; no code change is needed to revise a ruling here.",
+  "status": "pencil",
+  "marker": "✎",
+  "about": [
+    "✎ PENCIL. Every expectation below is what the exhaustive enumeration",
+    "(research/conformance/) observed on the date given. None of it has been",
+    "triaged by a human. An entry with \"triaged\": false is an observation, not",
+    "a ruling: it records what a run reported, names what would settle the",
+    "question, and takes no position on whether the cause is the data, the",
+    "requirements, or the engine.",
+    "",
+    "run.ts compares each Z3 answer against the expectation here. A",
+    "disagreement is the point of the exercise and is reported loudly; it is",
+    "not to be silenced by editing this file to match a run.",
+    "",
+    "If research/conformance/findings/triage.json (PR #17) lands, the",
+    "\"triaged\" and \"finding\" fields here should fold into it and be read from",
+    "there instead, so a finding has one status and not two."
+  ],
+  "defaults": {
+    "$note": "The expectation for any query not named in \"queries\" below. These are the P1.3 properties as stated in issue #1 -- what the theory is being asked to show -- not observations.",
+    "conflicting-shall": "unsat",
+    "no-obligation": "unsat",
+    "entry-fires": "sat",
+    "unresolved-conditional": "unsat",
+    "branch-reachable": "sat"
+  },
+  "queries": {
+    "CONFLICT/26b-id+30a": {
+      "expect": "sat",
+      "triaged": false,
+      "observed_on": "2026-09-06",
+      "observed_by": "npm run conformance, check consistency-conflicting-shall",
+      "finding": "FIND-01",
+      "observed": "The enumeration reported 114048 records in which entry 26b-id (cite 26(b)(i), when fact:activity = activity:trawling) and entry 30a (cite 30(a), when fact:position = position:anchored) both apply and both resolve to 'shall', while 26b-id declares rel:excludes on 30a.",
+      "would_settle": "A maintainer's reading of Rule 26(a) against the rel:excludes semantics: whether rel:excludes is a claim that the two predicates are disjoint (in which case the predicates or the relation are wrong), or a composition-layer instruction that the excluded entry's lights are not shown (in which case both applying is expected and this check is asking the wrong question)."
+    },
+    "CONFLICT/26c-id+30a": {
+      "expect": "sat",
+      "triaged": false,
+      "observed_on": "2026-09-06",
+      "observed_by": "npm run conformance, check consistency-conflicting-shall",
+      "finding": "FIND-02",
+      "observed": "The same shape as FIND-01 with entry 26c-id (cite 26(c)(i), when fact:activity = activity:fishing) in place of 26b-id: 114048 records where 26c-id and 30a both apply and both resolve to 'shall', with 26c-id declaring rel:excludes on 30a.",
+      "would_settle": "The same reading as FIND-01; the two stand or fall together."
+    },
+    "NO-OBLIGATION/any": {
+      "expect": "sat",
+      "triaged": false,
+      "observed_on": "2026-09-06",
+      "observed_by": "npm run conformance, check consistency-no-obligation",
+      "finding": "FIND-03",
+      "observed": "The enumeration reported 114048 records in which no entry applies at all, every one of them with fact:position = position:moored. No entry in the pinned applicability.json has a `when` that admits position:moored.",
+      "would_settle": "A maintainer's decision on whether position:moored is inside the scope of the lights table at all. Rule 30 names vessels at anchor and aground; facts.json declares position:moored as a value. Either the fact vocabulary is wider than the table intends, or the table is missing a case."
+    },
+    "NO-OBLIGATION/not-moored": {
+      "expect": "unsat",
+      "triaged": false,
+      "observed_on": "2026-09-06",
+      "observed_by": "npm run conformance, check consistency-no-obligation, position breakdown",
+      "observed": "Every record the enumeration found with zero applied entries had fact:position = position:moored; it found none with any other position. This query asks the solver for the same statement over the reals: with position:moored ruled out, no record leaves every entry inapplicable.",
+      "would_settle": "Nothing -- this is the bounded form of the claim rather than an untriaged observation. It is listed here because its expectation is derived from a run's breakdown and not from the property list."
+    }
+  }
+}
