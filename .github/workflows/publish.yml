@@ -66,10 +66,10 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run conformance
-      # This package ships dist/, not src/ (see package.json `files`) --
-      # build it before packing, or `npm publish` ships whatever dist/
-      # happens to be sitting in the checkout (stale or absent).
-      - run: npm run build
 
-      # No NODE_AUTH_TOKEN. Authentication is the OIDC identity above.
+      # No explicit `npm run build` step: this package ships dist/, not src/
+      # (see package.json `files`), and `prepublishOnly` runs the build for
+      # any `npm publish` invocation, CI or manual, so it can't be skipped
+      # or left stale. No NODE_AUTH_TOKEN either -- authentication is the
+      # OIDC identity above.
       - run: npm publish
