@@ -384,12 +384,18 @@ sortedFindings.forEach((f, i) => {
 // finding this run produced means the finding was fixed, renamed, or the
 // harness stopped grouping it that way -- not that the ruling should be
 // silently dropped. Flag it so a human decides whether to retire or move it.
-const liveFindingKeys = new Set(sortedFindings.map((f) => `${f.check}::${f.groupKey}`));
-for (const key of Object.keys(TRIAGE)) {
-  if (!liveFindingKeys.has(key)) {
-    console.error(
-      `findings/triage.json has a ruling for '${key}' but no current finding matches it -- confirm whether it landed and retire the entry, or the check/groupKey changed and it needs re-keying.`,
-    );
+// Skipped in --sample mode: a partial pass over the fact space won't
+// reproduce most findings (FIND-01/02/03 each need 114,048 of the full
+// 5.9M records), so every sampled run would spuriously warn on every
+// existing ruling.
+if (!sampleSize) {
+  const liveFindingKeys = new Set(sortedFindings.map((f) => `${f.check}::${f.groupKey}`));
+  for (const key of Object.keys(TRIAGE)) {
+    if (!liveFindingKeys.has(key)) {
+      console.error(
+        `findings/triage.json has a ruling for '${key}' but no current finding matches it -- confirm whether it landed and retire the entry, or the check/groupKey changed and it needs re-keying.`,
+      );
+    }
   }
 }
 
