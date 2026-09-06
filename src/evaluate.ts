@@ -98,16 +98,14 @@ function factValue(facts: FactRecord, key: string): FactValue | undefined {
 }
 
 /** `"any_of": [W, ...]` as a key of `when` is predicate-level disjunction,
- * not a fact constraint -- its value is a Predicate[], which is not a
- * Constraint, so it is cast through `unknown` at this one site rather than
- * routed through valueMatches. */
+ * not a fact constraint -- its value is a Predicate[], not a Constraint, so
+ * it's routed to predicateMatches recursively instead of valueMatches. */
 export function predicateMatches(when: Predicate, facts: FactRecord): boolean {
   return Object.entries(when).every(([key, constraint]) => {
     if (key === 'any_of') {
-      const options = constraint as unknown as Predicate[];
-      return options.some((w) => predicateMatches(w, facts));
+      return (constraint as Predicate[]).some((w) => predicateMatches(w, facts));
     }
-    return valueMatches(factValue(facts, key), constraint);
+    return valueMatches(factValue(facts, key), constraint as Constraint);
   });
 }
 
@@ -130,7 +128,9 @@ export function resolveModality(entry: Entry, facts: FactRecord): Modality {
 function oneOfAvailable(ref: Entry, facts: FactRecord): boolean {
   return Object.entries(ref.when).every(([key, constraint]) => {
     if (AXIS_FACTS.has(key)) return true;
-    return valueMatches(factValue(facts, key), constraint);
+    // one_of options are lights entries, which don't use `any_of` today;
+    // this path predates that key and doesn't special-case it.
+    return valueMatches(factValue(facts, key), constraint as Constraint);
   });
 }
 
@@ -141,7 +141,7 @@ function oneOfAvailable(ref: Entry, facts: FactRecord): boolean {
  * mine-clearance vessel at anchor shows Rule 30 lights, not mastheads.
  */
 function includeApplies(ref: Entry, facts: FactRecord): boolean {
-  const pos = ref.when['fact:position'];
+  const pos = ref.when['fact:position'] as Constraint | undefined;
   if (pos === undefined) return true;
   if (facts['fact:position'] === undefined) return true;
   return valueMatches(facts['fact:position'], pos);
@@ -371,14 +371,20 @@ export function evaluate(
     g.optional ? g.options.length + 1 : g.options.length,
   );
 
-  // #9: `1 << binaryCount` coerces to signed 32-bit and silently drops
-  // displays past this bound instead of failing loudly (REQ-MODEL-8).
-  if (binaryCount > 30) {
-    throw new Error(`display enumeration: ${binaryCount} binary choices exceeds the 30-bit bound`);
-  }
-
+  // #9: the decode loop below reads bits via `c & 1` / `c >>= 1` and takes
+  // the group index via `combo >> binaryCount` -- all coerce to signed
+  // 32-bit. binaryCount alone isn't the bound: group choices multiply the
+  // total further, so `combo >> binaryCount` goes negative once `combo`
+  // reaches 2**31, which a 30-binary case with any group reaches before
+  // totalCombos (3 * 2**30) does. Compute totalCombos with real-number
+  // exponentiation (not `1 << binaryCount`, itself unsafe past 31) and
+  // fail loudly past the signed 32-bit bound rather than silently
+  // returning fewer displays than exist (REQ-MODEL-8).
   const totalCombos =
-    (1 << binaryCount) * groupChoiceCounts.reduce((a, b) => a * b, 1);
+    2 ** binaryCount * groupChoiceCounts.reduce((a, b) => a * b, 1);
+  if (totalCombos > 2 ** 31) {
+    throw new Error(`display enumeration: ${totalCombos} combinations exceeds the signed 32-bit bound`);
+  }
 
   for (let combo = 0; combo < totalCombos; combo++) {
     let c = combo;

@@ -44,11 +44,15 @@ export interface AnyOfConstraint {
  * not/any_of forms above. */
 export type Constraint = SchemaConstraint | NotConstraint | AnyOfConstraint;
 
-/** `"any_of": [W, ...]` as a *key* of a `when` (not a fact's constraint):
- * predicate-level disjunction -- at least one sub-`when` W must hold. Its
- * value is structurally a Predicate[], not a Constraint, so callers cast
- * through `unknown` at that one key the way predicateMatches does. */
-export type Predicate = Record<string, Constraint>;
+/** A predicate: fact keys hold Constraints, plus one special key --
+ * `any_of: [W, ...]` (predicate-level disjunction: at least one sub-`when`
+ * W must hold) -- whose value is a Predicate[], not a Constraint. The index
+ * signature covers both so an object literal's `any_of: [...]` typechecks
+ * without a cast at the definition site; predicateMatches still narrows
+ * with `as` when reading a value back out by key. */
+export interface Predicate {
+  [key: string]: Constraint | Predicate[];
+}
 
 export interface ModalityBy {
   when: Predicate;
