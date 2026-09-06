@@ -10,6 +10,7 @@
 // alternative is returned (REQ-MODEL-8 / REQ-CONS-3).
 
 import type {
+  AnyOfConstraint,
   ApplicabilityData,
   Constraint,
   Display,
@@ -19,6 +20,7 @@ import type {
   FactRecord,
   FactValue,
   Modality,
+  NotConstraint,
   NumericConstraint,
   Predicate,
 } from './types';
@@ -72,8 +74,26 @@ function isNumericConstraint(c: Constraint): c is NumericConstraint {
   );
 }
 
+function isNotConstraint(c: Constraint): c is NotConstraint {
+  return typeof c === 'object' && c !== null && !Array.isArray(c) && 'not' in c;
+}
+
+function isAnyOfConstraint(c: Constraint): c is AnyOfConstraint {
+  return (
+    typeof c === 'object' &&
+    c !== null &&
+    !Array.isArray(c) &&
+    'any_of' in c &&
+    Array.isArray((c as AnyOfConstraint).any_of)
+  );
+}
+
 function valueMatches(value: unknown, constraint: Constraint): boolean {
-  if (value === undefined) return false; // an absent fact never satisfies
+  if (value === undefined) return false; // an absent fact never satisfies, `not` included
+  if (isNotConstraint(constraint)) return !valueMatches(value, constraint.not);
+  if (isAnyOfConstraint(constraint)) {
+    return constraint.any_of.some((c) => valueMatches(value, c));
+  }
   if (isNumericConstraint(constraint)) {
     if (typeof value !== 'number') return false;
     if (constraint.gte !== undefined && !(value >= constraint.gte)) return false;
@@ -97,10 +117,16 @@ function factValue(facts: FactRecord, key: string): FactValue | undefined {
   return (facts as Record<string, FactValue | undefined>)[key];
 }
 
+/** `"any_of": [W, ...]` as a key of `when` is predicate-level disjunction,
+ * not a fact constraint -- its value is a Predicate[], not a Constraint, so
+ * it's routed to predicateMatches recursively instead of valueMatches. */
 export function predicateMatches(when: Predicate, facts: FactRecord): boolean {
-  return Object.entries(when).every(([key, constraint]) =>
-    valueMatches(factValue(facts, key), constraint),
-  );
+  return Object.entries(when).every(([key, constraint]) => {
+    if (key === 'any_of') {
+      return (constraint as Predicate[]).some((w) => predicateMatches(w, facts));
+    }
+    return valueMatches(factValue(facts, key), constraint as Constraint);
+  });
 }
 
 export function resolveModality(entry: Entry, facts: FactRecord): Modality {
@@ -119,11 +145,22 @@ export function resolveModality(entry: Entry, facts: FactRecord): Modality {
  * scalar gates (30(b)'s "less than 50 meters") still describe this vessel
  * and are honored.
  */
-function oneOfAvailable(ref: Entry, facts: FactRecord): boolean {
-  return Object.entries(ref.when).every(([key, constraint]) => {
+function whenAvailable(when: Predicate, facts: FactRecord): boolean {
+  return Object.entries(when).every(([key, constraint]) => {
+    if (key === 'any_of') {
+      // Same predicate-level disjunction as predicateMatches -- axis facts
+      // named inside a disjunct are still overridden, so this recurses
+      // through whenAvailable's own AXIS_FACTS carve-out, not
+      // predicateMatches's.
+      return (constraint as Predicate[]).some((w) => whenAvailable(w, facts));
+    }
     if (AXIS_FACTS.has(key)) return true;
-    return valueMatches(factValue(facts, key), constraint);
+    return valueMatches(factValue(facts, key), constraint as Constraint);
   });
+}
+
+function oneOfAvailable(ref: Entry, facts: FactRecord): boolean {
+  return whenAvailable(ref.when, facts);
 }
 
 /**
@@ -133,7 +170,7 @@ function oneOfAvailable(ref: Entry, facts: FactRecord): boolean {
  * mine-clearance vessel at anchor shows Rule 30 lights, not mastheads.
  */
 function includeApplies(ref: Entry, facts: FactRecord): boolean {
-  const pos = ref.when['fact:position'];
+  const pos = ref.when['fact:position'] as Constraint | undefined;
   if (pos === undefined) return true;
   if (facts['fact:position'] === undefined) return true;
   return valueMatches(facts['fact:position'], pos);
@@ -363,8 +400,20 @@ export function evaluate(
     g.optional ? g.options.length + 1 : g.options.length,
   );
 
+  // #9: the decode loop below reads bits via `c & 1` / `c >>= 1` and takes
+  // the group index via `combo >> binaryCount` -- all coerce to signed
+  // 32-bit. binaryCount alone isn't the bound: group choices multiply the
+  // total further, so `combo >> binaryCount` goes negative once `combo`
+  // reaches 2**31, which a 30-binary case with any group reaches before
+  // totalCombos (3 * 2**30) does. Compute totalCombos with real-number
+  // exponentiation (not `1 << binaryCount`, itself unsafe past 31) and
+  // fail loudly past the signed 32-bit bound rather than silently
+  // returning fewer displays than exist (REQ-MODEL-8).
   const totalCombos =
-    (1 << binaryCount) * groupChoiceCounts.reduce((a, b) => a * b, 1);
+    2 ** binaryCount * groupChoiceCounts.reduce((a, b) => a * b, 1);
+  if (totalCombos > 2 ** 31) {
+    throw new Error(`display enumeration: ${totalCombos} combinations exceeds the signed 32-bit bound`);
+  }
 
   for (let combo = 0; combo < totalCombos; combo++) {
     let c = combo;
