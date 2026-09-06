@@ -125,13 +125,22 @@ export function resolveModality(entry: Entry, facts: FactRecord): Modality {
  * scalar gates (30(b)'s "less than 50 meters") still describe this vessel
  * and are honored.
  */
-function oneOfAvailable(ref: Entry, facts: FactRecord): boolean {
-  return Object.entries(ref.when).every(([key, constraint]) => {
+function whenAvailable(when: Predicate, facts: FactRecord): boolean {
+  return Object.entries(when).every(([key, constraint]) => {
+    if (key === 'any_of') {
+      // Same predicate-level disjunction as predicateMatches -- axis facts
+      // named inside a disjunct are still overridden, so this recurses
+      // through whenAvailable's own AXIS_FACTS carve-out, not
+      // predicateMatches's.
+      return (constraint as Predicate[]).some((w) => whenAvailable(w, facts));
+    }
     if (AXIS_FACTS.has(key)) return true;
-    // one_of options are lights entries, which don't use `any_of` today;
-    // this path predates that key and doesn't special-case it.
     return valueMatches(factValue(facts, key), constraint as Constraint);
   });
+}
+
+function oneOfAvailable(ref: Entry, facts: FactRecord): boolean {
+  return whenAvailable(ref.when, facts);
 }
 
 /**
