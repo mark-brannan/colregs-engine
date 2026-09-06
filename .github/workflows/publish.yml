@@ -7,10 +7,12 @@ name: Publish
 # Prerequisite, done once on npmjs.com: package settings -> Trusted publishers
 # -> GitHub Actions, with repository mark-brannan/colregs-engine and workflow
 # file `publish.yml`. Until that exists this workflow will fail
-# authentication, which is the correct failure mode. Since colregs-engine has
-# never been published, the very first release needs a manual `npm publish`
-# from a keyed machine before this package exists on npm for Trusted
-# Publishing to be configured against.
+# authentication, which is the correct failure mode. Trusted publishing also
+# typically requires the package to already exist on the registry, so the
+# very first publish of colregs-engine may need to be done by hand from an
+# authenticated session (`npm publish`) before this workflow has anything to
+# authenticate against -- unverified; treat it as an open question, not a
+# guarantee, until someone tries it.
 
 on:
   workflow_dispatch:
@@ -40,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - uses: actions/setup-node@v7
         with:
@@ -61,8 +63,13 @@ jobs:
           fi
 
       - run: npm ci
-      - run: npm run build
+      - run: npm run typecheck
       - run: npm test
+      - run: npm run conformance
+      # This package ships dist/, not src/ (see package.json `files`) --
+      # build it before packing, or `npm publish` ships whatever dist/
+      # happens to be sitting in the checkout (stale or absent).
+      - run: npm run build
 
       # No NODE_AUTH_TOKEN. Authentication is the OIDC identity above.
       - run: npm publish

@@ -23,14 +23,19 @@ name: Release
 # read, since that strips a leading `v`. Tags here are plain `vX.Y.Z`.
 #
 # Version policy lives in release-please-config.json, not here:
-# `versioning: always-bump-patch` pins every release to 0.0.x regardless of
-# commit type -- deliberate, until Mark decides colregs-engine is ready to
-# call something 0.1.0. Switch to the default versioning strategy (or
-# colregs's bump-minor-pre-major / bump-patch-for-minor-pre-major pair) once
-# that decision is made.
+# `versioning: always-bump-patch` pins every release to a patch bump of the
+# current 0.1.x line (0.1.0 -> 0.1.1 -> ...) regardless of commit type --
+# deliberate, until Mark decides colregs-engine is ready for a minor/major
+# bump. Switch to the default versioning strategy (or colregs's
+# bump-minor-pre-major / bump-patch-for-minor-pre-major pair) once that
+# decision is made.
 #
-# Mirrors mark-brannan/colregs's release-please.yml/publish.yml pair; see
-# that repo for the working reference this was copied from.
+# Same pattern as mark-brannan/colregs's release-please.yml -- see that
+# repo's copy for the fuller rationale. This copy needs two secrets that do
+# not yet exist on this repo (RELEASE_PLEASE_APP_CLIENT_ID and
+# RELEASE_PLEASE_APP_PRIVATE_KEY): until the GitHub App is installed here and
+# those secrets are copied over, this job will fail at the token-minting
+# step. That is the correct failure mode -- it is not silently inert.
 
 on:
   push:
