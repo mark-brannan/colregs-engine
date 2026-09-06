@@ -56,8 +56,9 @@ export const AXIS_FACTS = new Set<string>([
 // schema's only structured `refines` field lives under `modifiers` and
 // encodes a different relation (a modifier refining one axis *value*, not
 // one enum value refining a peer value in the same axis). There is no
-// naming convention safe to key off either -- 'activity:trawling' is not a
-// refinement of 'activity:fishing' despite the same "compound name" shape.
+// naming convention safe to key off either -- a shared prefix or suffix
+// between two enum values in the same axis is not evidence one refines the
+// other, and nothing in facts.json rules that reading out for a future pair.
 // So this table is deliberately still hand-maintained; the accompanying
 // test pins it (and AXIS_FACTS) against facts.json so a future refinement
 // colregs adds shows up as a failing test rather than a silent gap.
