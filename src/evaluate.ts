@@ -193,7 +193,10 @@ interface OneOfGroup {
 }
 
 function displayLights(node: Node): DisplayLight[] {
-  return node.entry.lights.map((spec) => ({
+  // colregs 0.2.0 made `lights` optional on an entry (conduct-only entries
+  // such as precedence/scope carry none); absent is equivalent to the
+  // empty array this always effectively was for such entries.
+  return (node.entry.lights ?? []).map((spec) => ({
     spec,
     sourceEntry: node.id,
     via: node.via,
@@ -201,11 +204,23 @@ function displayLights(node: Node): DisplayLight[] {
   }));
 }
 
+// colregs 0.2.0 (REQ-CAT-1) gave every entry a `category`, defaulting to
+// 'display' when absent, and added scope/precedence/etc. entries that read
+// a situation rather than a fact record -- Rule 4's `when` is empty because
+// "any condition of visibility" is the absence of a condition, so an
+// unfiltered match would select it for every fact record. colregs' own
+// reference filters to isDisplay before matching (test/data.test.mjs); this
+// mirrors that exactly so `applied` keeps meaning "what does this vessel
+// show", not "every paragraph whose predicate is satisfied".
+function isDisplay(e: Entry): boolean {
+  return (e.category ?? 'display') === 'display';
+}
+
 /** The predicate layer alone: entries whose `when` matches, without the
  * relation/display composition that follows. Factored out of `evaluate` so
  * a caller can inspect just this layer's result. */
 function appliedEntryList(data: ApplicabilityData, facts: FactRecord): Entry[] {
-  return data.entries.filter((e) => predicateMatches(e.when, facts));
+  return data.entries.filter((e) => isDisplay(e) && predicateMatches(e.when, facts));
 }
 
 /** Ids of the entries whose predicate matches `facts` — the same set

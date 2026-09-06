@@ -38,7 +38,7 @@
     "generate:check": "npm run generate && git add --intent-to-add -- src/generated && git diff --exit-code -- src/generated"
   },
   "dependencies": {
-    "colregs": "github:mark-brannan/colregs#a04377336da92043e34e986741f78dc9307dab9c"
+    "colregs": "^0.2.0"
   },
   "devDependencies": {
     "@types/node": "22.20.1",

@@ -1,13 +1,14 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.1.2 schema/situation-fixtures.schema.json
+ * Source: colregs@0.2.0 schema/situation-fixtures.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
 
 export type EntryId = string;
-export type Modality = 'shall' | 'may' | 'shall-if-practicable' | 'conditional' | 'exempt';
+export type Modality =
+  'shall' | 'may' | 'shall-if-practicable' | 'conditional' | 'exempt' | 'shall-not' | 'shall-not-impede';
 export type ExpectItem =
   | EntryId
   | {
@@ -26,6 +27,9 @@ export type ExpectItem =
  *
  * This interface was referenced by `HistRecord`'s JSON-Schema definition
  * via the `patternProperty` "^hist:[a-z0-9_]+$".
+ *
+ * This interface was referenced by `EnvRecord`'s JSON-Schema definition
+ * via the `patternProperty` "^env:[a-z0-9_]+$".
  */
 export type Scalar =
   | string
@@ -47,6 +51,8 @@ export interface SituationFixtures {
   adr?: string;
   requirements?: string[];
   jurisdiction: string;
+  override_note?: string;
+  expect_scope?: string;
   expect_form?: {
     note?: string;
     bare?: EntryId;
@@ -77,9 +83,12 @@ export interface SituationFixtures {
       other?: Vessel;
       pair?: {
         geo?: GeoRecord;
+        env?: EnvRecord;
       };
     };
   }[];
+  collapse_note?: string;
+  geometry_note?: string;
 }
 export interface Vessel {
   fact: FactRecord;
@@ -97,5 +106,8 @@ export interface GeoRecord {
   [k: string]: Scalar;
 }
 export interface HistRecord {
+  [k: string]: Scalar;
+}
+export interface EnvRecord {
   [k: string]: Scalar;
 }

@@ -21,9 +21,8 @@
 //   - modality_by: first matching branch wins; otherwise the entry's own
 //     (non-conditional) modality, or 'conditional' if none matches.
 //
-// `not` and both `any_of` forms arrive in colregs after the pinned 0.1.2,
-// whose schema has neither; they are implemented here so the reading is
-// complete, and are exercised by nothing until the pin moves.
+// `not` and both `any_of` forms are in colregs' schema since 0.2.0 and
+// exercised by real entries in data/applicability.json.
 
 import type { ApplicabilityData, Entry, FactRecord, FactValue, Modality, Predicate } from '../../src/types.js';
 
@@ -129,11 +128,25 @@ export function referenceWhenMatches(when: Predicate, facts: FactRecord): boolea
   return true;
 }
 
+// colregs 0.2.0 (REQ-CAT-1) gave every entry a `category`, defaulting to
+// 'display' when absent, and added scope/precedence/etc. entries that read
+// a situation rather than a fact record -- Rule 4's `when` is empty ("any
+// condition of visibility" is the absence of a condition), so an unfiltered
+// match selects it for every fact record. colregs' own reference filters to
+// isDisplay before matching (test/data.test.mjs); src/evaluate.ts mirrors
+// that, and this independent reading has to as well or every record is a
+// manufactured conformance mismatch rather than a real one.
+function isDisplay(e: Entry): boolean {
+  return (e.category ?? 'display') === 'display';
+}
+
 /** Ids of the entries whose `when` holds for this fact record — the
  * reference-implementation counterpart to src/evaluate.ts's
  * appliedEntries(). */
 export function referenceAppliedEntries(data: ApplicabilityData, facts: FactRecord): string[] {
-  return data.entries.filter((e) => referenceWhenMatches(e.when, facts)).map((e) => e.id);
+  return data.entries
+    .filter((e) => isDisplay(e) && referenceWhenMatches(e.when, facts))
+    .map((e) => e.id);
 }
 
 /** Resolved modality for one entry: first matching modality_by branch,
@@ -153,7 +166,7 @@ export function referenceModalities(
 ): Record<string, Modality> {
   const out: Record<string, Modality> = {};
   for (const e of data.entries) {
-    if (referenceWhenMatches(e.when, facts)) {
+    if (isDisplay(e) && referenceWhenMatches(e.when, facts)) {
       out[e.id] = referenceResolveModality(e, facts);
     }
   }
