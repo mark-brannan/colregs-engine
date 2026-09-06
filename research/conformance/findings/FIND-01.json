@@ -7,6 +7,8 @@
     "30(a)"
   ],
   "records": 114048,
+  "status": "human-reviewed",
+  "note": "26b-id carries rel:excludes: [30a, 30b] and evaluate() does suppress 30a (it lands in result.excluded, and displays shows Rule 26 lights only); the check reads result.applied, which is the pre-exclusion predicate-match set, so it fires precisely when the 26(a) machinery works. Harness false positive, not a data or engine bug.",
   "facts": {
     "fact:activity": "activity:trawling",
     "fact:composite_unit": true,

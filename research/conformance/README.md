@@ -152,6 +152,18 @@ Status ladder for a finding:
 Agents do not edit colregs. A finding is a candidate for a maintainer to
 judge, not a fix to apply.
 
+Every column of the register but two is derived, and the run overwrites them
+on every pass. **status** and a free-text **triage note** are the exception:
+they live in [`findings/triage.json`](findings/triage.json), a hand-maintained
+sidecar keyed by `check::groupKey` rather than `FIND-nn` — the same
+derived/hand-maintained split [#15](https://github.com/mark-brannan/colregs-engine/pull/15)
+used for `AXIS_FACTS`/`REFINEMENTS`, for the same reason: a run owns what it
+can regenerate and nothing else. To climb a finding up the ladder, edit
+`triage.json` and rerun `npm run conformance` — hand-editing the register or
+a `FIND-nn.json` directly is pointless, the next run overwrites it. A stale
+ruling (its key no longer matches any finding) prints a warning instead of
+being silently dropped.
+
 ## Files
 
 - `enumerate.ts` — threshold extractor and partitioned enumerator.
@@ -159,4 +171,5 @@ judge, not a fix to apply.
 - `run.ts` — the streaming pass, the checks, and the register writer.
 - `traceability.ts` — cite resolution against `rules.json`.
 - `prose.ts` — renders a fact record as a vessel description.
-- `findings/` — the generated register.
+- `findings/` — the generated register, plus the hand-maintained
+  `triage.json` sidecar.

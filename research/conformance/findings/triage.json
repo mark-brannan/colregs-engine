@@ -1,0 +1,14 @@
+{
+  "consistency-conflicting-shall::26b-id,30a": {
+    "status": "human-reviewed",
+    "note": "26b-id carries rel:excludes: [30a, 30b] and evaluate() does suppress 30a (it lands in result.excluded, and displays shows Rule 26 lights only); the check reads result.applied, which is the pre-exclusion predicate-match set, so it fires precisely when the 26(a) machinery works. Harness false positive, not a data or engine bug."
+  },
+  "consistency-conflicting-shall::26c-id,30a": {
+    "status": "human-reviewed",
+    "note": "Same mechanism as FIND-01: 26c-id excludes 30a/30b and evaluate() suppresses it correctly; the check reads the pre-exclusion applied set. Harness false positive, not a data or engine bug."
+  },
+  "consistency-no-obligation::position:moored": {
+    "status": "human-reviewed",
+    "note": "facts.json derives the position enum from Rule 3(i) (\"not at anchor, not made fast to the shore, not aground\"), so position:moored is the shore-fast case, for which COLREGS prescribes no lights. Correct gap, needs an expected-empty carve-out rather than a fix. Open question: SignalK's `moored` conflates shore-fast with a mooring buoy, which is arguably \"at anchor\" -- a decoding-layer ambiguity, not an applicability-data one."
+  }
+}
