@@ -38,6 +38,7 @@
     "prettier": "3.6.2",
     "tsx": "4.23.13",
     "typescript": "^5.7.2",
-    "vitest": "^3.2.7"
+    "vitest": "^3.2.7",
+    "z3-solver": "^4.15.3"
   }
 }
