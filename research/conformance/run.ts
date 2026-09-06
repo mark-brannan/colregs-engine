@@ -382,7 +382,7 @@ triage, not fixes.
   const rows = findings
     .map(
       (f) =>
-        `| ${f.id} | ${f.check} | ${f.count} | ${f.description.replace(/\|/g, '\\|')} | ${f.cites.join('; ') || '-'} | candidate |`,
+        `| ${f.id} | ${f.check} | ${f.count} | ${f.description.replace(/\\/g, '\\\\').replace(/\|/g, '\\|')} | ${f.cites.join('; ') || '-'} | candidate |`,
     )
     .join('\n');
   return header + rows + '\n';
