@@ -27,7 +27,8 @@
     "build": "tsc -p tsconfig.build.json",
     "conformance": "tsx research/conformance/run.ts",
     "generate": "tsx scripts/generate-schema-types.ts && tsx scripts/generate-fact-record.ts",
-    "generate:check": "npm run generate && git add --intent-to-add -- src/generated && git diff --exit-code -- src/generated"
+    "generate:check": "npm run generate && git add --intent-to-add -- src/generated && git diff --exit-code -- src/generated",
+    "z3": "tsx research/z3/run.ts"
   },
   "dependencies": {
     "colregs": "github:mark-brannan/colregs#a04377336da92043e34e986741f78dc9307dab9c"
