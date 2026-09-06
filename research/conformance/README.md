@@ -80,15 +80,16 @@ Two implementations that agree are worth more than one implementation that
 passes its own tests. Where they disagree, the harness fails rather than
 picking a winner.
 
-It covers more of the predicate language than `src/evaluate.ts` does: `not`
-and both `any_of` forms are implemented here and not there. Neither exists
-in the pinned colregs (0.1.2) schema; they arrive in a later release,
-together with the two-subject Part B steering entries that use them. So the
-agreement over the whole space is real but says nothing about those forms.
-When the pin moves, the first entry to use one will be a conformance
-failure, which is the behaviour to want from a check like this — and the
-Part B entries will need filtering out of the lights evaluation, in the
-engine and here alike, before the run is meaningful again.
+`not` and both `any_of` forms, and the two-subject Part B steering entries,
+arrived in colregs 0.2.0 (closing #9/#13). `src/evaluate.ts` implements
+`not`/`any_of`, and this harness's independent reading (`reference.ts`) does
+too, so both sides of every comparison here exercise them for real. The
+Part B steering entries (category `precedence`/`scope`/etc., not `display`)
+are read for a two-vessel situation this single-vessel fact-space harness
+doesn't enumerate; both the engine and this harness's reference filter them
+out of the lights evaluation (REQ-CAT-1's `category` default), so they never
+appear in an applied set and are excluded from coverage's never-fired
+reporting too.
 
 ## The checks
 

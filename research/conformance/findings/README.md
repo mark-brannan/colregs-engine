@@ -17,4 +17,4 @@ triage, not fixes.
 |---|---|---|---|---|---|
 | FIND-01 | consistency-conflicting-shall | 114048 | entries 26b-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(b)(i); 30(a) | candidate |
 | FIND-02 | consistency-conflicting-shall | 114048 | entries 26c-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(c)(i); 30(a) | candidate |
-| FIND-03 | consistency-no-obligation | 114048 | record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:moored | - | candidate |
+| FIND-03 | consistency-no-obligation | 190080 | record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:moored | - | candidate |

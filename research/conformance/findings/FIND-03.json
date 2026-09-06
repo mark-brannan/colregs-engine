@@ -3,7 +3,7 @@
   "check": "consistency-no-obligation",
   "description": "record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:moored",
   "cites": [],
-  "records": 114048,
+  "records": 190080,
   "facts": {
     "fact:activity": "activity:none",
     "fact:composite_unit": true,

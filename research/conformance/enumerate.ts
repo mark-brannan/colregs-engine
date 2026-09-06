@@ -68,9 +68,8 @@ function collectWhens(e: Entry): Predicate[] {
 /**
  * Recursively walk one constraint value, calling `visitNumeric` for every
  * {gte,gt,lte,lt} object found — including inside `not` and `any_of`
- * wrappers. The pinned colregs schema (0.1.2) has neither wrapper; later
- * releases add both, and the walk is written for them so the pin can move
- * without this file changing.
+ * wrappers, both live in colregs' schema since 0.2.0 and exercised by real
+ * entries in data/applicability.json.
  */
 function walkConstraint(c: unknown, visitNumeric: (n: Record<string, number>) => void): void {
   if (c === null || typeof c !== 'object') return; // scalar equality
