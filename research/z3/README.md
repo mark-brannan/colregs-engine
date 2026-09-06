@@ -24,6 +24,21 @@ entry — one `|branch:<id>:<i>|` per `modality_by` branch plus an
 `|unresolved:<id>|`. `queries.ts` states the P1.3 properties as queries over
 those definitions. 40 entries, 14 axes, 56 queries.
 
+colregs 0.2.0 (REQ-CAT-1) added a `category` to every entry and, under
+scope/precedence/classification, 30 more entries that read a *pair* of
+vessels — own:/other:/pair:-prefixed keys (`pair:geo:in_sight`,
+`own:kin:wind_side`, `other:geo:rel_bearing_deg`, …) that colregs'
+facts.json does not declare at all. Those 30 are excluded from this
+encoding, the same way `src/evaluate.ts` and `research/conformance/`
+already exclude them from `applied`/`displays` and from the exhaustive
+enumeration (`category: 'display'` only — see `encode.ts`'s file header,
+point 4). Nothing above changed as a result: 40 display entries, 14 axes and
+56 queries are the same counts as under colregs 0.1.2, because this
+encoding's scope was always "what `evaluate()`'s applied/display output can
+contain," and colregs 0.2.0 didn't touch that set. `npm run z3`'s own output
+reports the exclusion explicitly (`excluded  30 (3 scope, 21 precedence, 6
+classification)`), so a narrower scope is never silent.
+
 The same properties the exhaustive enumeration checks record by record:
 
 | property | queries | asks |
