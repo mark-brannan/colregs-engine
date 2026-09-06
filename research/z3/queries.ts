@@ -13,11 +13,16 @@
 // enumeration walks one representative per threshold interval, the solver
 // walks the reals -- and is never to be resolved by editing expectations.json
 // to match the run.
+//
+// Every query here is built from `entries` already filtered to
+// category: 'display' (isDisplay, from encode.ts) -- a non-display entry has
+// no `applies:`/`shall:` definition in the theory (encode.ts's file header,
+// point 4), so a query naming one would reference an undefined SMT symbol.
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { ApplicabilityData, Entry } from '../../src/types.js';
-import { APPLIES, BRANCH, SHALL, UNRESOLVED, sym } from './encode.js';
+import { APPLIES, BRANCH, SHALL, UNRESOLVED, isDisplay, sym } from './encode.js';
 
 export type Expectation = 'sat' | 'unsat';
 
@@ -101,6 +106,9 @@ export function excludingPairs(entries: Entry[]): [string, string][] {
 
 export function buildQueries(data: ApplicabilityData, expectations: Expectations): Query[] {
   const queries: Query[] = [];
+  // See the file header: only category: 'display' entries have SMT
+  // definitions to reference.
+  const displayEntries = data.entries.filter(isDisplay);
 
   const resolve = (id: string, property: Property): Pick<Query, 'expect' | 'recorded'> => {
     const recorded = expectations.queries[id];
@@ -116,7 +124,7 @@ export function buildQueries(data: ApplicabilityData, expectations: Expectations
 
   // (a) No two entries where one rel:excludes the other can both resolve to
   // `shall` for the same record.
-  for (const [a, b] of excludingPairs(data.entries)) {
+  for (const [a, b] of excludingPairs(displayEntries)) {
     const id = `CONFLICT/${a}+${b}`;
     queries.push({
       id,
@@ -133,7 +141,7 @@ export function buildQueries(data: ApplicabilityData, expectations: Expectations
   // second is what makes the exception a bounded, checkable claim rather
   // than a filter -- if some other record with no obligation exists, that
   // query comes back sat and the solver hands us the record.
-  const nothingApplies = data.entries.map((e) => `(not ${APPLIES(e.id)})`);
+  const nothingApplies = displayEntries.map((e) => `(not ${APPLIES(e.id)})`);
   queries.push({
     id: 'NO-OBLIGATION/any',
     property: 'no-obligation',
@@ -152,7 +160,7 @@ export function buildQueries(data: ApplicabilityData, expectations: Expectations
   });
 
   // (c) Every entry is satisfiable -- the never-fires check.
-  for (const e of data.entries) {
+  for (const e of displayEntries) {
     const id = `FIRES/${e.id}`;
     queries.push({
       id,
@@ -167,7 +175,7 @@ export function buildQueries(data: ApplicabilityData, expectations: Expectations
   // The two consistency checks research/conformance/run.ts also reports: an
   // applied conditional entry no modality_by branch resolves, and a branch
   // that is never the first match.
-  for (const e of data.entries) {
+  for (const e of displayEntries) {
     if (e.modality !== 'conditional') continue;
     const unresolvedId = `UNRESOLVED/${e.id}`;
     queries.push({

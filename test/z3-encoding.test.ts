@@ -227,8 +227,14 @@ describe('encoding agrees with src/evaluate.ts on random records', () => {
 
         // One check per record rather than one per entry: assert the record,
         // then ask whether ANY entry's encoded predicate disagrees with the
-        // engine. `unsat` means all forty agree.
-        const disagrees = data.entries.map((e) => {
+        // engine. `unsat` means all forty agree. encoding.entries is already
+        // filtered to category: 'display' -- the other 30 (colregs 0.2.0's
+        // scope/precedence/classification entries) read own:/other:/pair:
+        // facts this encoding is deliberately out of scope for (encode.ts's
+        // file header, point 4), and predicateMatches would disagree with
+        // them for a reason that has nothing to do with this differential
+        // check: `record` never carries those keys at all.
+        const disagrees = encoding.entries.map((e) => {
           const expr = encodePredicate(axesByKey, e.when);
           return predicateMatches(e.when, record) ? `(not ${expr})` : expr;
         });

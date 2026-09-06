@@ -34,7 +34,7 @@ import { fileURLToPath } from 'node:url';
 import applicabilityJson from 'colregs/data/applicability.json' with { type: 'json' };
 import { init } from 'z3-solver';
 
-import { predicateMatches, resolveModality } from '../../src/evaluate.js';
+import { appliedEntries, predicateMatches, resolveModality } from '../../src/evaluate.js';
 import type { ApplicabilityData, Entry, FactRecord, FactValue } from '../../src/types.js';
 import {
   referenceAppliedEntries,
@@ -68,10 +68,13 @@ const byId = new Map<string, Entry>(data.entries.map((e) => [e.id, e]));
 type Evaluator = 'engine' | 'reference';
 
 function appliedBy(which: Evaluator, facts: FactRecord): Set<string> {
+  // appliedEntries applies src/evaluate.ts's own isDisplay filter -- using
+  // predicateMatches directly here (no filter) would count entry '4' (Rule
+  // 4, category: scope, `when: {}`) as applied to every record, since an
+  // empty predicate matches unconditionally; that entry has no `applies:`
+  // definition in the theory at all (encode.ts's file header, point 4).
   return new Set(
-    which === 'engine'
-      ? data.entries.filter((e) => predicateMatches(e.when, facts)).map((e) => e.id)
-      : referenceAppliedEntries(data, facts),
+    which === 'engine' ? appliedEntries(data, facts) : referenceAppliedEntries(data, facts),
   );
 }
 
@@ -151,7 +154,17 @@ async function main(): Promise<void> {
   writeFileSync(smtPath, encoding.base + queriesToSmtLib(queries));
 
   console.log(`Z3 encoding of the applicability table (issue #1, P2.1)`);
-  console.log(`  entries      ${data.entries.length}`);
+  console.log(`  entries      ${data.entries.length} total, ${encoding.entries.length} encoded (category: display)`);
+  if (encoding.excludedNonDisplay.length > 0) {
+    const byCategory = new Map<string, number>();
+    for (const { category } of encoding.excludedNonDisplay) {
+      byCategory.set(category, (byCategory.get(category) ?? 0) + 1);
+    }
+    const breakdown = [...byCategory.entries()].map(([c, n]) => `${n} ${c}`).join(', ');
+    console.log(
+      `  excluded     ${encoding.excludedNonDisplay.length} (${breakdown}) -- own:/other:/pair:-scoped predicates, out of this encoding's scope (see encode.ts)`,
+    );
+  }
   console.log(`  axes         ${encoding.axes.length}`);
   console.log(`  queries      ${queries.length}`);
   console.log(`  expectations ${expectations.status} (research/z3/expectations.json)`);
