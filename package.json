@@ -2,7 +2,7 @@
   "name": "colregs-engine",
   "version": "0.1.0",
   "type": "module",
-  "description": "COLREGS applicability evaluator: predicates -> applied entries -> lawful displays",
+  "description": "Evaluation engine for structured COLREGS 72 data and national amalgamations",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
