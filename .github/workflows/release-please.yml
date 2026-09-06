@@ -23,8 +23,11 @@ name: Release
 # read, since that strips a leading `v`. Tags here are plain `vX.Y.Z`.
 #
 # Version policy lives in release-please-config.json, not here:
-# bump-patch-for-minor-pre-major and bump-minor-pre-major keep `feat` a patch
-# and a breaking change a minor while this is pre-1.0.
+# `versioning: always-bump-patch` pins every release to 0.0.x regardless of
+# commit type -- deliberate, until Mark decides colregs-engine is ready to
+# call something 0.1.0. Switch to the default versioning strategy (or
+# colregs's bump-minor-pre-major / bump-patch-for-minor-pre-major pair) once
+# that decision is made.
 #
 # Mirrors mark-brannan/colregs's release-please.yml/publish.yml pair; see
 # that repo for the working reference this was copied from.
