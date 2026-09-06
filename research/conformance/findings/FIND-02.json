@@ -7,7 +7,8 @@
     "30(a)"
   ],
   "records": 114048,
-  "status": "candidate",
+  "status": "human-reviewed",
+  "note": "Same mechanism as FIND-01: 26c-id excludes 30a/30b and evaluate() suppresses it correctly; the check reads the pre-exclusion applied set. Harness false positive, not a data or engine bug.",
   "facts": {
     "fact:activity": "activity:fishing",
     "fact:composite_unit": true,
