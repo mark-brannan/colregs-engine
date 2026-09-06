@@ -148,7 +148,6 @@ const noObligationPositions = new Map<string, number>();
 let conflictingObligationCount = 0;
 let unresolvedConditionalCount = 0;
 
-let orderMismatchCount = 0;
 let conformanceFailures = 0;
 let modalityMismatches = 0;
 
@@ -183,11 +182,11 @@ for (const facts of enumerateRecords(axes)) {
       [...missing, ...extra].map((id) => byId.get(id)?.cite ?? id),
       facts,
     );
-  } else if (engineApplied.join(',') !== [...refApplied].sort().join(',') &&
-    engineApplied.slice().sort().join(',') === refApplied.slice().sort().join(',') &&
-    engineApplied.join(',') !== refApplied.join(',')) {
-    orderMismatchCount++;
   }
+  // Order mismatches are structurally unreachable: both engineApplied and
+  // refApplied are built by filtering data.entries in the same fixed order,
+  // so whenever their sets match, their orders match too. Left uncounted —
+  // see the review thread on PR #14 for the reasoning.
 
   if (sameSet) {
     for (const id of engineApplied) {
@@ -263,7 +262,6 @@ const recordsPerSec = n / (wallMs / 1000);
 console.log(`\nprocessed ${n} records in ${(wallMs / 1000).toFixed(1)}s (${recordsPerSec.toFixed(0)} rec/s)`);
 console.log(`conformance failures (applied-set mismatch): ${conformanceFailures}`);
 console.log(`modality mismatches (same applied set, different modality): ${modalityMismatches}`);
-console.log(`applied-set order mismatches (informational, not a failure): ${orderMismatchCount}`);
 console.log(`no-obligation records: ${noObligationCount}`);
 console.log(`  by fact:position: ${JSON.stringify([...noObligationPositions.entries()])}`);
 console.log(`conflicting-shall records: ${conflictingObligationCount}`);

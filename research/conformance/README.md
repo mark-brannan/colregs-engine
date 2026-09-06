@@ -99,7 +99,9 @@ This is the only check that can fail the build.
 **consistency** — (i) two applied entries that both resolve to `shall` where
 one `rel:excludes` the other: an obligation the data states twice and
 contradicts itself on. (ii) records where nothing applies at all, counted and
-broken down by `fact:position`.
+broken down by `fact:position`. (iii) an applied entry whose modality resolves
+to `conditional` because no `modality_by` branch matched the record — printed
+as `unresolved-conditional records`.
 
 **coverage** — entries that never apply anywhere in the space, `modality_by`
 branches that are never the first match, and `one_of` options that are
