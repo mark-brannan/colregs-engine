@@ -1,23 +1,6 @@
-// The P1.3 consistency and coverage properties, restated as solver queries
-// over the definitions encode.ts emits.
-//
-// Each query is a set of assertions plus the answer expected of it. The
-// expectations are NOT in this file: they live in expectations.json, marked
-// pencil, each carrying the date it was observed and `triaged: false`. That
-// separation is deliberate. FIND-01, FIND-02 and FIND-03 are observations
-// from one enumeration run, not rulings; when a maintainer triages them the
-// change should be a data edit, not a code edit.
-//
-// run.ts reports when Z3 and the recorded expectation disagree. A
-// disagreement is the most valuable thing this harness can produce -- the
-// enumeration walks one representative per threshold interval, the solver
-// walks the reals -- and is never to be resolved by editing expectations.json
-// to match the run.
-//
-// Every query here is built from `entries` already filtered to
-// category: 'display' (isDisplay, from encode.ts) -- a non-display entry has
-// no `applies:`/`shall:` definition in the theory (encode.ts's file header,
-// point 4), so a query naming one would reference an undefined SMT symbol.
+// The P1.3 consistency and coverage properties as solver queries over the
+// definitions encode.ts emits. Expectations are data (expectations.json), not
+// code, and only category: 'display' entries have definitions to reference.
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -41,7 +24,6 @@ export interface RecordedExpectation {
   observed_on: string;
   observed_by: string;
   finding?: string;
-  observed: string;
   would_settle: string;
 }
 
@@ -106,8 +88,6 @@ export function excludingPairs(entries: Entry[]): [string, string][] {
 
 export function buildQueries(data: ApplicabilityData, expectations: Expectations): Query[] {
   const queries: Query[] = [];
-  // See the file header: only category: 'display' entries have SMT
-  // definitions to reference.
   const displayEntries = data.entries.filter(isDisplay);
 
   const resolve = (id: string, property: Property): Pick<Query, 'expect' | 'recorded'> => {

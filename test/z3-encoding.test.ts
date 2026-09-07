@@ -1,20 +1,34 @@
 // encodeConstraint / encodePredicate against literal predicates, including
-// `not` and both `any_of` forms -- neither of which appears in the pinned
-// colregs (0.1.2), so nothing else in the repo exercises them.
+// `not` and both `any_of` forms, which no display entry of the pinned colregs
+// uses yet (asserted below), so nothing else in the repo exercises them.
 //
-// Plus a differential check: for random fact records, the encoding's truth
-// value under Z3 must equal src/evaluate.ts's `predicateMatches`. String
-// assertions pin the shape; the differential check pins the meaning.
+// Then, against the real theory under Z3: a differential check on random
+// records (the encoding's truth value must equal `predicateMatches`), the
+// modality layer against `resolveModality`, and the three recorded findings
+// as positive controls. String assertions pin the shape; Z3 pins the meaning.
 
 import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json' with { type: 'json' };
 import { init } from 'z3-solver';
 
-import { predicateMatches } from '../src/evaluate.js';
-import type { ApplicabilityData, Constraint, FactRecord, FactValue, Predicate } from '../src/types.js';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+import { appliedEntries, predicateMatches, resolveModality } from '../src/evaluate.js';
+import type { ApplicabilityData, Constraint, Entry, FactRecord, FactValue, Predicate } from '../src/types.js';
 import { extractAxes, type Axis } from '../research/conformance/enumerate.js';
-import { buildEncoding, encodeConstraint, encodePredicate, sym, EncodingError } from '../research/z3/encode.js';
+import {
+  APPLIES,
+  SHALL,
+  buildEncoding,
+  encodeConstraint,
+  encodePredicate,
+  isDisplay,
+  sym,
+  EncodingError,
+} from '../research/z3/encode.js';
 import { parseNumeral, snapToGrid } from '../research/z3/decode.js';
+import { buildQueries, loadExpectations } from '../research/z3/queries.js';
 
 const boolAxis: Axis = { kind: 'boolean', key: 'fact:making_way' as never, values: [true, false] };
 const numAxis: Axis = {
@@ -106,8 +120,11 @@ describe('encodeConstraint', () => {
     expect(enc(enumAxis, 'activity:not-a-real-value')).toBe('false');
   });
 
-  it('encodes an empty any_of as false and an empty numeric object as true', () => {
+  it('encodes an empty any_of, and a bare `{}`, as false', () => {
     expect(enc(enumAxis, { any_of: [] })).toBe('false');
+    // `{}` has none of gte/gt/lte/lt, so the engine falls through to `===`.
+    expect(enc(numAxis, {})).toBe('false');
+    expect(enc(enumAxis, {})).toBe('false');
   });
 });
 
@@ -176,79 +193,182 @@ describe('model decoding', () => {
 });
 
 // ---------------------------------------------------------------------
-// Differential: the encoding's truth value must equal the engine's, for
-// every entry of the real data, on random records.
+// Against the real theory under Z3
 // ---------------------------------------------------------------------
 
-describe('encoding agrees with src/evaluate.ts on random records', () => {
-  it('matches predicateMatches for every entry on 500 random records', async () => {
-    const data = applicabilityJson as unknown as ApplicabilityData;
-    const { axes: realAxes } = extractAxes(data);
-    const encoding = buildEncoding(data);
-    const axesByKey = new Map(realAxes.map((a) => [a.key as string, a]));
+const data = applicabilityJson as unknown as ApplicabilityData;
+const displayEntries = data.entries.filter(isDisplay);
+const byId = new Map(displayEntries.map((e) => [e.id, e]));
 
+function finding(id: string): string {
+  return fileURLToPath(new URL(`../research/conformance/findings/${id}.json`, import.meta.url));
+}
+
+/** `(assert ...)` lines fixing every declared axis to the record's value. */
+function pinRecord(realAxes: Axis[], facts: FactRecord): string[] {
+  const rec = facts as Record<string, FactValue | undefined>;
+  return realAxes.map((a) => {
+    const v = rec[a.key];
+    if (v === undefined) throw new Error(`record has no value for axis ${a.key}`);
+    switch (a.kind) {
+      case 'boolean':
+        return `(assert (= ${sym(a.key)} ${v}))`;
+      case 'numeric':
+        return `(assert (= ${sym(a.key)} ${Number.isInteger(v) ? `${v}.0` : v}))`;
+      case 'enum':
+        return `(assert (= ${sym(a.key)} ${a.values.indexOf(v as string)}))`;
+    }
+  });
+}
+
+/** Ids of display entries whose `when` or modality_by branches use `key`. */
+function displayEntriesUsing(key: string): string[] {
+  const uses = (x: unknown): boolean =>
+    Array.isArray(x)
+      ? x.some(uses)
+      : typeof x === 'object' && x !== null
+        ? Object.entries(x).some(([k, v]) => k === key || uses(v))
+        : false;
+  return displayEntries
+    .filter((e) => uses(e.when) || uses((e.modality_by ?? []).map((b) => b.when)))
+    .map((e) => e.id);
+}
+
+it('no display entry of the pinned colregs uses `not` or `any_of` yet', () => {
+  // When this fails, the literal-predicate tests above are no longer the
+  // only exercise of those forms: drop this test and the header comment.
+  expect(displayEntriesUsing('not')).toEqual([]);
+  expect(displayEntriesUsing('any_of')).toEqual([]);
+});
+
+describe('the encoding against Z3', () => {
+  const { axes: realAxes } = extractAxes(data);
+  const axesByKey = new Map(realAxes.map((a) => [a.key as string, a]));
+  const encoding = buildEncoding(data);
+
+  /** Runs `f` with a solver loaded with the base theory; `check` answers one
+   * set of assertions inside a push/pop. */
+  async function withSolver(f: (check: (asserts: string[]) => Promise<string>) => Promise<void>) {
     const { Context, em } = await init();
     try {
-      const Z3 = Context('diff');
+      const Z3 = Context('test');
       const solver = new Z3.Solver();
       solver.fromString(encoding.base);
+      await f(async (asserts) => {
+        solver.push();
+        solver.fromString(asserts.join('\n'));
+        const answer = await solver.check();
+        solver.pop();
+        return answer;
+      });
+    } finally {
+      em.PThread.terminateAllThreads();
+    }
+  }
 
-      // A deterministic PRNG, so a failure is reproducible from the seed.
-      let seed = 20260906;
-      const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  it('matches predicateMatches for every entry on 500 random records', async () => {
+    // A deterministic PRNG, so a failure is reproducible from the seed.
+    let seed = 20260906;
+    const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
 
+    await withSolver(async (check) => {
       for (let n = 0; n < 500; n++) {
         const facts: Record<string, FactValue> = {};
-        const pins: string[] = [];
         for (const a of realAxes) {
           switch (a.kind) {
-            case 'boolean': {
-              const v = rnd() < 0.5;
-              facts[a.key] = v;
-              pins.push(`(assert (= ${sym(a.key)} ${v}))`);
+            case 'boolean':
+              facts[a.key] = rnd() < 0.5;
               break;
-            }
-            case 'numeric': {
+            case 'numeric':
               // Deliberately off the representative grid as often as on it.
-              const v = Math.round(rnd() * 220 * 2) / 2;
-              facts[a.key] = v;
-              pins.push(`(assert (= ${sym(a.key)} ${Number.isInteger(v) ? `${v}.0` : v}))`);
+              facts[a.key] = Math.round(rnd() * 220 * 2) / 2;
               break;
-            }
-            case 'enum': {
-              const i = Math.floor(rnd() * a.values.length);
-              facts[a.key] = a.values[i];
-              pins.push(`(assert (= ${sym(a.key)} ${i}))`);
+            case 'enum':
+              facts[a.key] = a.values[Math.floor(rnd() * a.values.length)];
               break;
-            }
           }
         }
         const record = facts as FactRecord;
 
-        // One check per record rather than one per entry: assert the record,
-        // then ask whether ANY entry's encoded predicate disagrees with the
-        // engine. `unsat` means all forty agree. encoding.entries is already
-        // filtered to category: 'display' -- the other 30 (colregs 0.2.0's
-        // scope/precedence/classification entries) read own:/other:/pair:
-        // facts this encoding is deliberately out of scope for (encode.ts's
-        // file header, point 4), and predicateMatches would disagree with
-        // them for a reason that has nothing to do with this differential
-        // check: `record` never carries those keys at all.
+        // One check per record: pin it, then ask whether ANY display entry's
+        // encoded predicate disagrees with the engine. `unsat` = all agree.
         const disagrees = encoding.entries.map((e) => {
           const expr = encodePredicate(axesByKey, e.when);
           return predicateMatches(e.when, record) ? `(not ${expr})` : expr;
         });
-        solver.push();
-        solver.fromString(`${pins.join('\n')}\n(assert (or ${disagrees.join(' ')}))`);
-        const answer = await solver.check();
-        solver.pop();
+        const answer = await check([
+          ...pinRecord(realAxes, record),
+          `(assert (or ${disagrees.join(' ')}))`,
+        ]);
         expect(
           answer,
           `the encoding disagrees with predicateMatches on ${JSON.stringify(record)}`,
         ).toBe('unsat');
       }
-    } finally {
-      em.PThread.terminateAllThreads();
-    }
+    });
   }, 120_000);
+
+  // Every CONFLICT query is a question about `shall:`, and nothing else in
+  // `npm test` reads it: a SHALL that is too weak makes those queries unsat
+  // and agrees with three of the five expectations by accident. So, one
+  // entry per modality on a record it applies to, and `shall:` must be sat
+  // exactly when resolveModality says 'shall'.
+  it('defines `shall:` as evaluate.ts resolves the modality, for every modality', async () => {
+    const base = JSON.parse(readFileSync(finding('FIND-01'), 'utf8')).facts as Record<
+      string,
+      FactValue
+    >;
+    const sail = {
+      'fact:propulsion': 'propulsion:sail',
+      'fact:position': 'position:underway',
+      'fact:activity': 'activity:none',
+      'fact:length_m': 6,
+    };
+    const cases: [string, FactRecord][] = [
+      ['30a', base as FactRecord], // shall
+      ['25d1', { ...base, ...sail } as FactRecord], // shall-if-practicable
+      ['30c', { ...base, 'fact:length_m': 120 } as FactRecord], // conditional, shall branch
+      ['30c', { ...base, 'fact:length_m': 20 } as FactRecord], // conditional, may branch
+      ['30b', { ...base, 'fact:length_m': 20 } as FactRecord], // may
+    ];
+    const modalities = new Set(cases.map(([id]) => byId.get(id)!.modality));
+    expect([...modalities].sort()).toEqual(['conditional', 'may', 'shall', 'shall-if-practicable']);
+
+    await withSolver(async (check) => {
+      for (const [id, record] of cases) {
+        expect(appliedEntries(data, record), `${id} must apply to its record`).toContain(id);
+        const pins = pinRecord(realAxes, record);
+        expect(await check([...pins, `(assert ${APPLIES(id)})`])).toBe('sat');
+        const engineSaysShall = resolveModality(byId.get(id) as Entry, record) === 'shall';
+        expect(
+          await check([...pins, `(assert ${SHALL(id)})`]),
+          `${id} on ${JSON.stringify(record)}`,
+        ).toBe(engineSaysShall ? 'sat' : 'unsat');
+      }
+    });
+  }, 60_000);
+
+  // Positive controls: an expectation that points at a finding must be
+  // witnessed by that finding's own representative record, so a definition
+  // that silently weakened fails here rather than agreeing by accident.
+  it('is satisfied by the representative record of every finding it expects', async () => {
+    const expectations = loadExpectations();
+    const queries = buildQueries(data, expectations);
+    const pointed = Object.entries(expectations.queries).filter(([, r]) => r.finding);
+    expect(pointed.length).toBeGreaterThan(0);
+
+    await withSolver(async (check) => {
+      for (const [id, recorded] of pointed) {
+        const q = queries.find((x) => x.id === id);
+        expect(q, `expectations.json names ${id}; buildQueries did not produce it`).toBeDefined();
+        expect(recorded.expect, `${id}: a finding is a witness, so it can only back a sat`).toBe('sat');
+        const record = JSON.parse(readFileSync(finding(recorded.finding!), 'utf8')).facts as FactRecord;
+        const answer = await check([
+          ...pinRecord(realAxes, record),
+          ...q!.asserts.map((a) => `(assert ${a})`),
+        ]);
+        expect(answer, `${id}: ${recorded.finding}'s record is not a witness`).toBe('sat');
+      }
+    });
+  }, 60_000);
 });

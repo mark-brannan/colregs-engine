@@ -11,8 +11,7 @@
 //   2. The answer is compared against the expectation recorded in
 //      expectations.json -- which is what the exhaustive enumeration
 //      observed, marked pencil and untriaged. A disagreement is the most
-//      valuable output this harness has and is reported as such. It is
-//      never to be resolved by editing expectations.json to match a run.
+//      valuable output this harness has and is reported as such.
 //   3. Every sat model is decoded back into a FactRecord and replayed
 //      through BOTH src/evaluate.ts and research/conformance/reference.ts.
 //      A model the solver calls a witness and the evaluators do not is a
@@ -68,11 +67,7 @@ const byId = new Map<string, Entry>(data.entries.map((e) => [e.id, e]));
 type Evaluator = 'engine' | 'reference';
 
 function appliedBy(which: Evaluator, facts: FactRecord): Set<string> {
-  // appliedEntries applies src/evaluate.ts's own isDisplay filter -- using
-  // predicateMatches directly here (no filter) would count entry '4' (Rule
-  // 4, category: scope, `when: {}`) as applied to every record, since an
-  // empty predicate matches unconditionally; that entry has no `applies:`
-  // definition in the theory at all (encode.ts's file header, point 4).
+  // Both evaluators filter to category: 'display', as the theory does.
   return new Set(
     which === 'engine' ? appliedEntries(data, facts) : referenceAppliedEntries(data, facts),
   );
@@ -299,7 +294,10 @@ async function main(): Promise<void> {
       console.log(`  ${r.query.id}: Z3 says ${r.answer}, expectations.json says ${r.query.expect}`);
       console.log(`    ${r.query.title}`);
       if (r.query.recorded) {
-        console.log(`    recorded ${r.query.recorded.observed_on}: ${r.query.recorded.observed}`);
+        const rec = r.query.recorded;
+        console.log(
+          `    recorded ${rec.observed_on} by ${rec.observed_by}${rec.finding ? ` (${rec.finding})` : ''}`,
+        );
       }
       if (r.facts) console.log(`    witness: ${describeVessel(r.facts)}`);
       if (r.facts) console.log(`    facts:   ${JSON.stringify(r.facts)}`);

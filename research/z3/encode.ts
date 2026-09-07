@@ -11,56 +11,41 @@
 //     `|branch:<id>:<i>|` per modality_by branch (that branch is the FIRST
 //     match) plus `|unresolved:<id>|` (applies, no branch matched).
 //
-// The properties of P1.3 are then solver queries over those definitions
-// rather than a loop over 5.9M records; queries.ts builds them and run.ts
-// runs them.
+// queries.ts turns the P1.3 properties into queries over those definitions;
+// run.ts runs them.
 //
-// Three things this encoding does deliberately, each of which the README
-// spells out:
+// Four deliberate choices, each of which changes what an answer means:
 //
-//   1. Numeric axes are Real, not a finite set of representatives. Where
-//      the enumeration proves a property over one point per threshold
-//      interval and leans on an unproved partition lemma, an `unsat` here
-//      is over every real value. The Z3 result is therefore strictly
-//      stronger, and a `sat` whose model lands off the representative grid
-//      would be evidence AGAINST the lemma --- run.ts checks for exactly
-//      that.
-//   2. Every declared axis is total: there is no "absent" value. That
-//      matches the enumerated fact space (which assigns every axis a
-//      predicate reads) and it matches the engine's semantics for the axes
-//      that are declared, because `valueMatches(undefined, ...)` is false
-//      for every constraint shape --- an absent fact can only ever make an
-//      entry apply less often. So an `unsat` under totality still implies
-//      `unsat` with absences allowed.
+//   1. Numeric axes are Real, not the enumeration's finite grid. An `unsat`
+//      here holds for every real value, where the enumeration's holds for
+//      one representative per threshold interval and leans on the partition
+//      lemma P3.1 has yet to prove. A `sat` model off the grid whose property
+//      fails at the grid point would refute that lemma; run.ts checks each.
+//   2. Every declared axis is total: no "absent" value, matching the
+//      enumerated fact space. The engine does accept an absent fact
+//      (src/facts.ts), and `valueMatches(undefined, ...)` is false for every
+//      constraint shape, so an absence only ever makes a predicate match
+//      less often. An `unsat` under totality therefore still holds with
+//      absences allowed for conflicting-shall and entry-fires (they only
+//      need predicates to match), and for branch-reachable only because
+//      every branch in the pinned data reads the same axis as the branches
+//      before it. It does NOT carry over for no-obligation or
+//      unresolved-conditional: fewer matches make those easier to satisfy,
+//      so their answers are claims about total records only, exactly as the
+//      enumeration's are.
 //   3. The translation follows src/evaluate.ts's `valueMatches` dispatch
 //      order exactly (not, then any_of, then numeric, then list, then
 //      scalar-with-refinement), including the type mismatches: a numeric
 //      constraint on an enum axis is `false`, and `{not: {gte: 5}}` on that
 //      axis is therefore `true`.
+//   4. Only `category: 'display'` entries are encoded, the same filter
+//      src/evaluate.ts and research/conformance/ apply. The other categories
+//      (colregs 0.2.0's scope/precedence/classification) read own:/other:/
+//      pair:-scoped facts FACT_SPEC does not declare; they are counted in
+//      Encoding.excludedNonDisplay and reported by the run, not solved.
 //
-// `not` and both `any_of` forms are implemented here even though the pinned
-// colregs (0.1.2) uses neither --- the same stance reference.ts takes, and
-// tested in test/z3-encoding.test.ts with literal predicates.
-//
-//   4. Only `category: 'display'` entries are encoded (REQ-CAT-1, colregs
-//      0.2.0). The scope/precedence/classification categories 0.2.0 added
-//      read a *pair* of vessels -- own:/other:/pair:-prefixed keys such as
-//      pair:geo:in_sight, own:kin:wind_side, other:geo:rel_bearing_deg --
-//      which FACT_SPEC (colregs facts.json) does not declare at all: it is
-//      a single-vessel vocabulary, and extractAxes (research/conformance/
-//      enumerate.ts) only ever turns `fact:`-prefixed keys into axes. That
-//      is not an oversight here: src/evaluate.ts's `applied`/`displays`
-//      never contain a non-display entry either (its own isDisplay filter),
-//      and research/conformance/reference.ts + run.ts apply the identical
-//      filter for the same reason -- this encoding's only job is to agree
-//      with what the enumeration already checks, and the enumeration has
-//      never covered two-vessel entries. Excluded entries are counted in
-//      Encoding.excludedNonDisplay so a run reports the narrowed scope
-//      explicitly rather than silently. Teaching extractAxes to emit
-//      pair-scoped axes was rejected: it would need new two-vessel
-//      modeling with no enumeration counterpart to check it against, for
-//      properties (conflicting-shall, entry-fires, ...) that were never
-//      about these entries to begin with.
+// `not` and both `any_of` forms are implemented, as reference.ts does;
+// test/z3-encoding.test.ts asserts that no display entry uses them yet.
 
 import { REFINEMENTS } from '../../src/evaluate.js';
 import type { ApplicabilityData, Constraint, Entry, Predicate } from '../../src/types.js';
@@ -131,12 +116,7 @@ function isNumeric(c: unknown): c is Record<'gte' | 'gt' | 'lte' | 'lt', number 
 
 export class EncodingError extends Error {}
 
-/** colregs 0.2.0 (REQ-CAT-1) gave every entry a `category`, defaulting to
- * 'display' when absent. src/evaluate.ts, research/conformance/reference.ts
- * and research/conformance/run.ts all filter to this before matching or
- * enumerating; this encoding has to as well, or it tries to declare SMT
- * axes for the own:/other:/pair:-scoped facts those other categories read,
- * which FACT_SPEC does not know about (see the file header, point 4). */
+/** `category` defaults to 'display' (colregs 0.2.0, REQ-CAT-1); see header point 4. */
 export function isDisplay(e: Entry): boolean {
   return (e.category ?? 'display') === 'display';
 }
