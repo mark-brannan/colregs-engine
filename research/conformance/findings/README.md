@@ -23,6 +23,6 @@ overwrites.
 
 | id | check | records | description | cites | status | triage note |
 |---|---|---|---|---|---|---|
-| FIND-01 | consistency-conflicting-shall | 114048 | entries 26b-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(b)(i); 30(a) | candidate | - |
-| FIND-02 | consistency-conflicting-shall | 114048 | entries 26c-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(c)(i); 30(a) | candidate | - |
-| FIND-03 | consistency-no-obligation | 190080 | record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:moored | - | candidate | - |
+| FIND-01 | consistency-conflicting-shall | 114048 | entries 26b-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(b)(i); 30(a) | agent-verified | Harness false positive: the check reads the pre-exclusion result.applied; evaluate() does suppress 30a via rel:excludes. |
+| FIND-02 | consistency-conflicting-shall | 114048 | entries 26c-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(c)(i); 30(a) | agent-verified | Same mechanism as FIND-01. |
+| FIND-03 | consistency-no-obligation | 190080 | record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:moored | - | human-reviewed | Correct gap: position:moored is Rule 3(i)'s shore-fast case, which prescribes no lights; see issue #24. |
