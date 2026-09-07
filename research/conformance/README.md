@@ -148,8 +148,8 @@ Status ladder for a finding:
   of the harness or the reference implementation.
 - **triaged** — an agent classified it (including "harness false positive")
   but a person has not ruled.
-- **human-reviewed** — a person triaged it into data bug, genuine ambiguity
-  in the rules, or engine bug.
+- **human-reviewed** — a person ruled: data bug, genuine ambiguity in the
+  rules, engine bug, or harness bug.
 - **landed** — resolved: a fixture, an ADR, or a change to the requirements.
 
 Agents do not edit colregs. A finding is a candidate for a maintainer to
