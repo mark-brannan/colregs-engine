@@ -112,7 +112,12 @@ function proseFields(file: string): Array<{ path: string; text: string }> {
     else if (node && typeof node === 'object') {
       for (const [k, v] of Object.entries(node)) {
         const p = `${path}.${k}`;
-        if (typeof v === 'string' && budgets.prose.keys.includes(k)) out.push({ path: p, text: v });
+        if (budgets.prose.keys.includes(k)) {
+          if (typeof v === 'string') out.push({ path: p, text: v });
+          else if (Array.isArray(v)) {
+            v.forEach((s, i) => typeof s === 'string' && out.push({ path: `${p}[${i}]`, text: s }));
+          }
+        }
         visit(v, p);
       }
     }
