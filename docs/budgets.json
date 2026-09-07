@@ -1,0 +1,42 @@
+{
+  "lines": {
+    "README.md": 180,
+    "docs/engine-notes.md": 110,
+    "docs/formal-methods-glossary.md": 190,
+    "docs/formal-methods-reading-list.md": 70,
+    "docs/normative-language.md": 130,
+    "research/conformance/README.md": 197
+  },
+  "prose": {
+    "keys": ["note", "$note", "notes", "about", "narrative", "rationale", "why", "would_settle"],
+    "maxChars": 300,
+    "grandfathered": []
+  },
+  "narration": {
+    "patterns": [
+      "\\bPR ?#?\\d+\\b",
+      "\\b(this|that|the) session\\b",
+      "\\bsplit out of\\b",
+      "\\bstacked on\\b"
+    ],
+    "headerPatterns": ["\\bP\\d\\.\\d\\b"],
+    "grandfathered": {}
+  },
+  "voice": {
+    "words": [
+      "delve", "leverage", "seamless", "cutting-edge", "robust", "comprehensive",
+      "testament", "tapestry", "pivotal", "foster", "elevate", "unlock", "game-changer"
+    ],
+    "phrases": [
+      "it'?s worth noting",
+      "\\bnot just\\b[^.]*\\bbut\\b",
+      "(?:^|[.!?]\\s+)(?:Moreover|Additionally|Certainly)\\b"
+    ],
+    "allow": ["Foster/Gleirscher", "Foster, Gleirscher"],
+    "count": ["rather than"]
+  },
+  "headers": {
+    "maxLines": 25,
+    "grandfathered": {}
+  }
+}
