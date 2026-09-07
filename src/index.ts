@@ -10,8 +10,22 @@
 // predicateMatches and resolveModality are not exported: they are predicate
 // internals, not answers, and nothing outside src/evaluate.ts uses them.
 
-export { appliedEntries, evaluate } from './evaluate.js';
+export {
+  appliedDisplayEntries,
+  evaluateDisplay,
+  // Deprecated aliases of the two above, kept for one release so searoom can
+  // migrate on its own schedule.
+  appliedEntries,
+  evaluate,
+} from './evaluate.js';
+export type { EvaluateOptions } from './evaluate.js';
 
-export type { Display, DisplayLight, Evaluation } from './types.js';
+export type {
+  Display,
+  DisplayEvaluation,
+  DisplayLight,
+  /** @deprecated Renamed to DisplayEvaluation. */
+  Evaluation,
+} from './types.js';
 export type { FactRecord } from './generated/fact-record.js';
 export type { Modality } from './generated/applicability.js';
