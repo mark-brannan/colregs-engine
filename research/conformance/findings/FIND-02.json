@@ -7,7 +7,8 @@
     "30(a)"
   ],
   "records": 114048,
-  "status": "candidate",
+  "status": "agent-verified",
+  "note": "Same mechanism as FIND-01.",
   "facts": {
     "fact:activity": "activity:fishing",
     "fact:composite_unit": true,
