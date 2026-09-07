@@ -5,7 +5,7 @@
   "cites": [],
   "records": 190080,
   "status": "human-reviewed",
-  "note": "facts.json derives the position enum from Rule 3(i) (\"not at anchor, not made fast to the shore, not aground\"), so position:moored is the shore-fast case, for which COLREGS prescribes no lights. Correct gap, needs an expected-empty carve-out rather than a fix. Open question: SignalK's `moored` conflates shore-fast with a mooring buoy, which is arguably \"at anchor\" -- a decoding-layer ambiguity, not an applicability-data one.",
+  "note": "Correct gap: position:moored is Rule 3(i)'s shore-fast case, which prescribes no lights; see issue #24.",
   "facts": {
     "fact:activity": "activity:none",
     "fact:composite_unit": true,
