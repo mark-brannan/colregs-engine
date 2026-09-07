@@ -206,7 +206,7 @@ describe('no session narration', () => {
 });
 
 describe('model-voice words', () => {
-  const wordPattern = budgets.voice.words.map((w) => `\\b${w.replace(/[.*+?^${}()|[\\]\\\\-]/g, '\\$&')}\\b`);
+  const wordPattern = budgets.voice.words.map((w) => `\\b${w.replace(/[\\^$.*+?()[\]{}|-]/g, '\\$&')}\\b`);
   const check = (file: string, text: string): void => {
     let stripped = text;
     for (const a of budgets.voice.allow) stripped = stripped.split(a).join('');
