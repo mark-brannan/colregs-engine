@@ -7,8 +7,8 @@
     "30(a)"
   ],
   "records": 114048,
-  "status": "agent-verified",
-  "note": "Same mechanism as FIND-01.",
+  "status": "human-reviewed",
+  "note": "Same ruling as FIND-01; the fishing (26(c)) + anchored case is the real one, resolved by rel:overrides.",
   "facts": {
     "fact:activity": "activity:fishing",
     "fact:composite_unit": true,

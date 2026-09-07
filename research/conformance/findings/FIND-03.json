@@ -3,9 +3,9 @@
   "check": "consistency-no-obligation",
   "description": "record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:moored",
   "cites": [],
-  "records": 190080,
-  "status": "human-reviewed",
-  "note": "Correct gap: position:moored is Rule 3(i)'s shore-fast case, which prescribes no lights; see issue #24.",
+  "records": 114048,
+  "status": "triaged",
+  "note": "Agent read: correct gap, position:moored is Rule 3(i)'s shore-fast case, which prescribes no lights; see issue #24. Awaiting Mark's ruling on whether moored is split, removed, or out of scope.",
   "facts": {
     "fact:activity": "activity:none",
     "fact:composite_unit": true,

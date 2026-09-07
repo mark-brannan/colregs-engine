@@ -7,8 +7,8 @@
     "30(a)"
   ],
   "records": 114048,
-  "status": "agent-verified",
-  "note": "Harness false positive: the check reads the pre-exclusion result.applied; evaluate() does suppress 30a via rel:excludes.",
+  "status": "human-reviewed",
+  "note": "Mark ruled 2026-09-07: rel:excludes means pick-one (as 25(b)/25(c)), so two 'shall' entries excluding each other is a data error and this check is right to fire. Fishing-over-anchor (26(a)) moves to rel:overrides; trawling + anchored is an impossible fact pair, to be declared at the facts level, not as a rule relation. Data change pending in colregs.",
   "facts": {
     "fact:activity": "activity:trawling",
     "fact:composite_unit": true,
