@@ -1,0 +1,45 @@
+{
+  "about": "✎ PENCIL. Hand-maintained, read by queries.ts. Each query below is what the exhaustive enumeration (research/conformance/) observed on the date given, untriaged: it names the finding and what would settle it, and takes no position on the cause. If findings/triage.json becomes the one home for a finding's status, fold `triaged` and `finding` into it.",
+  "status": "pencil",
+  "marker": "✎",
+  "defaults": {
+    "$note": "The expectation for any query not named below: the P1.3 properties as stated in issue #1, not observations.",
+    "conflicting-shall": "unsat",
+    "no-obligation": "unsat",
+    "entry-fires": "sat",
+    "unresolved-conditional": "unsat",
+    "branch-reachable": "sat"
+  },
+  "queries": {
+    "CONFLICT/26b-id+30a": {
+      "expect": "sat",
+      "triaged": false,
+      "observed_on": "2026-09-06",
+      "observed_by": "npm run conformance, check consistency-conflicting-shall",
+      "finding": "FIND-01",
+      "would_settle": "A maintainer's reading of Rule 26(a) against the rel:excludes semantics: whether rel:excludes is a claim that the two predicates are disjoint (in which case the predicates or the relation are wrong), or a composition-layer instruction that the excluded entry's lights are not shown (in which case both applying is expected and this check is asking the wrong question)."
+    },
+    "CONFLICT/26c-id+30a": {
+      "expect": "sat",
+      "triaged": false,
+      "observed_on": "2026-09-06",
+      "observed_by": "npm run conformance, check consistency-conflicting-shall",
+      "finding": "FIND-02",
+      "would_settle": "The same reading as FIND-01; the two stand or fall together."
+    },
+    "NO-OBLIGATION/any": {
+      "expect": "sat",
+      "triaged": false,
+      "observed_on": "2026-09-06",
+      "observed_by": "npm run conformance, check consistency-no-obligation",
+      "finding": "FIND-03",
+      "would_settle": "A maintainer's decision on whether position:moored is inside the scope of the lights table at all. Rule 30 names vessels at anchor and aground; facts.json declares position:moored as a value. Either the fact vocabulary is wider than the table intends, or the table is missing a case."
+    },
+    "NO-OBLIGATION/not-moored": {
+      "expect": "unsat",
+      "triaged": false,
+      "observed_on": "2026-09-06",
+      "observed_by": "npm run conformance, check consistency-no-obligation, position breakdown: every zero-obligation record was position:moored"
+    }
+  }
+}
