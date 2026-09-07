@@ -122,8 +122,13 @@ which is what the next section is about.
   actually compare against (7, 12, 20, 50 and 100 m, plus the tow, gear and
   speed constants) and the whole fact space is around 5 × 10⁶ records. Minutes
   of CPU.
-- **No choosing.** Where several displays are lawful, all of them come back.
-  A function that picks one can't be checked against the data.
+- **Complete answers.** Where several displays are lawful, all of them come
+  back. The fact record describes a situation, not a fitted vessel: nothing
+  in it says whether a sloop carries a tricolour lantern, so nothing in it
+  could settle Rule 25(b) against 25(c). Narrowing the set would take a fact
+  the engine is not given. Composition itself is a different matter — the
+  engine makes seven judgment calls the data leaves open, each recorded in
+  [docs/engine-notes.md](docs/engine-notes.md).
 - **Traceable.** Every entry in an output cites the paragraph it came from.
 
 ## Verification
