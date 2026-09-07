@@ -146,6 +146,8 @@ Status ladder for a finding:
 - **candidate** — the harness found it. Nobody has looked.
 - **agent-verified** — a second pass confirmed it is real and not an artefact
   of the harness or the reference implementation.
+- **triaged** — an agent classified it (including "harness false positive")
+  but a person has not ruled.
 - **human-reviewed** — a person triaged it into data bug, genuine ambiguity
   in the rules, or engine bug.
 - **landed** — resolved: a fixture, an ADR, or a change to the requirements.
