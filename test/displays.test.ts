@@ -167,6 +167,27 @@ describe('lawful display composition', () => {
     expect(e.displays[0].lights).toHaveLength(0);
   });
 
+  it('moored, no activity: Rule 3(i) prescribes no lights, so zero applied is correct', () => {
+    const e = evaluate(applicability, {
+      'fact:propulsion': 'propulsion:power',
+      'fact:activity': 'activity:none',
+      'fact:position': 'position:moored',
+      'fact:length_m': 30,
+    });
+    expect(e.applied).toEqual([]);
+    expect(e.displays.map((d) => d.entries)).toEqual([[]]);
+  });
+
+  it('moored but fishing: 26(c) has no position gate, so it still applies', () => {
+    const e = evaluate(applicability, {
+      'fact:propulsion': 'propulsion:power',
+      'fact:activity': 'activity:fishing',
+      'fact:position': 'position:moored',
+      'fact:length_m': 30,
+    });
+    expect(e.applied).toContain('26c-id');
+  });
+
   it('mine clearance at anchor: Rule 30 lights, no imported running lights', () => {
     const e = evaluate(applicability, {
       'fact:propulsion': 'propulsion:power',

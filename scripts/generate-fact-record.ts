@@ -26,6 +26,10 @@ interface EnumFact {
 }
 interface TypedFact {
   type: 'boolean' | 'number' | 'string';
+  /** `"fact:key=value"`: this modifier is only meaningful when that other
+   * fact holds that value — e.g. `fact:making_way` refines `fact:position`
+   * at `position:underway`. */
+  refines?: string;
 }
 interface SituationField {
   type: 'number' | 'boolean' | 'enum' | 'position';
@@ -62,12 +66,26 @@ const entries: Entry[] = [];
 const enumBody = (f: EnumFact): string =>
   `{ kind: 'enum', values: [${f.values.map((v) => `'${v}'`).join(', ')}] }`;
 
+/** `"fact:position=position:underway"` -> `{ key: 'fact:position', value: 'position:underway' }`. */
+function parseRefines(refines: string): { key: string; value: string } {
+  const eq = refines.indexOf('=');
+  if (eq === -1) {
+    throw new Error(`modifier refines '${refines}' is not of the form 'key=value'`);
+  }
+  return { key: refines.slice(0, eq), value: refines.slice(eq + 1) };
+}
+
 // Section order is facts.json's own; within a section, the data's key order.
 for (const [key, f] of Object.entries(facts.axes)) {
   entries.push({ key, body: enumBody(f) });
 }
 for (const [key, f] of Object.entries(facts.modifiers ?? {})) {
-  entries.push({ key, body: `{ kind: '${f.type}' }` });
+  if (f.refines) {
+    const { key: rk, value: rv } = parseRefines(f.refines);
+    entries.push({ key, body: `{ kind: '${f.type}', refines: { key: '${rk}', value: '${rv}' } }` });
+  } else {
+    entries.push({ key, body: `{ kind: '${f.type}' }` });
+  }
 }
 for (const key of Object.keys(facts.numerics ?? {})) {
   entries.push({ key, body: `{ kind: 'number' }` });

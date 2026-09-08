@@ -6,9 +6,5 @@
   "consistency-conflicting-shall::26c-id,30a": {
     "status": "human-reviewed",
     "note": "Same ruling as consistency-conflicting-shall::26b-id,30a; the fishing (26(c)) + anchored case is the real one, resolved by rel:overrides."
-  },
-  "consistency-no-obligation::position:moored": {
-    "status": "human-reviewed",
-    "note": "2026-09-07: keep position:moored as one value; add boolean modifier fact:on_mooring_buoy refining it, like fact:making_way refines underway. Rule 3(i) prescribes no lights alongside, so this gap is correct; the buoy case gets anchor lights under US 33 CFR 90.5. Data change pending, see #24."
   }
 }
