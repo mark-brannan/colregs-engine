@@ -112,7 +112,13 @@ classification entry fired, which today conflates "no encounter" with "cannot
 say" (Q-43); the status alphabet of ADR 0005 §5 is the intended fix and is not
 part of this shape yet.
 
-### 5. What this package does not evaluate
+### 5. What this shape does not evaluate
+
+Scoped to `evaluateDisplay` and `evaluateEncounter` as defined here — not a
+ceiling on the package. `conduct` in particular is the most ambitious item
+on the formal-methods programme (kinematic/temporal evaluation over a
+trace); it stays out of *this* shape because it needs a different input and
+tool, not because it's out of scope forever.
 
 - **`conduct`.** Rules 8, 13(a)'s action, 14(a), 16, 17: what a vessel shall
   *do*. Their predicates read a trace — 8(b)'s "readily apparent" alteration,
@@ -120,8 +126,7 @@ part of this shape yet.
   `kin:rot_deg_min` as read "by a conduct monitor rather than by a predicate at
   a point". Monitoring is a different function with a different input (a
   sequence of situations) and a different formal tool (STL/TLA+ per the
-  programme). It gets its own package when it exists; it is not a third verb
-  here.
+  programme). It is anticipated future work, not a third verb on this API.
 - **`care` and `meta`.** Rules 2(a) and 2(b) are in colregs'
   `represented_paragraphs` registry precisely so nothing computes them.
 - **The Rule 2 region solver** (R0/R1/R2) and the status alphabet's semantics.
