@@ -6,9 +6,12 @@ predicate-level check for [issue #6](https://github.com/mark-brannan/colregs-eng
 
 Status ladder: **candidate** (found by the harness, unreviewed) ->
 **agent-verified** (a second agent pass confirmed it's real and not a
-harness bug) -> **human-reviewed** (a person triaged it: data bug, genuine
-ambiguity, or engine bug) -> **landed** (fixed as a fixture, an ADR, or a
-requirement change).
+harness bug) -> **triaged** (an agent classified it and wrote the reason,
+including "harness false positive"; a person has not yet ruled) ->
+**human-reviewed** (a person ruled: data bug, genuine ambiguity, engine
+bug, or harness bug) -> **landed** (fixed as a fixture, an ADR, or a
+requirement change). A finding may skip agent-verified and go straight to
+triaged when the agent's read is that the harness, not the data, is wrong.
 
 Agents never edit colregs normatively; these are candidates for a human to
 triage, not fixes.
@@ -23,6 +26,6 @@ overwrites.
 
 | id | check | records | description | cites | status | triage note |
 |---|---|---|---|---|---|---|
-| FIND-01 | consistency-conflicting-shall | 114048 | entries 26b-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(b)(i); 30(a) | agent-verified | Harness false positive: the check reads the pre-exclusion result.applied; evaluate() does suppress 30a via rel:excludes. |
-| FIND-02 | consistency-conflicting-shall | 114048 | entries 26c-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(c)(i); 30(a) | agent-verified | Same mechanism as FIND-01. |
-| FIND-03 | consistency-no-obligation | 190080 | record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:moored | - | human-reviewed | Correct gap: position:moored is Rule 3(i)'s shore-fast case, which prescribes no lights; see issue #24. |
+| FIND-01 | consistency-conflicting-shall | 114048 | entries 26b-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(b)(i); 30(a) | human-reviewed | Mark ruled 2026-09-07: rel:excludes means pick-one (as 25(b)/25(c)), so two 'shall' entries excluding each other is a data error and this check is right to fire. Fishing-over-anchor (26(a)) moves to rel:overrides; trawling + anchored is an impossible fact pair, to be declared at the facts level, not as a rule relation. Data change pending in colregs. |
+| FIND-02 | consistency-conflicting-shall | 114048 | entries 26c-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(c)(i); 30(a) | human-reviewed | Same ruling as consistency-conflicting-shall::26b-id,30a; the fishing (26(c)) + anchored case is the real one, resolved by rel:overrides. |
+| FIND-03 | consistency-no-obligation | 190080 | record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:moored | - | human-reviewed | Mark ruled 2026-09-07: keep position:moored as one value; add a boolean modifier fact:on_mooring_buoy that refines it, the way fact:making_way refines position:underway. Alongside (Rule 3(i)'s made-fast-to-shore) prescribes no lights, so this gap is correct; the buoy case gets the anchor lights under the jurisdiction that says so (US 33 CFR 90.5). Data change pending in colregs; see issue #24. |

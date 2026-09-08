@@ -1,14 +1,14 @@
 {
   "consistency-conflicting-shall::26b-id,30a": {
-    "status": "agent-verified",
-    "note": "Harness false positive: the check reads the pre-exclusion result.applied; evaluate() does suppress 30a via rel:excludes."
+    "status": "human-reviewed",
+    "note": "Mark ruled 2026-09-07: rel:excludes means pick-one (as 25(b)/25(c)), so two 'shall' entries excluding each other is a data error and this check is right to fire. Fishing-over-anchor (26(a)) moves to rel:overrides; trawling + anchored is an impossible fact pair, to be declared at the facts level, not as a rule relation. Data change pending in colregs."
   },
   "consistency-conflicting-shall::26c-id,30a": {
-    "status": "agent-verified",
-    "note": "Same mechanism as FIND-01."
+    "status": "human-reviewed",
+    "note": "Same ruling as consistency-conflicting-shall::26b-id,30a; the fishing (26(c)) + anchored case is the real one, resolved by rel:overrides."
   },
   "consistency-no-obligation::position:moored": {
     "status": "human-reviewed",
-    "note": "Correct gap: position:moored is Rule 3(i)'s shore-fast case, which prescribes no lights; see issue #24."
+    "note": "Mark ruled 2026-09-07: keep position:moored as one value; add a boolean modifier fact:on_mooring_buoy that refines it, the way fact:making_way refines position:underway. Alongside (Rule 3(i)'s made-fast-to-shore) prescribes no lights, so this gap is correct; the buoy case gets the anchor lights under the jurisdiction that says so (US 33 CFR 90.5). Data change pending in colregs; see issue #24."
   }
 }
