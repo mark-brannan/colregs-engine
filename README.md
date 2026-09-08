@@ -95,8 +95,8 @@ the same terms.
 this case: one vessel's facts in, her signals out, lights and day shapes
 together. It is the first of four verbs, one per input: `evaluateDisplay`
 (built), `evaluateEncounter` over a two-vessel situation (next),
-`evaluateConduct` over a trace, `evaluateRegion` under a kinematic model.
-[ADR 0001](docs/adr/0001-api-shape.md) has the first two, [ADR 0002](docs/adr/0002-trace-and-region-api.md) the rest.
+`evaluateConduct` over a trace, `evaluateRule2Departure` under a kinematic model.
+[ADR 0001](docs/adr/0001-api-shape.md) has the first two, [ADR 0002](docs/adr/0002-trace-and-rule2-departure-api.md) the rest.
 
 `evaluateDisplay` reads applicability data from the colregs release this
 package resolves; pass `opts.data` to override — the conformance harness

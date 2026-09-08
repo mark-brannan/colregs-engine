@@ -122,13 +122,14 @@ ADR 0002.
 - **`conduct`.** Rules 8, 13(a)'s action, 14(a), 16, 17: what a vessel shall
   *do*. Their predicates read a trace — 8(b)'s "readily apparent" alteration,
   17(a)(ii)'s "as soon as it becomes apparent" — and colregs declares
-  `kin:rot_deg_min` as read "by a conduct monitor rather than by a predicate at
+  `kin:rot_deg_min` as read "by a conduct monitor, not by a predicate at
   a point". A different input (a sequence of situations) and a different tool
   (STL/TLA+), so a different verb: `evaluateConduct`, ADR 0002.
 - **`care` and `meta`.** Rules 2(a) and 2(b) are in colregs'
   `represented_paragraphs` registry precisely so nothing computes them.
-- **The Rule 2 region solver** (R0/R1/R2). Research under `research/`; its
-  runtime face is `evaluateRegion`, ADR 0002.
+- **The Rule 2 region solver** (R0/R1/R2, research-ontology labels, not API).
+  Research under `research/`; its runtime face is `evaluateRule2Departure`,
+  ADR 0002.
 - **Time.** Freshness, hysteresis and the 13(d) latch's clock are the caller's
   (searoom's switching plugin). The engine receives `hist:*` as facts; it does
   not maintain them.
