@@ -136,8 +136,8 @@ defaults to the colregs release this package resolves and a grid has no
 default. It is opaque: the solver's parameters (dynamics classes, horizon,
 cadence, separation, information, adversary) are Q-17 to Q-22, open until the
 sensitivity matrix, and a field set naming them would fix here what the matrix
-is meant to settle; they live inside the artefact, named by `version`.
-`colregs` is the release the grid was solved against; the finding carries it
+is meant to settle; they live inside the artefact, and `version` names one
+grid, immutably. `colregs` is the release solved against; the finding carries it
 beside `obligations.colregs.version`, and a mismatch is reported, not refused.
 Beyond that the shape follows proposal v4 §4 and adds nothing. Three of the
 four statuses name a region — `not-flagged` R0,
