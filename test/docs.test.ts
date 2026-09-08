@@ -70,7 +70,7 @@ function generatedFiles(): Set<string> {
 }
 
 const generated = generatedFiles();
-const handWrittenMd = ['README.md', ...docsMd, ...researchReadmes.filter((f) => !generated.has(f))];
+const handWrittenMd = ['README.md', 'AGENTS.md', ...docsMd, ...researchReadmes.filter((f) => !generated.has(f))];
 
 // Leading comment block of a TS file: consecutive `//` lines, or one `/* */`.
 function headerComment(text: string): string[] {
