@@ -4,8 +4,8 @@
 //
 // Then, against the real theory under Z3: a differential check on random
 // records (the encoding's truth value must equal `predicateMatches`), the
-// modality layer against `resolveModality`, and the three recorded findings
-// as positive controls. String assertions pin the shape; Z3 pins the meaning.
+// modality layer against `resolveModality`, and the recorded findings as
+// positive controls. String assertions pin the shape; Z3 pins the meaning.
 
 import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json' with { type: 'json' };
@@ -204,19 +204,27 @@ function finding(id: string): string {
   return fileURLToPath(new URL(`../research/conformance/findings/${id}.json`, import.meta.url));
 }
 
-/** `(assert ...)` lines fixing every declared axis to the record's value. */
+/** `(assert ...)` lines fixing every declared axis to the record's value. A
+ * modifier axis (`BooleanAxis.refines`) is legitimately absent from a real
+ * record outside the fact space it refines (research/conformance/enumerate.ts)
+ * -- left unconstrained here, since the z3 theory declares it total (encode.ts
+ * header, point 2) and no pinned predicate reads it off that refinement.
+ * Anything else missing is a real bug in the caller's record. */
 function pinRecord(realAxes: Axis[], facts: FactRecord): string[] {
   const rec = facts as Record<string, FactValue | undefined>;
-  return realAxes.map((a) => {
+  return realAxes.flatMap((a) => {
     const v = rec[a.key];
-    if (v === undefined) throw new Error(`record has no value for axis ${a.key}`);
+    if (v === undefined) {
+      if (a.kind === 'boolean' && a.refines) return [];
+      throw new Error(`record has no value for axis ${a.key}`);
+    }
     switch (a.kind) {
       case 'boolean':
-        return `(assert (= ${sym(a.key)} ${v}))`;
+        return [`(assert (= ${sym(a.key)} ${v}))`];
       case 'numeric':
-        return `(assert (= ${sym(a.key)} ${Number.isInteger(v) ? `${v}.0` : v}))`;
+        return [`(assert (= ${sym(a.key)} ${Number.isInteger(v) ? `${v}.0` : v}))`];
       case 'enum':
-        return `(assert (= ${sym(a.key)} ${a.values.indexOf(v as string)}))`;
+        return [`(assert (= ${sym(a.key)} ${a.values.indexOf(v as string)}))`];
     }
   });
 }

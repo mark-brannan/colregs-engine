@@ -32,7 +32,6 @@
       "triaged": false,
       "observed_on": "2026-09-06",
       "observed_by": "npm run conformance, check consistency-no-obligation",
-      "finding": "FIND-03",
       "would_settle": "A maintainer's decision on whether position:moored is inside the scope of the lights table at all. Rule 30 names vessels at anchor and aground; facts.json declares position:moored as a value. Either the fact vocabulary is wider than the table intends, or the table is missing a case."
     },
     "NO-OBLIGATION/not-moored": {

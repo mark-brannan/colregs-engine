@@ -33,6 +33,12 @@ export interface BooleanAxis {
   kind: 'boolean';
   key: FactKey;
   values: readonly [true, false];
+  /** Set when facts.json declares this a modifier that `refines` another
+   * axis (e.g. `fact:making_way` refines `fact:position=position:underway`).
+   * The record only carries this key when the refined axis holds that
+   * value; elsewhere the fact is absent, not `false` — see
+   * `enumerateRecords`. */
+  refines?: { key: FactKey; value: string };
 }
 
 export interface NumericAxis {
@@ -50,7 +56,7 @@ export type Axis = EnumAxis | BooleanAxis | NumericAxis;
 type FactSpec =
   | { kind: 'enum'; values: readonly string[] }
   | { kind: 'number' }
-  | { kind: 'boolean' }
+  | { kind: 'boolean'; refines?: { key: string; value: string } }
   | { kind: 'string' };
 
 const SPEC: Record<string, FactSpec | undefined> = FACT_SPEC;
@@ -181,9 +187,13 @@ export function extractAxes(data: ApplicabilityData): ExtractResult {
         axes.push({ kind: 'enum', key: factKey, values: spec.values });
         break;
       }
-      case 'boolean':
-        axes.push({ kind: 'boolean', key: factKey, values: [true, false] });
+      case 'boolean': {
+        const refines = spec.refines
+          ? { key: spec.refines.key as FactKey, value: spec.refines.value }
+          : undefined;
+        axes.push({ kind: 'boolean', key: factKey, values: [true, false], refines });
         break;
+      }
       case 'number': {
         const constants = [...(numericConstants.get(key) ?? new Set<number>())];
         axes.push({
@@ -204,32 +214,86 @@ export function extractAxes(data: ApplicabilityData): ExtractResult {
   return { axes, undeclaredEnumValues };
 }
 
+/**
+ * An upper bound on the enumeration, not the exact count: a refining
+ * modifier axis (`BooleanAxis.refines`) contributes its full 2 values here,
+ * but `enumerateRecords` below only emits both when the refined axis holds
+ * the refining value — one record, not two, everywhere else. The true count
+ * is `n` in run.ts's pass, which counts what was actually yielded.
+ */
 export function totalRecords(axes: Axis[]): number {
   return axes.reduce((acc, a) => acc * a.values.length, 1);
 }
 
+/** A boolean axis whose refinement is declared: narrows `refines` from
+ * optional to present, so callers don't re-check it. */
+type ModifierAxis = BooleanAxis & { refines: NonNullable<BooleanAxis['refines']> };
+
+function isModifierAxis(a: Axis): a is ModifierAxis {
+  return a.kind === 'boolean' && a.refines !== undefined;
+}
+
+/** `axes`, split into the cartesian-product axes and the modifier axes that
+ * ride along with them (present only where their refinement holds). A
+ * modifier axis is never itself a base axis: iterating it unconditionally
+ * is exactly the bug this split avoids. */
+function splitAxes(axes: Axis[]): { baseAxes: Axis[]; modifierAxes: ModifierAxis[] } {
+  const modifierAxes = axes.filter(isModifierAxis);
+  const modifierKeys = new Set<FactKey>(modifierAxes.map((a) => a.key));
+  const baseAxes = axes.filter((a) => !modifierKeys.has(a.key));
+  return { baseAxes, modifierAxes };
+}
+
+/** Expands one base record over the modifier axes: a record gets a
+ * modifier's key at all only where the refined axis already holds that
+ * modifier's refining value, and then one record per modifier value there
+ * (not one per modifier value everywhere, which would duplicate every
+ * record the refinement doesn't apply to). */
+function* expandModifiers(
+  base: Partial<Record<FactKey, FactValue>>,
+  modifierAxes: ModifierAxis[],
+  i: number,
+): Generator<FactRecord> {
+  if (i === modifierAxes.length) {
+    yield { ...base } as FactRecord;
+    return;
+  }
+  const axis = modifierAxes[i];
+  if (base[axis.refines.key] === axis.refines.value) {
+    for (const v of axis.values) {
+      yield* expandModifiers({ ...base, [axis.key]: v }, modifierAxes, i + 1);
+    }
+  } else {
+    yield* expandModifiers(base, modifierAxes, i + 1);
+  }
+}
+
 /**
- * Streams one FactRecord per point in the cartesian product, in mixed-radix
- * order over `axes`. Facts for axes not in the list are simply absent.
- * O(1) memory beyond the current record.
+ * Streams one FactRecord per point in the cartesian product of the base
+ * axes, in mixed-radix order, each expanded over the modifier axes it
+ * refines (see `expandModifiers`). Facts for axes not in the list, and a
+ * modifier fact wherever its refinement doesn't hold, are simply absent —
+ * never `false`. O(1) memory beyond the current record and one stack frame
+ * per modifier axis.
  */
 export function* enumerateRecords(axes: Axis[]): Generator<FactRecord> {
-  const total = totalRecords(axes);
-  const sizes = axes.map((a) => a.values.length);
+  const { baseAxes, modifierAxes } = splitAxes(axes);
+  const sizes = baseAxes.map((a) => a.values.length);
+  const total = sizes.reduce((acc, s) => acc * s, 1);
   for (let idx = 0; idx < total; idx++) {
     let rem = idx;
     // Built homogeneously, then narrowed. FactRecord is a mapped type whose
     // value type depends on the key, so a key chosen at runtime can't index
     // it for assignment; every value here comes from FACT_SPEC, which is
     // what makes the narrowing honest (and evaluate() re-checks it anyway).
-    const record: Partial<Record<FactKey, FactValue>> = {};
-    for (let i = 0; i < axes.length; i++) {
+    const base: Partial<Record<FactKey, FactValue>> = {};
+    for (let i = 0; i < baseAxes.length; i++) {
       const size = sizes[i];
       const digit = rem % size;
       rem = Math.floor(rem / size);
-      record[axes[i].key] = axes[i].values[digit] as FactValue;
+      base[baseAxes[i].key] = baseAxes[i].values[digit] as FactValue;
     }
-    yield record as FactRecord;
+    yield* expandModifiers(base, modifierAxes, 0);
   }
 }
 
