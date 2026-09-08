@@ -119,14 +119,14 @@ paragraph reads belongs in colregs; one only the solver reads, inside the grid.
 
 ```ts
 /** Loaded, never authored: a grid the solver produced offline, parameters inside. */
-interface Rule2DepartureModel { version: string; colregs: string; grid: unknown; }
+interface Rule2DepartureModel { version: string; colregs_version: string; grid: unknown; }
 interface Rule2DepartureFinding {
   status: 'not-flagged' | 'model-rule-conflict'
         | 'no-robust-policy-in-model' | 'inconclusive-in-model';
   banner?: { cite: string };
   obligations: EncounterEvaluation;
   advisories: Advisory[];
-  model: { version: string; colregs: string; assumptions_violated: string[] };
+  model: { version: string; colregs_version: string; assumptions_violated: string[] };
 }
 interface Advisory { action: unknown; margin_m: number; breaches: string[]; envelope: unknown; }
 ```
@@ -137,8 +137,8 @@ default. It is opaque: the solver's parameters (dynamics classes, horizon,
 cadence, separation, information, adversary) are Q-17 to Q-22, open until the
 sensitivity matrix, and a field set naming them would fix here what the matrix
 is meant to settle; they live inside the artefact, and `version` names one
-grid, immutably. `colregs` is the release solved against; the finding carries it
-beside `obligations.colregs.version`, and a mismatch is reported, not refused.
+grid, immutably. `colregs_version` is the release solved against; the finding
+carries it beside `obligations.colregs.version`; a mismatch is reported, not refused.
 Beyond that the shape follows proposal v4 §4 and adds nothing. Three of the
 four statuses name a region — `not-flagged` R0,
 `model-rule-conflict` R1, `no-robust-policy-in-model` R2 — and
@@ -194,7 +194,7 @@ counterexample trace becomes a fixture; a certified grid, a `Rule2DepartureModel
 | `hist:was_overtaking` a caller-supplied snapshot fact, never engine-derived | ✎ | Q-47; the first conduct monitor |
 | `ConductVerdict` alphabet `kept`/`breached`/`pending`; absent is absent | ✎ | the first STL monitor being written |
 | Phase values are paragraph cites, not entry ids | ✎ | the phase-4 TLA+ or UPPAAL model |
-| Vague-quantity constants live in colregs; solver parameters inside an opaque `Rule2DepartureModel`, `colregs` naming the release solved against | ✎ | the first constant a conduct entry reads; the first grid |
+| Vague-quantity constants live in colregs; solver parameters inside an opaque `Rule2DepartureModel`, `colregs_version` naming the release solved against | ✎ | the first constant a conduct entry reads; the first grid |
 | `Rule2DepartureFinding` field set; the status alphabet is colregs' (ADR 0005 §5), not this package's to rename | ✎ | proposal v4 §4's sensitivity matrix; Q-19, Q-20 |
 | No *situation* input names a departure; the grid does, and is named in every finding | ✎ | — |
 | Nothing exported until a fixture backs it | ✎ | — |
