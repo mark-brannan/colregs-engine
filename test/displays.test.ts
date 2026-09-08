@@ -365,6 +365,25 @@ describe('rel:overrides', () => {
     expect(result.overridden).toEqual([]);
   });
 
+  it('an overridden exempt entry does not exempt its own targets', () => {
+    const data = cloneData();
+    // A synthetic obligation overrides 30(e) itself (the exempt entry that
+    // would otherwise exempt 30a/30b at <7m, not-near-channel). Overriding
+    // the exemption source must let 30a/30b re-emerge, not leave them
+    // exempted-away by a source that never fired.
+    const e30e = findEntry(data, '30e');
+    const overrider = findEntry(data, '26c-id');
+    delete overrider['rel:excludes'];
+    overrider['rel:overrides'] = [e30e.id];
+    const facts = anchoredFishing(6, { 'fact:near_channel': false });
+    const result = evaluateDisplay(facts, { data });
+    expect(result.overridden).toEqual([{ id: e30e.id, by: '26c-id' }]);
+    expect(result.exempted).toEqual([]);
+    const allEntries = result.displays.flatMap((d) => d.entries);
+    expect(allEntries).toContain('30a');
+    expect(allEntries).toContain('30b');
+  });
+
   it('is dormant on the pinned release: rel:excludes still fires, rel:overrides does not', () => {
     const result = evaluateDisplay({
       'fact:propulsion': 'propulsion:power',
