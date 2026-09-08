@@ -243,8 +243,8 @@ function isDisplay(e: Entry): boolean {
 // truth this engine is diffed against, doesn't filter by it either. So
 // `jurisdiction` is deliberately left unread here for now: a caller whose
 // facts happen to match 30a-buoy/30b-buoy's predicate gets those lights
-// regardless of jurisdiction, same as before this field existed. Tracked
-// as a real, open gap (see the PR description), not a decision.
+// regardless of jurisdiction, same as before this field existed. No
+// jurisdiction parameter exists yet -- open gap, not a decision.
 /** The predicate layer alone: entries whose `when` matches, without the
  * relation/display composition that follows. Factored out of `evaluate` so
  * a caller can inspect just this layer's result. */

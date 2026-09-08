@@ -16,14 +16,14 @@
       "triaged": true,
       "observed_on": "2026-09-06",
       "observed_by": "npm run conformance, check consistency-conflicting-shall",
-      "would_settle": "Retired: colregs@0.2.2 answered this by changing 26b-id's relation to 30a from rel:excludes to rel:overrides (FIND-01's ruling). excludingPairs() no longer pairs them, so buildQueries() no longer produces this id at all -- kept here only as the historical record of the finding this settled, not as a live query. See findings/FIND-01.json."
+      "would_settle": "Retired: colregs@0.2.2 answered this by changing 26b-id's relation to 30a from rel:excludes to rel:overrides. excludingPairs() no longer pairs them, so buildQueries() no longer produces this id at all -- kept here only as the historical record of the finding this settled, not as a live query."
     },
     "CONFLICT/26c-id+30a": {
       "expect": "sat",
       "triaged": true,
       "observed_on": "2026-09-06",
       "observed_by": "npm run conformance, check consistency-conflicting-shall",
-      "would_settle": "Retired, same ruling as CONFLICT/26b-id+30a (FIND-02). See findings/FIND-02.json."
+      "would_settle": "Retired, same ruling as CONFLICT/26b-id+30a: 26c-id's relation to 30a changed from rel:excludes to rel:overrides in colregs@0.2.2."
     },
     "NO-OBLIGATION/any": {
       "expect": "sat",
