@@ -40,8 +40,8 @@ offline or runtime (Q-22), the conduct effect shape, a trace fixture schema.
 The two new verbs live **in this package**, superseding ADR 0001's pencilled
 "separate package": a function of a trace and a lookup in a precomputed grid are
 both pure and total, under the same validator, `opts.data` and `colregs.version`
-provenance. What is *not* pure — the solver that builds the grid, the model
-checker hunting counterexample traces — stays in `research/`.
+provenance. What is *not* pure — the solver, the model checker — stays in
+`research/`.
 
 ### 2. `Trace` — the input `conduct` reads
 
@@ -62,11 +62,10 @@ samples and not others. It cannot see identity (a `Situation` names no vessel):
 the pair staying the same is the caller's, like the latch; purity is over
 well-formed input.
 
-`hist:was_overtaking` is a present-tense snapshot fact the caller supplies and
-clears, not history the engine derives: the caller sets it when 13(b)'s sector
-held at an earlier sample, because "finally past and clear" is a seamanship
-judgement colregs declines to threshold (Q-47). A windowed trace cannot see a
-latch set before it — ADR 0001 §5's "time is the caller's" holds.
+`hist:was_overtaking` is a snapshot fact the caller supplies and clears, not
+history the engine derives: set when 13(b)'s sector held at an earlier sample,
+because "finally past and clear" is a judgement colregs declines to threshold
+(Q-47). A windowed trace cannot see a latch set before it; time is the caller's.
 
 ### 3. `ConductEvaluation` — verdicts over the window
 
@@ -74,17 +73,17 @@ latch set before it — ADR 0001 §5's "time is the caller's" holds.
 interface ConductEvaluation {
   colregs: { version: string; source: 'resolved' | 'caller' };
   window: { from_s: number; to_s: number; samples: number };
-  applied: string[];
+  applied: EntryId[];
   verdicts: ConductVerdict[];
   phases: ConductPhaseChange[];
 }
 interface ConductVerdict {
-  id: string; subject: 'own' | 'other';
+  id: EntryId; subject: 'own' | 'other';
   verdict: 'kept' | 'breached' | 'pending';
   attached_at_s?: number; decided_at_s?: number;
   robustness?: { value: number; unit: string };
 }
-interface ConductPhaseChange { subject: 'own' | 'other'; phase: string; at_s: number; }
+interface ConductPhaseChange { subject: 'own' | 'other'; phase: ParagraphCite; at_s: number; }
 ```
 
 - One **verdict** per applied conduct entry per subject it attached to; an
@@ -96,8 +95,9 @@ interface ConductPhaseChange { subject: 'own' | 'other'; phase: string; at_s: nu
   `Trace`, is runtime-verification vocabulary: the STL margin the monitor
   computes, value and unit, so a near miss and a wide pass do not look alike.
 - A **phase** is the Rule 13(d)/17 protocol state: the latch, the stand-on
-  vessel passing from 17(a)(i) to 17(a)(ii) to 17(b). `phase` is a paragraph
-  cite, never an entry id (several have no entry), naming the state machine
+  vessel passing from 17(a)(i) to 17(a)(ii) to 17(b). `phase` is a
+  `ParagraphCite`, never an `EntryId` — ADR 0001 §4's aliases, used throughout
+  here, and several phases have no entry — naming the state machine
   programme phase 4's TLA+ or UPPAAL model checks; the monitor refines it.
 - `applied` and the companion `appliedConductEntries(trace)` keep the fixture
   contract; per-sample encounter evaluations are not returned — call `evaluateEncounter`.
@@ -127,7 +127,7 @@ interface Rule2DepartureFinding {
 }
 interface Rule2DepartureAdvisory {
   action: { alter_deg?: number; sog_kn?: number }; margin_m: number;
-  breaches: string[]; envelope: { holds_until_s: number };
+  breaches: ParagraphCite[]; envelope: { holds_until_s: number };
 }
 ```
 
@@ -147,8 +147,8 @@ rule-derived obligations sit in `rules` unchanged, so the reader sees what the
 Rules said; R1's advisories are ranked best margin first, each with the
 paragraphs it breaks; R2's list is empty; `assumptions_violated` is display
 text, never matched on. `not-flagged` means not flagged by this model, never
-"the rules suffice". `breaches` carries paragraph cites (`17(c)`), as `phase`
-does, never entry ids: a `breaches` entry against a shall-if-practicable
+"the rules suffice". `breaches` carries `ParagraphCite`s (`17(c)`), as
+`phase` does, never entry ids: a `breaches` entry against a shall-if-practicable
 paragraph is the model's verdict and not the Rules' — the compliance predicate's
 rule for those, and for 17(a)(ii)'s `may`, is open and carded.
 
@@ -167,9 +167,8 @@ Disclaimers live in the README and licence, not here.
 | trace | `evaluateConduct` | STL monitors *are* the verdict function; TLA+/UPPAAL for the 13(d)/17 phase machine |
 | Rule 2 departure | `evaluateRule2Departure` | the game solver, offline; the artefact checked in, its parameters on the model |
 
-The tools do not move into `src/`. What moves is their *output*: a
-counterexample trace becomes a fixture; a certified grid, a
-`Rule2DepartureModel`.
+The tools do not move into `src/`. What moves is their *output*: a counterexample
+trace becomes a fixture; a certified grid, a `Rule2DepartureModel`.
 
 ## Consequences
 
@@ -193,6 +192,7 @@ counterexample trace becomes a fixture; a certified grid, a
 | `Trace` an object over `TraceSample[]`, `t_s` on the caller's clock, pair identity the caller's | ✎ | the first trace fixture |
 | `hist:was_overtaking` a caller-supplied snapshot fact, never engine-derived | ✎ | Q-47; the first conduct monitor |
 | `ConductVerdict` alphabet `kept`/`breached`/`pending`; absent is absent | ✎ | the first STL monitor being written |
+| Field names snake_case with unit suffixes; `EntryId`/`ParagraphCite` per ADR 0001 §4 | ✎ | that ADR's row; the compiler enforces neither |
 | `ConductPhaseChange.phase` values are paragraph cites, not entry ids | ✎ | the programme phase-4 TLA+ or UPPAAL model |
 | Vague-quantity constants live in colregs; `SolverParameters` on the model and echoed on the finding, `colregs_version` naming the release solved against; nothing else on the model is API | ✎ | the first constant a conduct entry reads; Q-19's sensitivity matrix |
 | `Rule2DepartureFinding` field set — `rules`, `Rule2DepartureAdvisory[]`, no banner cite (it is a function of `status`); the status alphabet is colregs' (ADR 0005 §5), not this package's to rename | ✎ | proposal v4 §4's sensitivity matrix; Q-19, Q-20 |
