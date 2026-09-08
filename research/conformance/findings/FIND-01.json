@@ -6,7 +6,7 @@
     "26(b)(i)",
     "30(a)"
   ],
-  "records": 114048,
+  "records": 57024,
   "status": "human-reviewed",
   "note": "2026-09-07: rel:excludes means pick-one (25(b)/25(c)); two 'shall' entries excluding each other is a data error, the check is right to fire. Fishing-over-anchor (26(a)) moves to rel:overrides; trawling + anchored is an impossible fact pair, declared at facts level. Data change pending in colregs.",
   "facts": {
@@ -14,7 +14,6 @@
     "fact:composite_unit": true,
     "fact:gear_extent_m": 149,
     "fact:length_m": 6,
-    "fact:making_way": true,
     "fact:max_speed_kn": 6,
     "fact:near_channel": true,
     "fact:non_displacement": true,

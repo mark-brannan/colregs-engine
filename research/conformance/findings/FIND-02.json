@@ -6,7 +6,7 @@
     "26(c)(i)",
     "30(a)"
   ],
-  "records": 114048,
+  "records": 57024,
   "status": "human-reviewed",
   "note": "Same ruling as consistency-conflicting-shall::26b-id,30a; the fishing (26(c)) + anchored case is the real one, resolved by rel:overrides.",
   "facts": {
@@ -14,7 +14,6 @@
     "fact:composite_unit": true,
     "fact:gear_extent_m": 149,
     "fact:length_m": 6,
-    "fact:making_way": true,
     "fact:max_speed_kn": 6,
     "fact:near_channel": true,
     "fact:non_displacement": true,

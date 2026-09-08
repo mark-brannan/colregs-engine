@@ -2,7 +2,8 @@
 
 ✎ **Pencil.** A proof of concept for
 [issue #1](https://github.com/mark-brannan/colregs-engine/issues/1) item
-P2.1. Nothing here has been triaged.
+P2.1. One query is triaged (`research/z3/expectations.json`); the rest are
+not.
 
 ```
 npm run z3                 # 56 queries, under a second
@@ -11,7 +12,7 @@ npm run z3 -- --verbose    # plus the decoded witness for every sat
 
 `npm test` covers the encoding (test/z3-encoding.test.ts: literal
 predicates, the modality layer, a differential check against the engine, and
-the three findings as positive controls). The harness itself is not in
+the recorded findings as positive controls). The harness itself is not in
 `npm test` and not in CI. z3-solver 4.15.3, pinned exactly, WebAssembly
 build; no system z3 needed.
 
@@ -56,9 +57,10 @@ the pinned colregs. Plain SMT-LIB 2; any other solver takes it unchanged.
 ## expectations.json
 
 Pencil. Query id → the answer the enumeration observed, the date, the run,
-`triaged: false`, a `finding` pointer into `research/conformance/findings/`,
-and `would_settle`, naming what a maintainer would have to decide. Code
-reads the file; revising a ruling is a data edit.
+whether a maintainer has ruled (`triaged`), an optional `finding` pointer
+into `research/conformance/findings/`, and `would_settle` — what remains to
+decide, or the ruling itself once `triaged` flips to `true`. Code reads the
+file; revising a ruling is a data edit.
 
 ## Files
 

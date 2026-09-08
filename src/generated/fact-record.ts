@@ -15,7 +15,7 @@ export const FACT_SPEC = {
   'fact:propulsion': { kind: 'enum', values: ['propulsion:power', 'propulsion:sail', 'propulsion:oars'] },
   'fact:activity': { kind: 'enum', values: ['activity:none', 'activity:fishing', 'activity:trawling', 'activity:towing', 'activity:pushing', 'activity:being_towed', 'activity:nuc', 'activity:ram', 'activity:ram_underwater', 'activity:cbd', 'activity:mine', 'activity:pilot', 'activity:diving'] },
   'fact:position': { kind: 'enum', values: ['position:underway', 'position:anchored', 'position:aground', 'position:moored'] },
-  'fact:making_way': { kind: 'boolean' },
+  'fact:making_way': { kind: 'boolean', refines: { key: 'fact:position', value: 'position:underway' } },
   'fact:length_m': { kind: 'number' },
   'fact:tow_length_m': { kind: 'number' },
   'fact:max_speed_kn': { kind: 'number' },

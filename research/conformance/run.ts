@@ -172,6 +172,13 @@ function evaluatePredicateForCoverage(when: Entry['when'], facts: FactRecord): b
   return predicateMatches(when, facts);
 }
 
+// Positions where zero applied entries is the ruled-correct answer, not a
+// data gap, so consistency-no-obligation stays quiet for them: Rule 3(i)'s
+// made-fast-to-the-shore case ("moored") is prescribed no lights at all.
+// Still tallied in noObligationCount / noObligationPositions below, so the
+// summary line reports them; only the finding is skipped.
+const EXPECTED_EMPTY_POSITIONS = new Set<string>(['position:moored']);
+
 // ---------------------------------------------------------------------
 // Consistency bookkeeping
 // ---------------------------------------------------------------------
@@ -252,13 +259,15 @@ for (const facts of enumerateRecords(axes)) {
     noObligationCount++;
     const pos = String(facts['fact:position'] ?? '(absent)');
     noObligationPositions.set(pos, (noObligationPositions.get(pos) ?? 0) + 1);
-    record(
-      'consistency-no-obligation',
-      pos,
-      `record has zero applied lights entries and so no lawful display, for a vessel with fact:position = ${pos}`,
-      [],
-      facts,
-    );
+    if (!EXPECTED_EMPTY_POSITIONS.has(pos)) {
+      record(
+        'consistency-no-obligation',
+        pos,
+        `record has zero applied lights entries and so no lawful display, for a vessel with fact:position = ${pos}`,
+        [],
+        facts,
+      );
+    }
   }
 
   for (const [aId, bId] of excludingPairs) {

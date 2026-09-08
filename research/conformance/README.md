@@ -34,7 +34,8 @@ Each axis gets representatives:
 | boolean | `true`, `false` |
 | numeric | every constant a predicate compares against, plus one interior point per open interval — `2k+1` for `k` constants |
 
-That gives 5,930,496 records:
+The product of these representative counts is an upper bound of 5,930,496
+records:
 
 | axis | kind | representatives |
 |---|---|---|
@@ -56,6 +57,14 @@ That gives 5,930,496 records:
 `fact:length_m` has eleven representatives because the entries compare
 against five constants — 7, 12, 20, 50 and 100 m; the last is Rule 30(c),
 which is easy to forget when counting by hand.
+
+`fact:making_way` is declared in facts.json as a modifier that `refines`
+`fact:position=position:underway`, so it isn't a free axis: a record carries
+it only where `fact:position` is already `position:underway`, and leaves it
+absent (never `false`) everywhere else, which is what rules out incoherent
+records like `position:moored` + `making_way: true`. That brings the actual
+count to 3,706,560; the bound above is what `totalRecords()` reports, and
+the run's own "processed N records" line is the true count.
 
 Enumeration is a mixed-radix walk over the axis list, so a record is
 addressable by its index and the pass holds one record at a time.
@@ -100,8 +109,11 @@ This is the only check that can fail the build.
 **consistency** — (i) two applied entries that both resolve to `shall` where
 one `rel:excludes` the other: an obligation the data states twice and
 contradicts itself on. (ii) records where nothing applies at all, counted and
-broken down by `fact:position`. (iii) an applied entry whose modality resolves
-to `conditional` because no `modality_by` branch matched the record — printed
+broken down by `fact:position` — except a declared expected-empty set of
+positions (today just `position:moored`, Rule 3(i)'s made-fast-to-the-shore
+case, which the Rules prescribe no lights for), which are still tallied but
+raise no finding. (iii) an applied entry whose modality resolves to
+`conditional` because no `modality_by` branch matched the record — printed
 as `unresolved-conditional records`.
 
 **coverage** — entries that never apply anywhere in the space, `modality_by`

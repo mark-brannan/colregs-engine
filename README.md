@@ -149,7 +149,7 @@ before.
 
 0. Fixture replay: the package's `fixtures/applicability-fixtures.json`,
    verbatim. The least it should pass.
-1. Exhaustive conformance, in CI. `npm run conformance` walks all 5,930,496
+1. Exhaustive conformance, in CI. `npm run conformance` walks all 3,706,560
    records of the partitioned fact space and checks that engine output equals
    the set of entries whose conditions hold, against a second reading of the
    predicate semantics written independently of `src/`. The same run looks for
