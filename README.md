@@ -18,14 +18,13 @@ it as a package once it's published.
 
 ## Usage
 
-One call. Pass the colregs applicability data and a fact record describing
-one vessel at one moment; get back every complete lawful display.
+One call. Pass a fact record describing one vessel at one moment and get
+back every complete lawful display.
 
 ```ts
-import { evaluate } from 'colregs-engine';
-import applicability from 'colregs/data/applicability.json';
+import { evaluateDisplay } from 'colregs-engine';
 
-const result = evaluate(applicability, {
+const result = evaluateDisplay({
   'fact:propulsion': 'propulsion:sail',
   'fact:activity':   'activity:none',
   'fact:position':   'position:underway',
@@ -53,7 +52,7 @@ When one rule vetoes another, the result says who did it. A fishing vessel
 aground:
 
 ```ts
-evaluate(applicability, {
+evaluateDisplay({
   'fact:propulsion': 'propulsion:power',
   'fact:activity':   'activity:fishing',
   'fact:position':   'position:aground',
@@ -80,29 +79,40 @@ through a cast is rejected too:
 ```ts
 import type { FactRecord } from 'colregs-engine';
 
-evaluate(applicability, { propulsion: 'sail' } as unknown as FactRecord);
+evaluateDisplay({ propulsion: 'sail' } as unknown as FactRecord);
 // Error: unknown fact key 'propulsion'; did you mean 'fact:propulsion'? …
 ```
 
 That is a change of behaviour: such a record used to evaluate to one empty
 display, which is also the honest answer for a vessel that lawfully shows
-nothing. The two must not look alike. `appliedEntries(data, facts)` returns
+nothing. The two must not look alike. `appliedDisplayEntries(facts)` returns
 just the matching entry ids, without composing displays, and validates on
 the same terms.
 
-Every result carries `colregs.version`, the release of colregs resolved by
-this package at import time — an answer is a function of the data as much
-as of the facts. It names the engine's own dependency, not a stamp on the
-`data` argument: colregs' schema carries no version field, so nothing here
-can detect a caller who imports applicability data from somewhere other
-than the colregs release actually installed.
+## Why `display`, and the data behind it
 
-There are two entry points:
+`display` is colregs' own category name (ADR 0005, not yet settled) for
+this case: one vessel's facts in, her signals out, lights and day shapes
+together. `classification` and `precedence` read a *situation* instead — two
+vessels, a different input type — so they'll get their own entry points
+rather than wider fields on `DisplayEvaluation`; `conduct` is a trace, not a
+point evaluation, and isn't one of these at all.
 
-- `colregs-engine` — `evaluate`, `appliedEntries`, and the engine's own
-  output vocabulary: `Evaluation`, `Display`, `DisplayLight`, `FactRecord`,
-  `Modality`. This is what most consumers want, and it does not move when
-  colregs releases data.
+`evaluateDisplay` reads applicability data from the colregs release this
+package resolves; pass `opts.data` to override — the conformance harness
+injects synthetic tables, and other jurisdictions will arrive as separate
+files. Every result carries `colregs.version` and `colregs.source`:
+`'resolved'` means the version describes the data exactly, `'caller'` means
+you supplied it and the version only names what this package resolved —
+colregs' schema has no version field, so the two may disagree unnoticed.
+
+## Entry points
+
+- `colregs-engine` — `evaluateDisplay`, `appliedDisplayEntries`, and the
+  engine's own output vocabulary: `DisplayEvaluation`, `Display`,
+  `DisplayLight`, `FactRecord`, `Modality`. This is what most consumers
+  want, and it does not move when colregs releases data. `evaluate`,
+  `appliedEntries` and `Evaluation` still exist as deprecated aliases.
 - `colregs-engine/schema` — the colregs data shapes, generated from that
   package's JSON Schema: `Entry`, `Predicate`, `LightSpec`, `LightDef`,
   `ApplicabilityData` and the rest. Import these only if you read the data
@@ -122,8 +132,13 @@ which is what the next section is about.
   actually compare against (7, 12, 20, 50 and 100 m, plus the tow, gear and
   speed constants) and the whole fact space is around 5 × 10⁶ records. Minutes
   of CPU.
-- **No choosing.** Where several displays are lawful, all of them come back.
-  A function that picks one can't be checked against the data.
+- **Complete answers.** Where several displays are lawful, all of them come
+  back. The fact record describes a situation, not a fitted vessel: nothing
+  in it says whether a sloop carries a tricolour lantern, so nothing in it
+  could settle Rule 25(b) against 25(c). Narrowing the set would take a fact
+  the engine is not given. Composition itself is a different matter — the
+  engine makes seven judgment calls the data leaves open, each recorded in
+  [docs/engine-notes.md](docs/engine-notes.md).
 - **Traceable.** Every entry in an output cites the paragraph it came from.
 
 ## Verification

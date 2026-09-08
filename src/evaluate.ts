@@ -15,8 +15,8 @@ import type {
   Constraint,
   Display,
   DisplayLight,
+  DisplayEvaluation,
   Entry,
-  Evaluation,
   FactRecord,
   FactValue,
   Modality,
@@ -30,8 +30,25 @@ import { validateFacts } from './facts.js';
 // changed" without re-deriving which data was in play.
 import colregsPackage from 'colregs/package.json' with { type: 'json' };
 import factsData from 'colregs/data/facts.json' with { type: 'json' };
+import applicabilityData from 'colregs/data/applicability.json' with { type: 'json' };
 
 const COLREGS_VERSION: string = colregsPackage.version;
+
+// The applicability data this package resolves. Loading it here rather than
+// taking it as a required argument is what makes COLREGS_VERSION mean
+// something: a caller who passed data from a different release used to get a
+// stamp that quietly described the wrong thing. `opts.data` still overrides
+// it -- the conformance harness injects synthetic tables, and other
+// jurisdictions will arrive as separate files -- but an override is recorded
+// as `source: 'caller'` instead of being invisible.
+const RESOLVED_DATA = applicabilityData as unknown as ApplicabilityData;
+
+/** Options common to every evaluation entry point. */
+export interface EvaluateOptions {
+  /** Applicability data to evaluate against, instead of this package's own
+   * resolved colregs release. */
+  data?: ApplicabilityData;
+}
 
 // AXIS_FACTS: facts.json's mechanical signal for "situational classification
 // key" is structural, not prose. Every key under `axes` is a
@@ -224,27 +241,46 @@ function appliedEntryList(data: ApplicabilityData, facts: FactRecord): Entry[] {
 }
 
 /** Ids of the entries whose predicate matches `facts` — the same set
- * `evaluate(...).applied` returns, without running display composition.
- * Validates `facts` on the same terms evaluate() does. */
+ * `evaluateDisplay(...).applied` returns, without running display
+ * composition. Validates `facts` on the same terms evaluateDisplay() does. */
+export function appliedDisplayEntries(
+  facts: FactRecord,
+  opts: EvaluateOptions = {},
+): string[] {
+  validateFacts(facts);
+  return appliedEntryList(opts.data ?? RESOLVED_DATA, facts).map((e) => e.id);
+}
+
+/** @deprecated Renamed to {@link appliedDisplayEntries}, which resolves the
+ * applicability data itself and takes it as `opts.data` instead of a
+ * positional argument. Removed in a later 0.x. */
 export function appliedEntries(
   data: ApplicabilityData,
   facts: FactRecord,
 ): string[] {
-  validateFacts(facts);
-  return appliedEntryList(data, facts).map((e) => e.id);
+  return appliedDisplayEntries(facts, { data });
 }
 
 /**
- * Evaluates `facts` against `data`, returning every lawful display.
+ * Evaluates one vessel's `facts`, returning every lawful display.
  *
- * Throws if `facts` carries a key or value outside colregs' vocabulary: an
- * empty result must mean "this vessel shows nothing", never "you misspelt
- * something".
+ * `display` is colregs' own category (ADR 0005) for the one-vessel
+ * lights-and-shapes case: one fact record in, signals and modality out. The
+ * two-subject categories — `classification` and `precedence` — read a
+ * situation, not a fact record, so they will be separate entry points rather
+ * than a wider result here.
+ *
+ * Evaluates against this package's own colregs release unless `opts.data`
+ * says otherwise. Throws if `facts` carries a key or value outside colregs'
+ * vocabulary: an empty result must mean "this vessel shows nothing", never
+ * "you misspelt something".
  */
-export function evaluate(
-  data: ApplicabilityData,
+export function evaluateDisplay(
   facts: FactRecord,
-): Evaluation {
+  opts: EvaluateOptions = {},
+): DisplayEvaluation {
+  const data = opts.data ?? RESOLVED_DATA;
+  const source: 'resolved' | 'caller' = opts.data ? 'caller' : 'resolved';
   validateFacts(facts);
 
   const byId = new Map(data.entries.map((e) => [e.id, e]));
@@ -529,7 +565,7 @@ export function evaluate(
   }
 
   return {
-    colregs: { version: COLREGS_VERSION },
+    colregs: { version: COLREGS_VERSION, source },
     applied: applied.map((e) => e.id),
     exempted,
     excluded,
@@ -542,4 +578,14 @@ export function evaluate(
     })),
     modalities,
   };
+}
+
+/** @deprecated Renamed to {@link evaluateDisplay}, which resolves the
+ * applicability data itself and takes it as `opts.data` instead of a
+ * positional argument. Removed in a later 0.x. */
+export function evaluate(
+  data: ApplicabilityData,
+  facts: FactRecord,
+): DisplayEvaluation {
+  return evaluateDisplay(facts, { data });
 }

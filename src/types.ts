@@ -96,17 +96,22 @@ export interface Display {
   chosen: string[];
 }
 
-export interface Evaluation {
+export interface DisplayEvaluation {
   /**
-   * The colregs release resolved by this package, read at import time. An
-   * applicability answer is a function of the data as much as of the facts;
-   * without this, "the answer changed" cannot be told apart from "the data
-   * changed". Names the engine's own dependency, not a stamp on the `data`
-   * argument — colregs' schema carries no version field, so a caller who
-   * evaluates against applicability data from some other release goes
-   * undetected.
+   * The colregs release resolved by this package, read at import time, and
+   * where the data actually came from. An applicability answer is a function
+   * of the data as much as of the facts; without this, "the answer changed"
+   * cannot be told apart from "the data changed".
+   *
+   * `source: 'resolved'` means the data is this package's own colregs
+   * dependency and `version` describes it exactly. `source: 'caller'` means
+   * the caller supplied `opts.data`, and `version` then names only the
+   * release this package resolved — colregs' schema carries no version
+   * field, so nothing here can tell whether the two agree. The field says
+   * which of those two claims it is making rather than leaving them
+   * indistinguishable.
    */
-  colregs: { version: string };
+  colregs: { version: string; source: 'resolved' | 'caller' };
   /** Entries whose predicate matched, in data order (the fixture contract). */
   applied: string[];
   /** Applied entries relieved by a rel:exempts entry, with the exempting id. */
@@ -129,3 +134,8 @@ export interface Evaluation {
   /** Resolved modality per applied/imported entry id. */
   modalities: Record<string, Modality>;
 }
+
+/** @deprecated Renamed to {@link DisplayEvaluation} — `display` is colregs'
+ * own category name for the one-vessel lights-and-shapes case, and the
+ * two-subject cases return different shapes. Removed in a later 0.x. */
+export type Evaluation = DisplayEvaluation;
