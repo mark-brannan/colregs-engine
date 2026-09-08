@@ -64,7 +64,12 @@ jobs:
 
       - run: npm ci
       - run: npm run typecheck
+      # No prose-budget engine on this runner; ci.yml's dedicated
+      # prose-budget job is the gate for docs/budgets.json, so the local
+      # wrapper skips here too.
       - run: npm test
+        env:
+          PROSE_BUDGET_ALLOW_MISSING_ENGINE: 1
       - run: npm run conformance
 
       # No explicit `npm run build` step: this package ships dist/, not src/
