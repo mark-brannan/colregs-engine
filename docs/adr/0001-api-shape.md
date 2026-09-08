@@ -73,15 +73,10 @@ interface Subject { fact: FactRecord; kin?: Kinematics; geo?: DirectionalGeometr
 interface Pair    { geo?: PairGeometry; env?: Environment; }
 ```
 
-- `own` is required; `other` is not. colregs' own fixture schema
-  (`situation-fixtures.schema.json`, `colregs@0.2.0`) only requires `own` —
-  it is already the "first consumer that legitimately has one vessel and a
-  `pair`" the register named below, which settles that row: a single-vessel
-  scope entry (e.g. Rule 19) can be represented without a caller synthesizing
-  a dummy `other`. `Subject.fact` is required, matching `Vessel.fact`
-  upstream; every other class inside a subject stays optional, and every key
-  inside a class is optional — absent is absent, the same rule `FactRecord`
-  already follows.
+- `own` is required; `other`/`Subject.fact` follow colregs' own fixture schema
+  (`situation-fixtures.schema.json`, `0.2.0`) — `other` optional (Rule 19's
+  single-vessel scope needs no synthesized one), `fact` required. Every other
+  class, and every key inside a class, is optional — absent is absent.
 - Keys keep their full colregs identifier (`'kin:heading_deg'`, not
   `heading_deg`), as `FactRecord` keeps `'fact:length_m'`. A fixture's
   `situation` object is then assignable to `Situation` unedited.
@@ -120,11 +115,10 @@ part of this shape yet.
 
 ### 5. What this shape does not evaluate
 
-Scoped to `evaluateDisplay` and `evaluateEncounter` as defined here — not a
-ceiling on the package. `conduct` in particular is the most ambitious item
-on the formal-methods programme (kinematic/temporal evaluation over a
-trace); it stays out of *this* shape because it needs a different input and
-tool, not because it's out of scope forever.
+Scoped to `evaluateDisplay`/`evaluateEncounter` as defined here, not a ceiling
+on the package — `conduct` (kinematic/temporal evaluation over a trace) is
+out of *this* shape because it needs a different input and tool, not because
+it's excluded.
 
 - **`conduct`.** Rules 8, 13(a)'s action, 14(a), 16, 17: what a vessel shall
   *do*. Their predicates read a trace — 8(b)'s "readily apparent" alteration,
@@ -168,7 +162,7 @@ resolution, and validation of the situation record.
 | `FactRecord` keeps its name | ink | — |
 | `Situation` nested by subject and class, generated from `facts.json` | ink | — |
 | Verb name `evaluateEncounter`; result name `EncounterEvaluation` | ✎ | colregs renaming the `pair` subject or the `encounter` effect |
-| `own` required, `other` optional, `Subject.fact` required | ✎ | revised 2026-09-07 from "own/other both required": colregs' own `situation-fixtures.schema.json` (`0.2.0`, pinned here) only requires `own` — Mark to confirm before it goes to ink |
+| `own` required, `other`/`Subject.fact` per colregs 0.2.0's fixture schema | ✎ | revised 2026-09-07 from "own/other both required"; Mark to confirm before ink |
 | `appliedEncounterEntries` as the fixture-replay companion | ✎ | the situation-fixture replay being written |
 | `EncounterEvaluation` field set (§4) | ✎ | building it; Q-35, Q-36, Q-43 in colregs |
 | `encounter` absent vs the ADR 0005 §5 status alphabet | ✎ | Q-43 |
