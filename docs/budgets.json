@@ -12,14 +12,7 @@
   "prose": {
     "keys": ["note", "$note", "notes", "about", "narrative", "rationale", "why", "would_settle"],
     "maxChars": 300,
-    "grandfathered": [
-      "research/z3/expectations.json:$.about",
-      "research/z3/expectations.json:$.queries.CONFLICT/26b-id+30a.would_settle",
-      "research/conformance/findings/FIND-01.json:$.note",
-      "research/conformance/findings/FIND-03.json:$.note",
-      "research/conformance/findings/triage.json:$.consistency-conflicting-shall::26b-id,30a.note",
-      "research/conformance/findings/triage.json:$.consistency-no-obligation::position:moored.note"
-    ]
+    "grandfathered": ["research/z3/expectations.json:$.about", "research/z3/expectations.json:$.queries.CONFLICT/26b-id+30a.would_settle"]
   },
   "narration": {
     "patterns": [
