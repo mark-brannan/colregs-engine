@@ -1,0 +1,51 @@
+{
+  "lines": {
+    "README.md": 180,
+    "AGENTS.md": 29,
+    "docs/engine-notes.md": 110,
+    "docs/formal-methods-glossary.md": 190,
+    "docs/formal-methods-reading-list.md": 70,
+    "docs/normative-language.md": 130,
+    "research/conformance/README.md": 197,
+    "research/z3/README.md": 89
+  },
+  "prose": {
+    "keys": ["note", "$note", "notes", "about", "narrative", "rationale", "why", "would_settle"],
+    "maxChars": 300,
+    "grandfathered": ["research/z3/expectations.json:$.about", "research/z3/expectations.json:$.queries.CONFLICT/26b-id+30a.would_settle"]
+  },
+  "narration": {
+    "patterns": [
+      "\\bPR ?#?\\d+\\b",
+      "\\b(this|that|the) session\\b",
+      "\\bsplit out of\\b",
+      "\\bstacked on\\b"
+    ],
+    "headerPatterns": ["\\bP\\d\\.\\d\\b"],
+    "grandfathered": {
+      "research/z3/encode.ts": ["P2.1", "P1.3", "P3.1"],
+      "research/z3/queries.ts": ["P1.3"],
+      "research/z3/run.ts": ["P2.1", "P3.1"]
+    }
+  },
+  "voice": {
+    "words": [
+      "delve", "leverage", "seamless", "cutting-edge", "robust", "comprehensive",
+      "testament", "tapestry", "pivotal", "foster", "elevate", "unlock", "game-changer"
+    ],
+    "phrases": [
+      "it'?s worth noting",
+      "\\bnot just\\b[^.]*\\bbut\\b",
+      "(?:^|[.!?]\\s+)(?:Moreover|Additionally|Certainly)\\b"
+    ],
+    "allow": ["Foster/Gleirscher", "Foster, Gleirscher"],
+    "count": ["rather than"]
+  },
+  "headers": {
+    "maxLines": 25,
+    "grandfathered": {
+      "research/z3/encode.ts": 48,
+      "research/z3/run.ts": 27
+    }
+  }
+}
