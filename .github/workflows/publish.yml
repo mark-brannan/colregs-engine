@@ -69,7 +69,7 @@ jobs:
       # wrapper skips here too.
       - run: npm test
         env:
-          PROSE_BUDGET_SKIP: 1
+          PROSE_BUDGET_ALLOW_MISSING_ENGINE: 1
       - run: npm run conformance
 
       # No explicit `npm run build` step: this package ships dist/, not src/

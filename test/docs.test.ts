@@ -1,7 +1,7 @@
 // Runs the shared prose-budget engine (mark-brannan/dotfiles, .local/bin)
 // over the tree with docs/budgets.json. Engine lookup: $PROSE_BUDGET, then
 // PATH, then ~/.local/bin/prose-budget. A missing engine fails; set
-// PROSE_BUDGET_SKIP=1 to skip instead.
+// PROSE_BUDGET_ALLOW_MISSING_ENGINE=1 to skip instead.
 
 import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
@@ -15,11 +15,11 @@ const engine = [process.env.PROSE_BUDGET, 'prose-budget', join(homedir(), '.loca
   .filter((c): c is string => !!c)
   .find((c) => spawnSync(c, ['--version']).status === 0);
 
-const skip = !engine && !!process.env.PROSE_BUDGET_SKIP;
-if (skip) console.warn(`prose-budget engine not found (searched ${SEARCHED}); PROSE_BUDGET_SKIP is set, skipping`);
+const skip = !engine && !!process.env.PROSE_BUDGET_ALLOW_MISSING_ENGINE;
+if (skip) console.warn(`prose-budget engine not found (searched ${SEARCHED}); PROSE_BUDGET_ALLOW_MISSING_ENGINE is set, skipping`);
 
 (skip ? it.skip : it)('prose budgets hold (prose-budget --tree)', () => {
-  expect(engine, `prose-budget engine not found (searched ${SEARCHED}); set PROSE_BUDGET_SKIP=1 to skip`).toBeTruthy();
+  expect(engine, `prose-budget engine not found (searched ${SEARCHED}); set PROSE_BUDGET_ALLOW_MISSING_ENGINE=1 to skip`).toBeTruthy();
   const run = spawnSync(engine!, ['--tree', '--require-config'], { cwd: ROOT, encoding: 'utf8' });
   expect(run.status, `${run.stdout}${run.stderr}`).toBe(0);
 });
