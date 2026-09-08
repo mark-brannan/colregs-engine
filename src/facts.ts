@@ -73,6 +73,11 @@ function checkRecord(
   noun: string,
 ): void {
   const nounCap = noun[0].toUpperCase() + noun.slice(1);
+  if (typeof record !== 'object' || record === null || Array.isArray(record)) {
+    throw new Error(
+      `${nounCap} record must be an object, got ${JSON.stringify(record)}.`,
+    );
+  }
   for (const [key, value] of Object.entries(record) as [string, unknown][]) {
     const s = spec[key];
     if (s === undefined) {
@@ -166,10 +171,17 @@ function validateSubject(which: 'own' | 'other', subject: Subject): void {
 export function validateSituation(situation: Situation): void {
   validateSubject('own', situation.own);
   if (situation.other !== undefined) validateSubject('other', situation.other);
-  if (situation.pair?.geo !== undefined) {
-    checkRecord(situation.pair.geo, GEO_PAIR, GEO_PAIR_KEYS, 'geo');
-  }
-  if (situation.pair?.env !== undefined) {
-    checkRecord(situation.pair.env, ENV, ENV_KEYS, 'env');
+  if (situation.pair !== undefined) {
+    if (typeof situation.pair !== 'object' || situation.pair === null) {
+      throw new Error(
+        `situation.pair must be an object, got ${JSON.stringify(situation.pair)}.`,
+      );
+    }
+    if (situation.pair.geo !== undefined) {
+      checkRecord(situation.pair.geo, GEO_PAIR, GEO_PAIR_KEYS, 'geo');
+    }
+    if (situation.pair.env !== undefined) {
+      checkRecord(situation.pair.env, ENV, ENV_KEYS, 'env');
+    }
   }
 }

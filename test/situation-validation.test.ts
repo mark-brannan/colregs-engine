@@ -112,6 +112,35 @@ describe('validateSituation', () => {
     );
   });
 
+  it('a non-object pair is rejected rather than silently skipped', () => {
+    const situation = {
+      own: { fact: { ...baseFacts } },
+      pair: 'not an object',
+    } as unknown as Situation;
+    expect(() => validateSituation(situation)).toThrow(
+      /situation\.pair must be an object, got "not an object"/,
+    );
+  });
+
+  it('null pair.geo is rejected rather than silently skipped', () => {
+    const situation = {
+      own: { fact: { ...baseFacts } },
+      pair: { geo: null },
+    } as unknown as Situation;
+    expect(() => validateSituation(situation)).toThrow(
+      /Geo record must be an object, got null/,
+    );
+  });
+
+  it('an array kin container is rejected, not iterated as if it were a record', () => {
+    const situation = {
+      own: { fact: { ...baseFacts }, kin: ['kin:heading_deg'] },
+    } as unknown as Situation;
+    expect(() => validateSituation(situation)).toThrow(
+      /Kin record must be an object, got \["kin:heading_deg"\]/,
+    );
+  });
+
   it('kin:position rejects a value missing latitude/longitude', () => {
     const situation = {
       own: { fact: { ...baseFacts }, kin: { 'kin:position': { lat: 1 } } },
