@@ -3,7 +3,7 @@
   "check": "consistency-no-obligation",
   "description": "record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:moored",
   "cites": [],
-  "records": 114048,
+  "records": 190080,
   "status": "human-reviewed",
   "note": "Mark ruled 2026-09-07: keep position:moored as one value; add a boolean modifier fact:on_mooring_buoy that refines it, the way fact:making_way refines position:underway. Alongside (Rule 3(i)'s made-fast-to-shore) prescribes no lights, so this gap is correct; the buoy case gets the anchor lights under the jurisdiction that says so (US 33 CFR 90.5). Data change pending in colregs; see issue #24.",
   "facts": {
