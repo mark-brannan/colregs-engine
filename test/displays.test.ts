@@ -46,7 +46,7 @@ describe('lawful display composition', () => {
       'fact:position': 'position:underway',
       'fact:length_m': 49,
     });
-    expect(below.optionalAdditions.map((a) => a.id)).toContain('23a2');
+    expect(below.optional_additions.map((a) => a.id)).toContain('23a2');
     expect(below.modalities['23a2']).toBe('may');
 
     const above = evaluate(applicability, {
@@ -204,7 +204,7 @@ describe('lawful display composition', () => {
       'fact:length_m': 200,
     });
     expect(e.displays.some((d) => d.entries.includes('23a1'))).toBe(true);
-    expect(e.optionalAdditions.map((a) => a.id)).toContain('28');
+    expect(e.optional_additions.map((a) => a.id)).toContain('28');
     // at 200 m the second masthead import resolves to shall
     for (const d of e.displays) expect(d.entries).toContain('23a2');
   });

@@ -7,13 +7,12 @@ end, under colregs' `docs/conventions.md`.
 ## Context
 
 The engine shipped one entry point, `evaluateDisplay`, and its README promised
-that colregs' `classification` and `precedence` categories would "get their
-own entry points". That promise was made in passing while renaming, with no
-target for the next PR to build to. Meanwhile colregs' ADR 0005 (pencil, all
-of it) fixed the *input* those categories read — a situation record, declared
-in `data/facts.json` §`situation` and exercised by
-`fixtures/situation-fixtures.json` — and some twenty two-subject entries have
-been written against it. The data side exists; the engine side has no shape.
+that colregs' `classification` and `precedence` categories would "get their own
+entry points" — a promise made in passing while renaming, with no target to
+build to. Meanwhile colregs' ADR 0005 (pencil, all of it) fixed the *input*
+those categories read: a situation record in `data/facts.json` §`situation`,
+exercised by `fixtures/situation-fixtures.json`, with some twenty two-subject
+entries written against it. The data side exists; the engine side has no shape.
 
 This ADR fixes the shape. It does not build it.
 
@@ -32,16 +31,14 @@ A verb is named for the thing it evaluates, in colregs' own vocabulary: a
 is **not** built, for three reasons that are about the data, not taste:
 
 - **One predicate pass.** Every `scope`, `classification` and `precedence`
-  entry matches against the same situation by the same walker. colregs' own
-  reference evaluator does it in one pass; two verbs would run it twice or
-  make the caller carry the encounter type from one call into the next.
+  entry matches the same situation by the same walker, as colregs' reference
+  evaluator does; two verbs run it twice or make the caller carry the type on.
 - **Relations cross categories.** Rule 18's precedence entries override Rule
   15's; entry `13a` overrides every Rule 18 entry. `rel:overrides` can only be
   resolved with both sides applied in the same result.
 - **Q-35 is open.** Whether a norm may read another norm's *effect* (8(f)(iii)
-  reads "a vessel whose passage is not to be impeded") is a data question
-  colregs has not settled. An API seam between classification and precedence
-  would settle it by accident, in the wrong repository.
+  reads "a vessel whose passage is not to be impeded") is unsettled in colregs.
+  An API seam here would settle it by accident, in the wrong repository.
 
 Each verb has a companion that returns only the matched entry ids —
 `appliedDisplayEntries` today, `appliedEncounterEntries` to come — because
@@ -81,37 +78,43 @@ interface Pair    { geo?: PairGeometry; env?: Environment; }
   `heading_deg`), as `FactRecord` keeps `'fact:length_m'`. A fixture's
   `situation` object is then assignable to `Situation` unedited.
 - `Kinematics`, `History`, the two geometries and `Environment` are
-  **generated** from `facts.json` §`situation`, by the generator that already
-  produces `FactRecord`, and checked at runtime by the validator that already
-  rejects an unknown fact key with a "did you mean" hint. A situation that
-  arrives as JSON is rejected on the same terms as a fact record.
+  **generated** from `facts.json` §`situation` by the generator that produces
+  `FactRecord`, and checked by the same validator: a situation arriving as
+  JSON is rejected on the same terms as a fact record.
 - `FactRecord` is reused, not copied, as `Subject.fact`.
 
 ### 4. `EncounterEvaluation`, the target result
 
 ```ts
+type EntryId = string;       // a colregs entry id: '13a', '18b'
+type ParagraphCite = string; // a Rules paragraph cite: '17(c)'
+
 interface EncounterEvaluation {
   colregs: { version: string; source: 'resolved' | 'caller' };
-  applied: string[];
-  scope: string[];
+  applied: EntryId[];
+  scope: EntryId[];
   encounter?: 'head-on' | 'crossing' | 'overtaking' | 'none';
-  riskOfCollision: { asserted: boolean; by: string[] };
+  risk_of_collision: { asserted: boolean; by: EntryId[] };
   roles: { own: SubjectRole[]; other: SubjectRole[] };
-  overridden: { id: string; by: string }[];
-  modalities: Record<string, Modality>;
+  overridden: { id: EntryId; by: EntryId }[];
+  modalities: Record<EntryId, Modality>;
 }
-interface SubjectRole { role: Role; by: string; }
+interface SubjectRole { role: Role; by: EntryId; }
 ```
+
+`EntryId` and `ParagraphCite` are both `string`, marking which vocabulary a
+field holds: `applied` and `overridden` cite entries, ADR 0002's `phase` and
+`breaches` cite paragraphs. Field names are snake_case with unit suffixes
+throughout, as colregs' own keys are (`kin:heading_deg`).
 
 `colregs` and `applied` mean what they mean on `DisplayEvaluation`. Roles are
 a *set* per subject, each citing the entry that assigned it: colregs' own
 suite pins a sailing vessel meeting a CBD vessel as holding `stand-on` and
 `shall-not-impede` at once (Q-36), and a result type that could hold one role
-would have to lie. `riskOfCollision` carries its grounds because 7(a) lets an
+would have to lie. `risk_of_collision` carries its grounds because 7(a) lets an
 entry add a ground and never deny one. `encounter` is absent when no
-classification entry fired, which today conflates "no encounter" with "cannot
-say" (Q-43); the status alphabet of ADR 0005 §5 is the intended fix and is not
-part of this shape yet.
+classification entry fired, conflating "no encounter" with "cannot say" (Q-43);
+ADR 0005 §5's status alphabet is the fix, and is not part of this shape yet.
 
 ### 5. What this shape does not evaluate
 
@@ -122,17 +125,15 @@ ADR 0002.
 - **`conduct`.** Rules 8, 13(a)'s action, 14(a), 16, 17: what a vessel shall
   *do*. Their predicates read a trace — 8(b)'s "readily apparent" alteration,
   17(a)(ii)'s "as soon as it becomes apparent" — and colregs declares
-  `kin:rot_deg_min` as read "by a conduct monitor, not by a predicate at
-  a point". A different input (a sequence of situations) and a different tool
-  (STL/TLA+), so a different verb: `evaluateConduct`, ADR 0002.
+  `kin:rot_deg_min` read "by a conduct monitor, not by a predicate at a point".
+  A different input and a different tool (STL/TLA+): `evaluateConduct`, ADR 0002.
 - **`care` and `meta`.** Rules 2(a) and 2(b) are in colregs'
   `represented_paragraphs` registry precisely so nothing computes them.
 - **The Rule 2 region solver** (R0/R1/R2, research-ontology labels, not API).
   Research under `research/`; its runtime face is `evaluateRule2Departure`,
   ADR 0002.
-- **Time.** Freshness, hysteresis and the 13(d) latch's clock are the caller's
-  (searoom's switching plugin). The engine receives `hist:*` as facts; it does
-  not maintain them.
+- **Time.** Freshness, hysteresis and the 13(d) latch's clock are the caller's.
+  The engine receives `hist:*` as facts; it does not maintain them.
 - **Choosing.** No verb picks a display or a role; every lawful answer is
   returned (REQ-MODEL-8).
 
@@ -148,9 +149,8 @@ resolution, and validation of the situation record.
   builds `appliedEncounterEntries` against `situation-fixtures.json`; only then
   `evaluateEncounter`. Composition decisions the data leaves open go in
   `docs/engine-notes.md` as the display ones did.
-- `colregs-engine/schema` stays the home of mirrored colregs shapes;
-  `Situation` and `EncounterEvaluation` are engine vocabulary and export from
-  the root, beside `FactRecord` and `DisplayEvaluation`.
+- `colregs-engine/schema` stays the home of mirrored colregs shapes; `Situation`
+  and `EncounterEvaluation` are engine vocabulary, exported from the root.
 
 ## Register
 
@@ -163,6 +163,7 @@ resolution, and validation of the situation record.
 | Verb name `evaluateEncounter`; result name `EncounterEvaluation` | ✎ | colregs renaming the `pair` subject or the `encounter` effect |
 | `own` required, `other`/`Subject.fact` per colregs 0.2.0's fixture schema | ✎ | revised 2026-09-07 from "own/other both required"; Mark to confirm before ink |
 | `appliedEncounterEntries` as the fixture-replay companion | ✎ | the situation-fixture replay being written |
+| Field names snake_case with unit suffixes across both ADRs; `EntryId`/`ParagraphCite` alias `string` for ids and cites | ✎ | the rename's alias window closing; a consumer arguing the compiler should enforce the two apart |
 | `EncounterEvaluation` field set (§4) | ✎ | building it; Q-35, Q-36, Q-43 in colregs |
 | `encounter` absent vs the ADR 0005 §5 status alphabet | ✎ | Q-43 |
 | `conduct` is a separate package, not a third verb | ✎ | superseded by ADR 0002: a third and fourth verb, in this package |
