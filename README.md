@@ -12,8 +12,7 @@ works out how the surviving entries interact: a display can include another,
 replace it, rule it out, or exempt the vessel from showing anything. What
 comes out is the set of complete lawful displays.
 
-Sister packages: [colregs](https://github.com/mark-brannan/colregs) holds
-the rules as data; [searoom](https://github.com/mark-brannan/searoom) is the
+Sister packages: [searoom](https://github.com/mark-brannan/searoom) is the
 study tool built on this engine, with a
 [live demo](https://mark-brannan.github.io/searoom/);
 [nav-wright](https://github.com/mark-brannan/nav-wright) will draw the
@@ -108,6 +107,7 @@ own vocabulary and do not move when colregs releases data.
 | [`DisplayEvaluation`](src/types.ts) | the result: `applied`, `excluded`, `displays`, and the `colregs` version stamp |
 | [`Display`](src/types.ts), [`DisplayLight`](src/types.ts) | one lawful display and one light in it, each light citing `source_entry`, `via` and `modality` |
 | [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
+| [`Modality`](src/generated/applicability.ts) | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them |
 | `evaluate`, `appliedEntries`, `Evaluation` | deprecated aliases of the above, kept for one release |
 
 `colregs-engine/schema` ([src/schema.ts](src/schema.ts)) is the colregs data
