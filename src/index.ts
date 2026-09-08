@@ -27,6 +27,8 @@ export type {
   /** @deprecated Renamed to DisplayEvaluation. */
   Evaluation,
   Situation,
+  Subject,
+  Pair,
 } from './types.js';
 export type { FactRecord } from './generated/fact-record.js';
 export type { Modality } from './generated/applicability.js';

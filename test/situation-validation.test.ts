@@ -88,6 +88,30 @@ describe('validateSituation', () => {
     );
   });
 
+  it('a missing own throws a named error, not a raw TypeError', () => {
+    const situation = {} as unknown as Situation;
+    expect(() => validateSituation(situation)).toThrow(
+      /situation\.own is required and must be an object, got undefined/,
+    );
+  });
+
+  it('a missing own.fact throws a named error, not a raw TypeError', () => {
+    const situation = { own: {} } as unknown as Situation;
+    expect(() => validateSituation(situation)).toThrow(
+      /situation\.own\.fact is required and must be an object, got undefined/,
+    );
+  });
+
+  it('a missing other.fact throws a named error naming "other"', () => {
+    const situation = {
+      own: { fact: { ...baseFacts } },
+      other: {},
+    } as unknown as Situation;
+    expect(() => validateSituation(situation)).toThrow(
+      /situation\.other\.fact is required and must be an object/,
+    );
+  });
+
   it('kin:position rejects a value missing latitude/longitude', () => {
     const situation = {
       own: { fact: { ...baseFacts }, kin: { 'kin:position': { lat: 1 } } },

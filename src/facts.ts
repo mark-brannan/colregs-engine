@@ -133,7 +133,18 @@ export function validateFacts(facts: FactRecord): void {
   checkRecord(facts, SPEC, KEYS, 'fact');
 }
 
-function validateSubject(subject: Subject): void {
+function validateSubject(which: 'own' | 'other', subject: Subject): void {
+  if (typeof subject !== 'object' || subject === null) {
+    throw new Error(
+      `situation.${which} is required and must be an object, got ${JSON.stringify(subject)}.`,
+    );
+  }
+  if (typeof subject.fact !== 'object' || subject.fact === null) {
+    throw new Error(
+      `situation.${which}.fact is required and must be an object, got ` +
+        `${JSON.stringify(subject.fact)}.`,
+    );
+  }
   validateFacts(subject.fact);
   if (subject.kin !== undefined) checkRecord(subject.kin, KIN, KIN_KEYS, 'kin');
   if (subject.geo !== undefined) {
@@ -148,11 +159,13 @@ function validateSubject(subject: Subject): void {
  * Throws on the same terms as validateFacts(), extended to a situation's
  * `kin`/`geo`/`hist`/`env` classes (ADR 0001 §3): an unknown key or a value
  * outside its accepted set is rejected with a "did you mean" hint, for both
- * subjects and the pair.
+ * subjects and the pair. `own`/`own.fact` are ADR 0001 §3's two required
+ * fields, so a missing one is named directly rather than surfacing as
+ * whatever TypeError reading a property of `undefined` happens to throw.
  */
 export function validateSituation(situation: Situation): void {
-  validateSubject(situation.own);
-  if (situation.other !== undefined) validateSubject(situation.other);
+  validateSubject('own', situation.own);
+  if (situation.other !== undefined) validateSubject('other', situation.other);
   if (situation.pair?.geo !== undefined) {
     checkRecord(situation.pair.geo, GEO_PAIR, GEO_PAIR_KEYS, 'geo');
   }
