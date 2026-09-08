@@ -12,6 +12,13 @@ works out how the surviving entries interact: a display can include another,
 replace it, rule it out, or exempt the vessel from showing anything. What
 comes out is the set of complete lawful displays.
 
+Sister packages: [colregs](https://github.com/mark-brannan/colregs) holds
+the rules as data; [searoom](https://github.com/mark-brannan/searoom) is the
+study tool built on this engine, with a
+[live demo](https://mark-brannan.github.io/searoom/);
+[nav-wright](https://github.com/mark-brannan/nav-wright) will draw the
+vessels and their lights.
+
 ## Usage
 
 One call. Pass a fact record describing one vessel at one moment and get
@@ -91,15 +98,22 @@ settled in [ADR 0001](docs/adr/0001-api-shape.md) and
 
 ## Entry points
 
-- `colregs-engine` — `evaluateDisplay`, `appliedDisplayEntries`, and the
-  engine's own output vocabulary: `DisplayEvaluation`, `Display`,
-  `DisplayLight`, `FactRecord`, `Modality`. This is what most consumers
-  want, and it does not move when colregs releases data. `evaluate`,
-  `appliedEntries` and `Evaluation` still exist as deprecated aliases.
-- `colregs-engine/schema` — the colregs data shapes, generated from that
-  package's JSON Schema: `Entry`, `Predicate`, `LightSpec`, `LightDef`,
-  `ApplicabilityData` and the rest. Import these only if you read the data
-  files yourself; they change when the data changes.
+From `colregs-engine` ([src/index.ts](src/index.ts)). These are the engine's
+own vocabulary and do not move when colregs releases data.
+
+| Export | What you get |
+| --- | --- |
+| [`evaluateDisplay(facts, opts?)`](src/evaluate.ts) | every complete lawful display for one vessel, plus which entries applied and which were excluded and by whom |
+| [`appliedDisplayEntries(facts, opts?)`](src/evaluate.ts) | just the ids of the entries whose conditions hold, no composition |
+| [`DisplayEvaluation`](src/types.ts) | the result: `applied`, `excluded`, `displays`, and the `colregs` version stamp |
+| [`Display`](src/types.ts), [`DisplayLight`](src/types.ts) | one lawful display and one light in it, each light citing `source_entry`, `via` and `modality` |
+| [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
+| `evaluate`, `appliedEntries`, `Evaluation` | deprecated aliases of the above, kept for one release |
+
+`colregs-engine/schema` ([src/schema.ts](src/schema.ts)) is the colregs data
+shapes generated from that package's JSON Schema: `Entry`, `Predicate`,
+`LightSpec`, `ApplicabilityData` and the rest. Import these only if you read
+the data files yourself; they change when the data changes.
 
 ## Constraints
 
