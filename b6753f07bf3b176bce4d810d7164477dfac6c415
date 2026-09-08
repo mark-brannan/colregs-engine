@@ -1,0 +1,1 @@
+ci: test job runs npm test with PROSE_BUDGET_SKIP=1; the prose-budget job is the gate
