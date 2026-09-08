@@ -29,10 +29,10 @@
     },
     "NO-OBLIGATION/any": {
       "expect": "sat",
-      "triaged": false,
+      "triaged": true,
       "observed_on": "2026-09-06",
       "observed_by": "npm run conformance, check consistency-no-obligation",
-      "would_settle": "A maintainer's decision on whether position:moored is inside the scope of the lights table at all. Rule 30 names vessels at anchor and aground; facts.json declares position:moored as a value. Either the fact vocabulary is wider than the table intends, or the table is missing a case."
+      "would_settle": "Settled: Rule 3(i) rules a vessel made fast to the shore out of Rule 30 entirely, prescribing no lights at all. run.ts EXPECTED_EMPTY_POSITIONS and its README record this ruling for position:moored; findings/triage.json no longer carries a separate entry for it."
     },
     "NO-OBLIGATION/not-moored": {
       "expect": "unsat",
