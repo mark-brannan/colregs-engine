@@ -50,7 +50,6 @@ precomputed grid is still pure and total, and the same validator, the same
 `opts.data` and the same `colregs.version` provenance apply. What is *not*
 pure — the solver that builds the grid, the model checker that hunts for
 counterexample traces — stays in `research/` until it earns a repository.
-The verbs are the programme's runtime face; the tools are its workshop.
 
 ### 2. `Trace` — the input `conduct` reads
 
@@ -63,14 +62,15 @@ type Trace = TraceSample[];
 `t_s` is seconds on the caller's clock; the engine reads differences only.
 A trace is a window, not a session: the caller (searoom's switching plugin,
 the simulator, a fixture) decides how much history to hand over, and the
-result says what window it saw. Nothing is kept between calls.
+result says what window it saw. Nothing is kept between calls. Out-of-order
+samples or a changing pair are rejected by the validator that rejects an
+unknown fact key; the purity claim is over well-formed input.
 
 `hist:was_overtaking` is a present-tense snapshot fact the caller supplies
-and clears, not history the engine derives: it answers "are you now in a
-state where you were previously overtaking", set on the caller's side by
-13(b)'s sector having held at an earlier sample, because "finally past and
-clear" is a seamanship judgement colregs declines to threshold (Q-47). A
-windowed trace cannot see a latch set before the window, so the engine has
+and clears, not history the engine derives: it is set on the caller's side
+by 13(b)'s sector having held at an earlier sample, because "finally past
+and clear" is a seamanship judgement colregs declines to threshold (Q-47).
+A windowed trace cannot see a latch set before the window, so the engine has
 no business computing it — ADR 0001 §5's "time is the caller's" stays true.
 
 ### 3. `ConductEvaluation` — verdicts over the window
@@ -100,9 +100,10 @@ interface PhaseChange { subject: 'own' | 'other'; phase: string; at_s: number; }
   `robustness` is the STL margin the monitor computes, value and unit, so a
   near miss and a wide pass do not look alike.
 - A **phase** is the Rule 13(d)/17 protocol state: the latch, the stand-on
-  vessel passing from 17(a)(i) to 17(a)(ii) to 17(b). `phase` is the id of
-  the paragraph that put a vessel there — the same state machine phase 4's
-  TLA+ or UPPAAL model checks; the monitor is its refinement.
+  vessel passing from 17(a)(i) to 17(a)(ii) to 17(b). `phase` is a paragraph
+  cite, never an entry id — several of these paragraphs have no entry — and
+  it names the same state machine phase 4's TLA+ or UPPAAL model checks; the
+  monitor is its refinement.
 - `applied` and the companion `appliedConductEntries(trace)` keep the
   fixture contract, as the point fixtures do; per-sample encounter
   evaluations are not returned — call `evaluateEncounter` on a sample.
@@ -111,7 +112,8 @@ Vague quantities a conduct paragraph reads — "readily apparent" (8(b)),
 "ample time" (16), "as soon as it becomes apparent" (17(a)(ii)) — are
 declared once in colregs' `situation.constants`, as
 `appreciable_bearing_change_deg_min` is in `facts.json` at 0.2.0. A number
-the Rules read belongs in colregs; one only the model reads belongs in it.
+a paragraph reads belongs in colregs; one only the solver reads belongs in
+`Rule2DepartureModel`.
 
 ### 4. `Rule2DepartureModel` and `Rule2DepartureFinding` — the Rule 2 departure finding
 
@@ -132,22 +134,30 @@ interface Rule2DepartureFinding {
 interface Advisory { action: unknown; margin_m: number; breaches: string[]; envelope: unknown; }
 ```
 
-The model is passed like `opts.data` is: a versioned artefact the solver
-produced offline, checked in, named in every result. The shape follows
-proposal v4 §4 exactly and adds nothing: status from the closed alphabet,
-carrying the R0/R1/R2 region one-to-one so the field isn't repeated; the
-rule-derived obligations unchanged so the reader sees what the Rules said;
-advisories in R1 ranked best margin first, each with the paragraphs it
-breaks; an empty list in R2; the assumptions violated, named. `not-flagged`
-means not flagged by this model, never "the rules suffice". A `breaches`
-entry citing a shall-if-practicable paragraph is a model verdict, not the
-Rules': the compliance predicate's own rule for those paragraphs (and for
-17(a)(ii)'s `may`) is open, carded.
+The model is required and positional, not an `opts` field: `opts.data`
+defaults to the colregs release this package resolves and a grid has no
+default. It is a versioned artefact the solver produced offline, checked in,
+named in every result. The shape follows proposal v4 §4 and adds nothing.
+Three of the four statuses name a region — `not-flagged` R0,
+`model-rule-conflict` R1, `no-robust-policy-in-model` R2 — and
+`inconclusive-in-model` names none, so a `region` field could only repeat
+them or invent one. The rule-derived obligations sit inside unchanged, so
+the reader sees what the Rules said; R1's advisories are ranked best margin
+first, each with the paragraphs it breaks; R2's list is empty; assumptions
+violated are named. `not-flagged` means not flagged by this model, never
+"the rules suffice". `banner.cite` and `breaches` carry paragraph cites
+(`2(b)`, `17(c)`), never entry ids: a `breaches` entry against a
+shall-if-practicable paragraph is the model's verdict and not the Rules' —
+the compliance predicate's rule for those, and for 17(a)(ii)'s `may`, is
+open and carded.
 
-The guard rail is a property of the signature: no input names a departure or
-asserts one. A caller corrects *facts* and the outputs change; no input
-moves an obligation or advisory by asserting danger. Disclaimers live in
-the README and the licence, not in outputs.
+The guard rail is narrower than "no danger input". The grid is what asserts
+departures, and a caller who swaps it changes every finding. What the
+signature buys is that no *situation* input names a departure — correcting
+facts moves the outputs; asserting danger is not an input — and that
+`model.version` rides on every finding, so a claim is attributable to a
+named grid and never to the Rules. Disclaimers live in the README and the
+licence, not in outputs.
 
 ### 5. How each layer is checked
 
@@ -183,8 +193,8 @@ counterexample trace becomes a fixture; a certified grid, a `Rule2DepartureModel
 | `Trace` as `TraceSample[]`, `t_s` on the caller's clock | ✎ | the first trace fixture |
 | `hist:was_overtaking` a caller-supplied snapshot fact, never engine-derived | ✎ | Q-47; the first conduct monitor |
 | `ConductVerdict` alphabet `kept`/`breached`/`pending`/`not-in-force` | ✎ | the first STL monitor being written |
-| Phase values are paragraph ids | ✎ | the phase-4 TLA+ or UPPAAL model |
+| Phase values are paragraph cites, not entry ids | ✎ | the phase-4 TLA+ or UPPAAL model |
 | Vague-quantity constants live in colregs, model parameters in `Rule2DepartureModel` | ✎ | the first constant a conduct entry reads |
 | `Rule2DepartureFinding` field set, status alphabet | ✎ | proposal v4 §4's sensitivity matrix; Q-19, Q-20 |
-| No input names a departure or asserts one, no disclaimer in outputs | ✎ | — |
+| No *situation* input names a departure; the grid does, and is named in every finding | ✎ | — |
 | Nothing exported until a fixture backs it | ✎ | — |
