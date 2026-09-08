@@ -43,7 +43,7 @@ displays:
   chosen [25c]   sidelights[shall], sternlight[shall], all-round red[may], all-round green[may]
 ```
 
-Every light in a display names the entry that prescribes it (`sourceEntry`),
+Every light in a display names the entry that prescribes it (`source_entry`),
 the entry that pulled it in if different (`via`), and how strongly the rule
 requires it (`modality`). Every display names the choices that produced it
 (`chosen`), so a UI can let the user eliminate options.
