@@ -4,8 +4,8 @@
 
 import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json';
-import { appliedEntries, evaluate } from '../src/evaluate';
-import type { ApplicabilityData, FactRecord } from '../src/types';
+import { appliedEntries, evaluate, evaluateDisplay } from '../src/evaluate';
+import type { ApplicabilityData, Entry, FactRecord } from '../src/types';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
 
@@ -270,6 +270,129 @@ describe('lawful display composition', () => {
               });
               expect(e.displays.length).toBeGreaterThan(0);
             }
+  });
+});
+
+// rel:overrides is dormant on the pinned colregs 0.2.0 data (only
+// precedence entries carry it there), so these cases build synthetic
+// tables by cloning applicability.json and rewriting entries -- the
+// mechanism a later colregs release exercises for real when 26(a) moves
+// from rel:excludes to rel:overrides.
+describe('rel:overrides', () => {
+  function cloneData(): ApplicabilityData {
+    return structuredClone(applicability);
+  }
+
+  function findEntry(data: ApplicabilityData, id: string): Entry {
+    const e = data.entries.find((x) => x.id === id);
+    if (!e) throw new Error(`fixture entry ${id} not found`);
+    return e;
+  }
+
+  function anchoredFishing(length_m: number, extra: Partial<FactRecord> = {}): FactRecord {
+    return {
+      'fact:propulsion': 'propulsion:power',
+      'fact:activity': 'activity:fishing',
+      'fact:position': 'position:anchored',
+      'fact:length_m': length_m,
+      ...extra,
+    };
+  }
+
+  it('an obligation overriding two targets displaces both', () => {
+    const data = cloneData();
+    const e = findEntry(data, '26c-id');
+    delete e['rel:excludes'];
+    e['rel:overrides'] = ['30a', '30b'];
+    const result = evaluateDisplay(anchoredFishing(30), { data });
+    expect(result.displays).toHaveLength(1);
+    expect(result.displays[0].entries).toEqual(['26c-id']);
+    expect(result.overridden).toEqual([
+      { id: '30a', by: '26c-id' },
+      { id: '30b', by: '26c-id' },
+    ]);
+    expect(result.excluded).toEqual([]);
+    for (const d of result.displays) {
+      expect(d.entries).not.toContain('30a');
+      expect(d.entries).not.toContain('30b');
+    }
+  });
+
+  it('a target that is not itself applied is not reported overridden', () => {
+    const data = cloneData();
+    const e = findEntry(data, '26c-id');
+    delete e['rel:excludes'];
+    e['rel:overrides'] = ['30a', '30b'];
+    // 30(b) requires length < 50 m; at 60 m it never applies, so it can't
+    // be displaced.
+    const result = evaluateDisplay(anchoredFishing(60), { data });
+    expect(result.overridden).toEqual([{ id: '30a', by: '26c-id' }]);
+    expect(result.displays).toHaveLength(1);
+  });
+
+  it('a may overrider is inert', () => {
+    const data = cloneData();
+    const e = findEntry(data, '26c-id');
+    delete e['rel:excludes'];
+    e['rel:overrides'] = ['30a', '30b'];
+    e.modality = 'may';
+    const result = evaluateDisplay(anchoredFishing(30), { data });
+    expect(result.overridden).toEqual([]);
+    const allEntries = result.displays.flatMap((d) => d.entries);
+    expect(allEntries).toContain('30a');
+    expect(allEntries).toContain('30b');
+  });
+
+  it('a displaced entry leaves composition and its own overrides do not fire', () => {
+    const data = cloneData();
+    const e26c = findEntry(data, '26c-id');
+    delete e26c['rel:excludes'];
+    e26c['rel:overrides'] = ['30a'];
+    findEntry(data, '30a')['rel:overrides'] = ['30c'];
+    const result = evaluateDisplay(anchoredFishing(30), { data });
+    expect(result.overridden).toEqual([{ id: '30a', by: '26c-id' }]);
+    expect(result.applied).toContain('30c');
+  });
+
+  it('an already-exempted target is not double-reported as overridden', () => {
+    const data = cloneData();
+    const e = findEntry(data, '26c-id');
+    delete e['rel:excludes'];
+    e['rel:overrides'] = ['30a', '30b'];
+    const facts = anchoredFishing(6, { 'fact:near_channel': false });
+    const result = evaluateDisplay(facts, { data });
+    expect(result.exempted.map((x) => x.id).sort()).toEqual(['30a', '30b']);
+    expect(result.overridden).toEqual([]);
+  });
+
+  it('an overridden exempt entry does not exempt its own targets', () => {
+    const data = cloneData();
+    // A synthetic obligation overrides 30(e) itself (the exempt entry that
+    // would otherwise exempt 30a/30b at <7m, not-near-channel). Overriding
+    // the exemption source must let 30a/30b re-emerge, not leave them
+    // exempted-away by a source that never fired.
+    const e30e = findEntry(data, '30e');
+    const overrider = findEntry(data, '26c-id');
+    delete overrider['rel:excludes'];
+    overrider['rel:overrides'] = [e30e.id];
+    const facts = anchoredFishing(6, { 'fact:near_channel': false });
+    const result = evaluateDisplay(facts, { data });
+    expect(result.overridden).toEqual([{ id: e30e.id, by: '26c-id' }]);
+    expect(result.exempted).toEqual([]);
+    const allEntries = result.displays.flatMap((d) => d.entries);
+    expect(allEntries).toContain('30a');
+    expect(allEntries).toContain('30b');
+  });
+
+  it('is dormant on the pinned release: rel:excludes still fires, rel:overrides does not', () => {
+    const result = evaluateDisplay({
+      'fact:propulsion': 'propulsion:power',
+      'fact:activity': 'activity:trawling',
+      'fact:position': 'position:anchored',
+      'fact:length_m': 30,
+    });
+    expect(result.excluded.map((x) => x.id).sort()).toEqual(['30a', '30b']);
+    expect(result.overridden).toEqual([]);
   });
 });
 
