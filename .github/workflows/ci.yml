@@ -25,9 +25,7 @@ jobs:
       - run: npm run typecheck
       # No prose-budget engine on this runner; the prose-budget job below
       # is the gate for docs/budgets.json, so the local wrapper skips here.
-      - run: npm test
-        env:
-          PROSE_BUDGET_ALLOW_MISSING_ENGINE: 1
+      - uses: mark-brannan/.github/.github/actions/npm-test-prose-fallback@add/npm-test-prose-fallback-action
       # tsconfig.build.json (declaration emit, src-only) is otherwise never
       # exercised: a declaration-emit-only error, or a bad import specifier in
       # the emitted ESM, would pass typecheck and tests and break consumers.
