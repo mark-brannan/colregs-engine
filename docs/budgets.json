@@ -1,4 +1,5 @@
 {
+  "$comment": "Prose budgets enforced by prose-budget (dotfiles .local/bin). Raising a number or adding an exception is a deliberate, reviewable diff. narration.disable drops the engine's built-in issue pattern: research notes cite issue #N legitimately.",
   "lines": {
     "README.md": 180,
     "AGENTS.md": 29,
@@ -8,42 +9,86 @@
     "docs/normative-language.md": 130,
     "research/conformance/README.md": 197,
     "research/z3/README.md": 89,
-    "docs/adr/0001-api-shape.md": 170
+    "docs/adr/0001-api-shape.md": 170,
+    "required": true,
+    "must_budget": [
+      "README.md",
+      "AGENTS.md",
+      "docs/**/*.md",
+      "research/conformance/README.md",
+      "research/z3/README.md"
+    ]
   },
-  "prose": {
-    "keys": ["note", "$note", "notes", "about", "narrative", "rationale", "why", "would_settle"],
-    "maxChars": 300,
-    "grandfathered": ["research/z3/expectations.json:$.about", "research/z3/expectations.json:$.queries.CONFLICT/26b-id+30a.would_settle"]
+  "json_prose": {
+    "targets": [
+      "research/**/*.json",
+      "docs/**/*.json"
+    ],
+    "keys": [
+      "note",
+      "$note",
+      "notes",
+      "about",
+      "narrative",
+      "rationale",
+      "why",
+      "would_settle"
+    ],
+    "max_chars": 300,
+    "grandfathered": [
+      "research/z3/expectations.json#/about",
+      "research/z3/expectations.json#/queries/CONFLICT~126b-id+30a/would_settle"
+    ]
   },
   "narration": {
-    "patterns": [
-      "\\bPR ?#?\\d+\\b",
-      "\\b(this|that|the) session\\b",
-      "\\bsplit out of\\b",
-      "\\bstacked on\\b"
+    "targets": [
+      "README.md",
+      "AGENTS.md",
+      "docs/**/*.md",
+      "research/**/README.md",
+      "research/**/*.json",
+      "docs/**/*.json",
+      "test/**/*.test.ts",
+      "research/**/*.ts"
     ],
-    "headerPatterns": ["\\bP\\d\\.\\d\\b"],
-    "grandfathered": {
-      "research/z3/encode.ts": ["P2.1", "P1.3", "P3.1"],
-      "research/z3/queries.ts": ["P1.3"],
-      "research/z3/run.ts": ["P2.1", "P3.1"]
+    "grandfathered": [
+      { "file": "research/z3/encode.ts", "match": "P2.1" },
+      { "file": "research/z3/encode.ts", "match": "P1.3" },
+      { "file": "research/z3/encode.ts", "match": "P3.1" },
+      { "file": "research/z3/queries.ts", "match": "P1.3" },
+      { "file": "research/z3/run.ts", "match": "P2.1" },
+      { "file": "research/z3/run.ts", "match": "P3.1" }
+    ],
+    "disable": [
+      "issue"
+    ],
+    "scope": {
+      "phase": [
+        "research/**/*.ts"
+      ]
     }
   },
   "voice": {
-    "words": [
-      "delve", "leverage", "seamless", "cutting-edge", "robust", "comprehensive",
-      "testament", "tapestry", "pivotal", "foster", "elevate", "unlock", "game-changer"
+    "scope": "tree",
+    "targets": [
+      "README.md",
+      "AGENTS.md",
+      "docs/**/*.md",
+      "research/**/README.md",
+      "research/**/*.json",
+      "docs/**/*.json"
     ],
-    "phrases": [
-      "it'?s worth noting",
-      "\\bnot just\\b[^.]*\\bbut\\b",
-      "(?:^|[.!?]\\s+)(?:Moreover|Additionally|Certainly)\\b"
-    ],
-    "allow": ["Foster/Gleirscher", "Foster, Gleirscher"],
-    "count": ["rather than"]
+    "allow": [
+      "Foster/Gleirscher",
+      "Foster, Gleirscher"
+    ]
   },
   "headers": {
-    "maxLines": 25,
+    "targets": [
+      "research/**/*.ts",
+      "src/**/*.ts"
+    ],
+    "max_lines": 25,
     "grandfathered": {
       "research/z3/encode.ts": 48,
       "research/z3/run.ts": 27
