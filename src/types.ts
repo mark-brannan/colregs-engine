@@ -80,6 +80,10 @@ export interface ApplicabilityData extends Omit<SchemaApplicabilityData, 'entrie
 export interface DisplayLight {
   spec: LightSpec;
   /** Entry whose lights clause prescribes this light. */
+  source_entry: string;
+  /** @deprecated Renamed to {@link DisplayLight.source_entry} — field names
+   * are snake_case with unit suffixes across this API and colregs' own keys
+   * (ADR 0001 §4). Carries the same value; removed in a later 0.x. */
   sourceEntry: string;
   /** Entry that pulled it in, when different (rel:includes / one_of import). */
   via?: string;
@@ -125,12 +129,15 @@ export interface DisplayEvaluation {
    * relations: lawful additions that don't multiply the display set
    * (second masthead below 50 m, deck lights below 100 m, …).
    */
-  optionalAdditions: {
+  optional_additions: {
     id: string;
     via?: string;
     lights: DisplayLight[];
     cite: string;
   }[];
+  /** @deprecated Renamed to {@link DisplayEvaluation.optional_additions} —
+   * see ADR 0001 §4. Carries the same array; removed in a later 0.x. */
+  optionalAdditions: DisplayEvaluation['optional_additions'];
   /** Resolved modality per applied/imported entry id. */
   modalities: Record<string, Modality>;
 }

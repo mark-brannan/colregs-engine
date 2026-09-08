@@ -57,4 +57,12 @@ describe('deprecated aliases', () => {
       appliedDisplayEntries(sloop12, { data: applicability }),
     );
   });
+
+  it('the camelCase field aliases carry what the snake_case fields carry', () => {
+    const result = evaluateDisplay(sloop12);
+    expect(result.optionalAdditions).toEqual(result.optional_additions);
+    const lights = result.displays.flatMap((d) => d.lights);
+    expect(lights.length).toBeGreaterThan(0);
+    for (const light of lights) expect(light.sourceEntry).toBe(light.source_entry);
+  });
 });
