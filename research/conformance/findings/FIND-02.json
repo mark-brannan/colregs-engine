@@ -8,7 +8,7 @@
   ],
   "records": 114048,
   "status": "human-reviewed",
-  "note": "Same ruling as FIND-01; the fishing (26(c)) + anchored case is the real one, resolved by rel:overrides.",
+  "note": "Same ruling as consistency-conflicting-shall::26b-id,30a; the fishing (26(c)) + anchored case is the real one, resolved by rel:overrides.",
   "facts": {
     "fact:activity": "activity:fishing",
     "fact:composite_unit": true,
