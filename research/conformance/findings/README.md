@@ -26,5 +26,4 @@ overwrites.
 
 | id | check | records | description | cites | status | triage note |
 |---|---|---|---|---|---|---|
-| FIND-01 | consistency-conflicting-shall | 57024 | entries 26b-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(b)(i); 30(a) | human-reviewed | 2026-09-07: rel:excludes means pick-one (25(b)/25(c)); two 'shall' entries excluding each other is a data error, the check is right to fire. Fishing-over-anchor (26(a)) moves to rel:overrides; trawling + anchored is an impossible fact pair, declared at facts level. Data change pending in colregs. |
-| FIND-02 | consistency-conflicting-shall | 57024 | entries 26c-id and 30a are both resolved 'shall' and rel:excludes the other: a conflicting obligation | 26(c)(i); 30(a) | human-reviewed | Same ruling as consistency-conflicting-shall::26b-id,30a; the fishing (26(c)) + anchored case is the real one, resolved by rel:overrides. |
+

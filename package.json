@@ -40,7 +40,7 @@
     "z3": "tsx research/z3/run.ts"
   },
   "dependencies": {
-    "colregs": "^0.2.0"
+    "colregs": "^0.2.2"
   },
   "devDependencies": {
     "@types/node": "22.20.1",

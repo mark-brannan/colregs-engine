@@ -234,6 +234,17 @@ function isDisplay(e: Entry): boolean {
   return (e.category ?? 'display') === 'display';
 }
 
+// NOTE (colregs@0.2.2, ADR 0008): every entry now also carries a required
+// `jurisdiction` field (`intl` throughout, `us/inland` for the new
+// mooring-buoy delta, 30a-buoy/30b-buoy). This package has no jurisdiction
+// parameter or filter of any kind yet -- adding one is real API-design work
+// (an ADR, like ADR 0001's own scoping), not something to freelance under a
+// dependency bump -- and research/conformance/reference.ts, the ground
+// truth this engine is diffed against, doesn't filter by it either. So
+// `jurisdiction` is deliberately left unread here for now: a caller whose
+// facts happen to match 30a-buoy/30b-buoy's predicate gets those lights
+// regardless of jurisdiction, same as before this field existed. No
+// jurisdiction parameter exists yet -- open gap, not a decision.
 /** The predicate layer alone: entries whose `when` matches, without the
  * relation/display composition that follows. Factored out of `evaluate` so
  * a caller can inspect just this layer's result. */

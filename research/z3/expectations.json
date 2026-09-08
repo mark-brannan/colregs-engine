@@ -13,19 +13,17 @@
   "queries": {
     "CONFLICT/26b-id+30a": {
       "expect": "sat",
-      "triaged": false,
+      "triaged": true,
       "observed_on": "2026-09-06",
       "observed_by": "npm run conformance, check consistency-conflicting-shall",
-      "finding": "FIND-01",
-      "would_settle": "A maintainer's reading of Rule 26(a) against the rel:excludes semantics: whether rel:excludes is a claim that the two predicates are disjoint (in which case the predicates or the relation are wrong), or a composition-layer instruction that the excluded entry's lights are not shown (in which case both applying is expected and this check is asking the wrong question)."
+      "would_settle": "Retired: colregs@0.2.2 answered this by changing 26b-id's relation to 30a from rel:excludes to rel:overrides. excludingPairs() no longer pairs them, so buildQueries() no longer produces this id at all -- kept here only as the historical record of the finding this settled, not as a live query."
     },
     "CONFLICT/26c-id+30a": {
       "expect": "sat",
-      "triaged": false,
+      "triaged": true,
       "observed_on": "2026-09-06",
       "observed_by": "npm run conformance, check consistency-conflicting-shall",
-      "finding": "FIND-02",
-      "would_settle": "The same reading as FIND-01; the two stand or fall together."
+      "would_settle": "Retired, same ruling as CONFLICT/26b-id+30a: 26c-id's relation to 30a changed from rel:excludes to rel:overrides in colregs@0.2.2."
     },
     "NO-OBLIGATION/any": {
       "expect": "sat",

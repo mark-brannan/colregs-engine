@@ -81,8 +81,12 @@ describe('the real fact space: no incoherent or duplicate records', () => {
       expect(incoherent).toBe(0);
       // Regression pin: a duplicate-emitting or over-restrictive refinement
       // bug changes this count. Was 5,930,496 when making_way was still a
-      // free boolean axis (research/conformance/README.md's old table).
-      expect(n).toBe(3706560);
+      // free boolean axis (research/conformance/README.md's old table); was
+      // 3,706,560 before colregs@0.2.2 added fact:on_mooring_buoy as a
+      // second modifier (refining position:moored, same shape as
+      // making_way refining position:underway) — that split moored's one
+      // slot into two, same as underway's, raising the product.
+      expect(n).toBe(4447872);
     },
     20_000,
   );
