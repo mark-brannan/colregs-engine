@@ -10,6 +10,14 @@
 
 import type { Modality } from './generated/applicability.js';
 import type { LightSpec } from './schema.js';
+import type { FactRecord } from './generated/fact-record.js';
+import type {
+  DirectionalGeometry,
+  Environment,
+  History,
+  Kinematics,
+  PairGeometry,
+} from './generated/situation.js';
 
 export * from './schema.js';
 
@@ -139,3 +147,28 @@ export interface DisplayEvaluation {
  * own category name for the one-vessel lights-and-shapes case, and the
  * two-subject cases return different shapes. Removed in a later 0.x. */
 export type Evaluation = DisplayEvaluation;
+
+/**
+ * The input a two-subject rule reads (ADR 0001 §3, mirroring colregs' ADR
+ * 0005). Nested by subject and class, not flat by predicate namespace, so a
+ * fixture's `situation` object is assignable here unedited — the flat
+ * `own:fact:activity` form stays internal to the walker.
+ */
+export interface Subject {
+  fact: FactRecord;
+  kin?: Kinematics;
+  geo?: DirectionalGeometry;
+  hist?: History;
+}
+
+/** Facts of the encounter itself, symmetric between the two vessels. */
+export interface Pair {
+  geo?: PairGeometry;
+  env?: Environment;
+}
+
+export interface Situation {
+  own: Subject;
+  other?: Subject;
+  pair?: Pair;
+}

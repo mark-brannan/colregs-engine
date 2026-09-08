@@ -1,28 +1,53 @@
-// Runtime validation of a fact record against colregs' vocabulary.
+// Runtime validation of a fact record — and, per ADR 0001 §3, a situation's
+// five generated classes — against colregs' vocabulary.
 //
-// The types in src/generated/fact-record.ts make a bad key or value a compile
-// error, but the engine is also reached from JavaScript, from JSON off the
-// wire, and through the `as` casts consumers write when they parse config.
-// Without this, a misspelt key matched nothing and evaluate() returned an
-// empty display set — the same answer it gives for a vessel that lawfully
-// shows nothing. Two very different situations must not look alike.
+// The types in src/generated/fact-record.ts and src/generated/situation.ts
+// make a bad key or value a compile error, but the engine is also reached
+// from JavaScript, from JSON off the wire, and through the `as` casts
+// consumers write when they parse config. Without this, a misspelt key
+// matched nothing and evaluate() returned an empty display set — the same
+// answer it gives for a vessel that lawfully shows nothing. Two very
+// different situations must not look alike.
 
 import { FACT_SPEC, type FactRecord } from './generated/fact-record.js';
+import {
+  ENV_SPEC,
+  GEO_OWN_SPEC,
+  GEO_PAIR_SPEC,
+  HIST_SPEC,
+  KIN_SPEC,
+} from './generated/situation.js';
+import type { Situation, Subject } from './types.js';
 
-/** The generated spec, widened for lookup by an arbitrary runtime key. */
-type FactSpec =
-  | { kind: 'enum'; values: readonly string[] }
-  | { kind: 'number' }
-  | { kind: 'boolean' }
-  | { kind: 'string' };
+/** Every generated spec, widened for lookup by an arbitrary runtime key. */
+type Spec =
+  | { kind: 'enum'; values: readonly string[]; nullable?: boolean }
+  | { kind: 'number'; nullable?: boolean }
+  | { kind: 'boolean'; nullable?: boolean }
+  | { kind: 'string'; nullable?: boolean }
+  | { kind: 'position'; nullable?: boolean };
 
-const SPEC: Record<string, FactSpec | undefined> = FACT_SPEC;
+const SPEC: Record<string, Spec | undefined> = FACT_SPEC;
 const KEYS = Object.keys(FACT_SPEC);
+const KIN: Record<string, Spec | undefined> = KIN_SPEC;
+const KIN_KEYS = Object.keys(KIN_SPEC);
+const HIST: Record<string, Spec | undefined> = HIST_SPEC;
+const HIST_KEYS = Object.keys(HIST_SPEC);
+const GEO_OWN: Record<string, Spec | undefined> = GEO_OWN_SPEC;
+const GEO_OWN_KEYS = Object.keys(GEO_OWN_SPEC);
+const GEO_PAIR: Record<string, Spec | undefined> = GEO_PAIR_SPEC;
+const GEO_PAIR_KEYS = Object.keys(GEO_PAIR_SPEC);
+const ENV: Record<string, Spec | undefined> = ENV_SPEC;
+const ENV_KEYS = Object.keys(ENV_SPEC);
 
 /** `'propulsion'` -> `'fact:propulsion'`: the mistake worth naming. */
-function suggestKey(key: string): string | undefined {
-  const namespaced = `fact:${key}`;
-  return KEYS.includes(namespaced) ? namespaced : undefined;
+function suggestKey(
+  key: string,
+  prefix: string,
+  keys: readonly string[],
+): string | undefined {
+  const namespaced = `${prefix}:${key}`;
+  return keys.includes(namespaced) ? namespaced : undefined;
 }
 
 /** `'sail'` -> `'propulsion:sail'`, for an enumerated key's values. */
@@ -35,40 +60,103 @@ function suggestValue(
 }
 
 /**
+ * Throws unless every key of `record` is one `spec` declares and every value
+ * is one that key accepts. The message names the offending key, and the
+ * value too when the key itself was valid. Shared by validateFacts() and
+ * validateSituation() so a mistyped `kin:` or `geo:` key is rejected on the
+ * same terms as a mistyped `fact:` one — same hint, same "did you mean".
+ */
+function checkRecord(
+  record: object,
+  spec: Record<string, Spec | undefined>,
+  keys: readonly string[],
+  noun: string,
+): void {
+  const nounCap = noun[0].toUpperCase() + noun.slice(1);
+  for (const [key, value] of Object.entries(record) as [string, unknown][]) {
+    const s = spec[key];
+    if (s === undefined) {
+      const hint = suggestKey(key, noun, keys);
+      throw new Error(
+        `unknown ${noun} key '${key}'${hint ? `; did you mean '${hint}'?` : ''} ` +
+          `${nounCap} keys are namespaced and defined by colregs data/facts.json: ` +
+          `${keys.join(', ')}.`,
+      );
+    }
+    // An explicitly-undefined key asserts nothing, exactly like an absent one.
+    if (value === undefined) continue;
+    if (value === null) {
+      if (s.nullable) continue;
+      throw new Error(`${noun} key '${key}' does not accept null.`);
+    }
+
+    if (s.kind === 'enum') {
+      if (typeof value !== 'string' || !s.values.includes(value)) {
+        const hint = suggestValue(s.values, value);
+        throw new Error(
+          `${noun} key '${key}' does not accept ${JSON.stringify(value)}` +
+            `${hint ? `; did you mean '${hint}'?` : ''} ` +
+            `Accepted values: ${s.values.join(', ')}.`,
+        );
+      }
+      continue;
+    }
+    if (s.kind === 'position') {
+      const v = value as Record<string, unknown>;
+      if (
+        typeof value !== 'object' ||
+        typeof v.latitude !== 'number' ||
+        typeof v.longitude !== 'number'
+      ) {
+        throw new Error(
+          `${noun} key '${key}' expects { latitude, longitude }, got ` +
+            `${JSON.stringify(value)}.`,
+        );
+      }
+      continue;
+    }
+    if (typeof value !== s.kind) {
+      throw new Error(
+        `${noun} key '${key}' expects a ${s.kind}, got ` +
+          `${typeof value} (${JSON.stringify(value)}).`,
+      );
+    }
+  }
+}
+
+/**
  * Throws unless every key of `facts` is a colregs fact key and every value is
  * one that key accepts. The message names the offending key, and the value
  * too when the key itself was valid.
  */
 export function validateFacts(facts: FactRecord): void {
-  for (const [key, value] of Object.entries(facts)) {
-    const spec = SPEC[key];
-    if (spec === undefined) {
-      const hint = suggestKey(key);
-      throw new Error(
-        `unknown fact key '${key}'${hint ? `; did you mean '${hint}'?` : ''} ` +
-          `Fact keys are namespaced and defined by colregs data/facts.json: ` +
-          `${KEYS.join(', ')}.`,
-      );
-    }
-    // An explicitly-undefined key asserts nothing, exactly like an absent one.
-    if (value === undefined) continue;
+  checkRecord(facts, SPEC, KEYS, 'fact');
+}
 
-    if (spec.kind === 'enum') {
-      if (typeof value !== 'string' || !spec.values.includes(value)) {
-        const hint = suggestValue(spec.values, value);
-        throw new Error(
-          `fact key '${key}' does not accept ${JSON.stringify(value)}` +
-            `${hint ? `; did you mean '${hint}'?` : ''} ` +
-            `Accepted values: ${spec.values.join(', ')}.`,
-        );
-      }
-      continue;
-    }
-    if (typeof value !== spec.kind) {
-      throw new Error(
-        `fact key '${key}' expects a ${spec.kind}, got ` +
-          `${typeof value} (${JSON.stringify(value)}).`,
-      );
-    }
+function validateSubject(subject: Subject): void {
+  validateFacts(subject.fact);
+  if (subject.kin !== undefined) checkRecord(subject.kin, KIN, KIN_KEYS, 'kin');
+  if (subject.geo !== undefined) {
+    checkRecord(subject.geo, GEO_OWN, GEO_OWN_KEYS, 'geo');
+  }
+  if (subject.hist !== undefined) {
+    checkRecord(subject.hist, HIST, HIST_KEYS, 'hist');
+  }
+}
+
+/**
+ * Throws on the same terms as validateFacts(), extended to a situation's
+ * `kin`/`geo`/`hist`/`env` classes (ADR 0001 §3): an unknown key or a value
+ * outside its accepted set is rejected with a "did you mean" hint, for both
+ * subjects and the pair.
+ */
+export function validateSituation(situation: Situation): void {
+  validateSubject(situation.own);
+  if (situation.other !== undefined) validateSubject(situation.other);
+  if (situation.pair?.geo !== undefined) {
+    checkRecord(situation.pair.geo, GEO_PAIR, GEO_PAIR_KEYS, 'geo');
+  }
+  if (situation.pair?.env !== undefined) {
+    checkRecord(situation.pair.env, ENV, ENV_KEYS, 'env');
   }
 }

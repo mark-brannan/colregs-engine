@@ -26,6 +26,7 @@ export type {
   DisplayLight,
   /** @deprecated Renamed to DisplayEvaluation. */
   Evaluation,
+  Situation,
 } from './types.js';
 export type { FactRecord } from './generated/fact-record.js';
 export type { Modality } from './generated/applicability.js';
