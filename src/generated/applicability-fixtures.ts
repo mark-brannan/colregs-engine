@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.2.0 schema/applicability-fixtures.schema.json
+ * Source: colregs@0.2.2 schema/applicability-fixtures.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
@@ -24,6 +24,7 @@ export interface ApplicabilityFixtures {
    */
   cases: {
     name: string;
+    jurisdiction?: string;
     facts: {
       [k: string]: FactValue;
     };

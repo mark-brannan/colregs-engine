@@ -1,10 +1,10 @@
 {
   "consistency-conflicting-shall::26b-id,30a": {
-    "status": "human-reviewed",
-    "note": "2026-09-07: rel:excludes means pick-one (25(b)/25(c)); two 'shall' entries excluding each other is a data error, the check is right to fire. Fishing-over-anchor (26(a)) moves to rel:overrides; trawling + anchored is an impossible fact pair, declared at facts level. Data change pending in colregs."
+    "status": "retired",
+    "note": "Ruled: 26(a) moves to rel:overrides (FIND-01). Landed in colregs@0.2.2, so the pair no longer exists and the finding no longer reproduces."
   },
   "consistency-conflicting-shall::26c-id,30a": {
-    "status": "human-reviewed",
-    "note": "Same ruling as consistency-conflicting-shall::26b-id,30a; the fishing (26(c)) + anchored case is the real one, resolved by rel:overrides."
+    "status": "retired",
+    "note": "Same ruling as 26b-id,30a (FIND-02); retired alongside it in colregs@0.2.2."
   }
 }

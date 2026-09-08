@@ -41,11 +41,7 @@ Each composition decision below is tested in `test/displays.test.ts`.
    own `rel:excludes`/`rel:overrides` then don't fire either, so a chain
    stops at the first displacement. `rel:excludes` between two
    alternatives (25(b) vs 25(c)) stays a co-occurrence constraint between
-   displays, not a removal. The pinned colregs release still carries Rule
-   26(a) as `rel:excludes`, not `rel:overrides`: there, a `shall` excluder
-   vetoes its targets outright, including one_of import options (a
-   fishing vessel aground does not import the Rule 30 anchor lights
-   26(a) forbids) — that veto path goes when the pin moves.
+   displays, not a removal.
 
 3. **Genuine alternatives split into separate displays, one per lawful
    choice.** An applied entry whose `rel:in_lieu_of` references applied
