@@ -281,8 +281,13 @@ describe('the encoding against Z3', () => {
 
     await withSolver(async (check) => {
       for (let n = 0; n < 500; n++) {
+        // Non-modifier axes first, then modifiers: a modifier's refined axis
+        // (e.g. fact:position for fact:making_way) must already have its
+        // random value before we can tell whether the refinement holds.
         const facts: Record<string, FactValue> = {};
+        const modifierAxes = realAxes.filter((a) => a.kind === 'boolean' && a.refines);
         for (const a of realAxes) {
+          if (a.kind === 'boolean' && a.refines) continue;
           switch (a.kind) {
             case 'boolean':
               facts[a.key] = rnd() < 0.5;
@@ -294,6 +299,16 @@ describe('the encoding against Z3', () => {
             case 'enum':
               facts[a.key] = a.values[Math.floor(rnd() * a.values.length)];
               break;
+          }
+        }
+        // A modifier axis only gets a fact (and only ever a pinned assertion,
+        // via pinRecord) where its refined axis holds the refining value --
+        // mirroring expandModifiers in research/conformance/enumerate.ts, so
+        // this stays a record the real fact space could actually produce.
+        for (const a of modifierAxes) {
+          if (a.kind !== 'boolean' || !a.refines) continue;
+          if (facts[a.refines.key] === a.refines.value) {
+            facts[a.key] = rnd() < 0.5;
           }
         }
         const record = facts as FactRecord;

@@ -191,6 +191,20 @@ export function extractAxes(data: ApplicabilityData): ExtractResult {
         const refines = spec.refines
           ? { key: spec.refines.key as FactKey, value: spec.refines.value }
           : undefined;
+        // The comparison at expandModifiers() is string equality against
+        // the refining axis's raw value, so a refinement target has to be
+        // an enum axis: a boolean or numeric target's FactValue would never
+        // equal the string, silently dropping the modifier everywhere.
+        if (refines) {
+          const targetSpec = SPEC[refines.key];
+          if (targetSpec === undefined || targetSpec.kind !== 'enum') {
+            throw new Error(
+              `fact axis ${factKey} refines ${refines.key}, but that axis is not an enum ` +
+                `axis (declared kind: ${targetSpec?.kind ?? 'undeclared'}); only enum ` +
+                `refinement targets are supported`,
+            );
+          }
+        }
         axes.push({ kind: 'boolean', key: factKey, values: [true, false], refines });
         break;
       }
