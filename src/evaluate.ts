@@ -215,6 +215,7 @@ function displayLights(node: Node): DisplayLight[] {
   // empty array this always effectively was for such entries.
   return (node.entry.lights ?? []).map((spec) => ({
     spec,
+    source_entry: node.id,
     sourceEntry: node.id,
     via: node.via,
     modality: (spec.modality as Modality) ?? node.modality,
@@ -613,6 +614,13 @@ export function evaluateDisplay(
     });
   }
 
+  const optionalAdditions = additions.map((n) => ({
+    id: n.id,
+    via: n.via,
+    lights: displayLights(n),
+    cite: n.entry.cite,
+  }));
+
   return {
     colregs: { version: COLREGS_VERSION, source },
     applied: applied.map((e) => e.id),
@@ -620,12 +628,8 @@ export function evaluateDisplay(
     excluded,
     overridden,
     displays,
-    optionalAdditions: additions.map((n) => ({
-      id: n.id,
-      via: n.via,
-      lights: displayLights(n),
-      cite: n.entry.cite,
-    })),
+    optional_additions: optionalAdditions,
+    optionalAdditions,
     modalities,
   };
 }
