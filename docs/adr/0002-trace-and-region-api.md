@@ -1,10 +1,10 @@
 # ADR 0002 — The trace and region verbs: kinematic and temporal evaluation
 
 Date: 2026-09-07
-Status: accepted as a straw man, **all of it in pencil**. It names the
-verbs and frames their inputs and results so the programme has a target to
-build toward; it does not build them, and it expects to be broken while the
-package is 0.x. Ink and pencil per item in the register at the end.
+Status: accepted as a straw man, in pencil except where the register at
+the end says ink. It names the verbs and frames their inputs and results
+so the programme has a target to build toward; it does not build them, and
+it expects to be broken while the package is 0.x.
 
 ## Context
 
@@ -109,7 +109,7 @@ interface PhaseChange { subject: 'own' | 'other'; phase: string; at_s: number; b
 Vague quantities a conduct paragraph reads — "readily apparent" (8(b)),
 "ample time" (16), "as soon as it becomes apparent" (17(a)(ii)) — are
 declared once in colregs' `situation.constants` in pencil, as
-`appreciable_bearing_change_deg_min` already is. A number the Rules read
+`appreciable_bearing_change_deg_min` is in `facts.json` at 0.2.0. A number the Rules read
 belongs in colregs; a number only the model reads belongs in the model.
 
 ### 4. `RegionModel` and `RegionEvaluation` — the Rule 2 query
