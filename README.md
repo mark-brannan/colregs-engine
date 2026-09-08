@@ -18,8 +18,8 @@ it as a package once it's published.
 
 ## Usage
 
-One call. Pass the colregs applicability data and a fact record describing
-one vessel at one moment; get back every complete lawful display.
+One call. Pass a fact record describing one vessel at one moment and get
+back every complete lawful display.
 
 ```ts
 import { evaluateDisplay } from 'colregs-engine';
@@ -89,57 +89,34 @@ nothing. The two must not look alike. `appliedDisplayEntries(facts)` returns
 just the matching entry ids, without composing displays, and validates on
 the same terms.
 
-## Why `display`, and what the other cases will be called
+## Why `display`, and the data behind it
 
-`display` is colregs' own category name (ADR 0005) for the case this
-function serves: one vessel's facts in, the signals she shows out. It covers
-lights and day shapes together, because in the data they are one category
-separated by a visibility condition, not two evaluations.
+`display` is colregs' own category name (ADR 0005, not yet settled) for
+this case: one vessel's facts in, her signals out, lights and day shapes
+together. `classification` and `precedence` read a *situation* instead — two
+vessels, a different input type — so they'll get their own entry points
+rather than wider fields on `DisplayEvaluation`; `conduct` is a trace, not a
+point evaluation, and isn't one of these at all.
 
-The other engine-evaluable categories read a *situation* — two vessels, with
-relative geometry and kinematics — which is a different input type, not a
-wider fact record. So they will arrive as their own entry points rather than
-as more fields on `DisplayEvaluation`:
-
-| category | input | entry point |
-|---|---|---|
-| `display` | one vessel's facts | `evaluateDisplay` |
-| `classification` | a situation | not yet built |
-| `precedence` | a situation | not yet built |
-| `conduct` | a trace, not a point | not an evaluation at all |
-
-Those names are not settled, and neither is the ADR they come from — both
-are `pencil` in colregs' own sense. The shape of the seam is the durable
-part: a second input type, not a fatter first one.
-
-## Data, and the version stamp
-
-`evaluateDisplay` reads the applicability data from the colregs release this
-package resolves. Pass `opts.data` to evaluate against something else — the
-conformance harness injects synthetic tables, and other jurisdictions will
-arrive as separate files.
-
-Every result carries `colregs.version` and `colregs.source`, because an
-answer is a function of the data as much as of the facts. `source:
-'resolved'` means the version describes the data exactly. `source: 'caller'`
-means you supplied the data, and the version then names only what this
-package resolved: colregs' schema carries no version field, so nothing here
-can tell whether the two agree. The field says which claim it is making
-rather than leaving the two indistinguishable.
+`evaluateDisplay` reads applicability data from the colregs release this
+package resolves; pass `opts.data` to override — the conformance harness
+injects synthetic tables, and other jurisdictions will arrive as separate
+files. Every result carries `colregs.version` and `colregs.source`:
+`'resolved'` means the version describes the data exactly, `'caller'` means
+you supplied it and the version only names what this package resolved —
+colregs' schema has no version field, so the two may disagree unnoticed.
 
 ## Entry points
 
 - `colregs-engine` — `evaluateDisplay`, `appliedDisplayEntries`, and the
   engine's own output vocabulary: `DisplayEvaluation`, `Display`,
   `DisplayLight`, `FactRecord`, `Modality`. This is what most consumers
-  want, and it does not move when colregs releases data.
+  want, and it does not move when colregs releases data. `evaluate`,
+  `appliedEntries` and `Evaluation` still exist as deprecated aliases.
 - `colregs-engine/schema` — the colregs data shapes, generated from that
   package's JSON Schema: `Entry`, `Predicate`, `LightSpec`, `LightDef`,
   `ApplicabilityData` and the rest. Import these only if you read the data
   files yourself; they change when the data changes.
-
-`evaluate(data, facts)`, `appliedEntries(data, facts)` and the `Evaluation`
-type still exist as deprecated aliases, and go in a later 0.x.
 
 The composition decisions the engine makes on top of the data are recorded
 in [docs/engine-notes.md](docs/engine-notes.md).
