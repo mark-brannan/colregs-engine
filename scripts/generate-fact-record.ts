@@ -1,4 +1,5 @@
-// Generates src/generated/fact-record.ts from node_modules/colregs/data/facts.json.
+// Generates src/generated/fact-record.ts and src/generated/situation.ts from
+// node_modules/colregs/data/facts.json.
 //
 // facts.json is the input vocabulary: which fact keys exist and, for the
 // enumerated ones, which values they may take. `FactRecord` used to be
@@ -9,7 +10,9 @@
 // The emitted FACT_SPEC is the single source for both halves of the fix: the
 // key and value unions are derived from it at the type level, and
 // validateFacts() reads the same object at runtime, so the compile-time and
-// run-time answers cannot diverge.
+// run-time answers cannot diverge. §situation's five classes (kin/hist/geo
+// own+pair/env, ADR 0001 §3) get the same treatment, in the same run, from
+// the same source file.
 //
 // The schema (which keys are *allowed to exist*) is generated separately by
 // generate-schema-types.ts; this reads the data (which keys *do* exist).
@@ -24,12 +27,26 @@ interface EnumFact {
 interface TypedFact {
   type: 'boolean' | 'number' | 'string';
 }
+interface SituationField {
+  type: 'number' | 'boolean' | 'enum' | 'position';
+  values?: string[];
+  note?: string;
+}
 interface FactsJson {
   axes: Record<string, EnumFact>;
   modifiers?: Record<string, TypedFact>;
   numerics?: Record<string, unknown>;
   booleans?: Record<string, unknown>;
   enums?: Record<string, EnumFact>;
+  situation: {
+    kinematics: Record<string, SituationField | string>;
+    history: Record<string, SituationField | string>;
+    geometry: {
+      directional: Record<string, SituationField>;
+      symmetric: Record<string, SituationField>;
+    };
+    environment: Record<string, SituationField | string>;
+  };
 }
 
 const facts = JSON.parse(
@@ -119,4 +136,121 @@ export type FactRecord = {
 writeFileSync('src/generated/fact-record.ts', out);
 console.log(
   `generated ${entries.length} fact keys from colregs@${colregsVersion}`,
+);
+
+// §situation's five classes. Same source, same key/value-union derivation as
+// FACT_SPEC above; the one addition is `nullable`, because hist:latched_at_s
+// is documented (not schema-typed — facts.json states its type as plain
+// `number`) as null until Rule 13(d) latches. Detecting that from the note's
+// prose is the only signal facts.json gives; a future field with the same
+// shape picks up `nullable` the same way, with no generator change.
+const fieldBody = (f: SituationField): string => {
+  const nullable = (f.note ?? '').toLowerCase().includes('null');
+  const suffix = nullable ? ', nullable: true' : '';
+  if (f.type === 'enum') {
+    return `{ kind: 'enum', values: [${f.values!.map((v) => `'${v}'`).join(', ')}]${suffix} }`;
+  }
+  return `{ kind: '${f.type}'${suffix} }`;
+};
+
+const sectionEntries = (
+  section: Record<string, SituationField | string>,
+): Entry[] =>
+  Object.entries(section)
+    .filter((pair): pair is [string, SituationField] => pair[0] !== 'note')
+    .map(([key, f]) => ({ key, body: fieldBody(f) }));
+
+interface SituationClass {
+  specName: string;
+  typeName: string;
+  keyName: string;
+  valuesName: string;
+  doc: string;
+  entries: Entry[];
+}
+
+const classes: SituationClass[] = [
+  {
+    specName: 'KIN_SPEC',
+    typeName: 'Kinematics',
+    keyName: 'KinKey',
+    valuesName: 'KinValues',
+    doc: 'Absolute kinematic state of one vessel, in the world frame (own/other only).',
+    entries: sectionEntries(facts.situation.kinematics),
+  },
+  {
+    specName: 'HIST_SPEC',
+    typeName: 'History',
+    keyName: 'HistKey',
+    valuesName: 'HistValues',
+    doc: 'What has already been true of this encounter and latches (own/other only).',
+    entries: sectionEntries(facts.situation.history),
+  },
+  {
+    specName: 'GEO_OWN_SPEC',
+    typeName: 'DirectionalGeometry',
+    keyName: 'DirectionalGeometryKey',
+    valuesName: 'DirectionalGeometryValues',
+    doc: "Relative geometry measured from one subject's own frame (own/other only).",
+    entries: sectionEntries(facts.situation.geometry.directional),
+  },
+  {
+    specName: 'GEO_PAIR_SPEC',
+    typeName: 'PairGeometry',
+    keyName: 'PairGeometryKey',
+    valuesName: 'PairGeometryValues',
+    doc: 'Relative geometry symmetric between the two vessels (pair only).',
+    entries: sectionEntries(facts.situation.geometry.symmetric),
+  },
+  {
+    specName: 'ENV_SPEC',
+    typeName: 'Environment',
+    keyName: 'EnvironmentKey',
+    valuesName: 'EnvironmentValues',
+    doc: 'Where the encounter is happening — a property of the water, not of either vessel (pair only).',
+    entries: sectionEntries(facts.situation.environment),
+  },
+];
+
+const situationOut = `/**
+ * GENERATED FILE — DO NOT EDIT.
+ *
+ * Source: colregs@${colregsVersion} data/facts.json (situation)
+ * Regenerate with \`npm run generate\`; \`npm run generate:check\` fails the
+ * build if this file and the pinned data disagree.
+ */
+
+/** The value type of one situation field, given its spec entry. */
+type ValueOfSituationSpec<S> =
+  | (S extends { kind: 'enum'; values: readonly (infer V)[] }
+      ? V
+      : S extends { kind: 'number' }
+        ? number
+        : S extends { kind: 'boolean' }
+          ? boolean
+          : S extends { kind: 'position' }
+            ? { latitude: number; longitude: number }
+            : never)
+  | (S extends { nullable: true } ? null : never);
+
+${classes
+  .map(
+    (c) => `/** ${c.doc} */
+export const ${c.specName} = {
+${c.entries.map((e) => `  '${e.key}': ${e.body},`).join('\n')}
+} as const;
+export type ${c.keyName} = keyof typeof ${c.specName};
+export type ${c.valuesName} = {
+  [K in ${c.keyName}]: ValueOfSituationSpec<(typeof ${c.specName})[K]>;
+};
+export type ${c.typeName} = {
+  [K in ${c.keyName}]?: ${c.valuesName}[K];
+};`,
+  )
+  .join('\n\n')}
+`;
+
+writeFileSync('src/generated/situation.ts', situationOut);
+console.log(
+  `generated ${classes.reduce((n, c) => n + c.entries.length, 0)} situation keys across ${classes.length} classes from colregs@${colregsVersion}`,
 );
