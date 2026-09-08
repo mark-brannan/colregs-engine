@@ -284,6 +284,29 @@ export function buildEncoding(data: ApplicabilityData): Encoding {
     lines.push('');
   }
 
+  // Every axis above is total (header point 2), so a boolean modifier that
+  // `refines` another axis (e.g. `fact:making_way` refines
+  // `fact:position=position:underway`) is otherwise a free variable: Z3 can
+  // set it true off the refined value, a combination enumerate.ts never
+  // yields (expandModifiers only emits the modifier where the refinement
+  // holds), producing a `sat` witness with no corresponding real record.
+  // Constraining the modifier to imply its refinement holds closes that gap.
+  const modifierAxes = axes.filter(
+    (a): a is Axis & { kind: 'boolean'; refines: NonNullable<Extract<Axis, { kind: 'boolean' }>['refines']> } =>
+      a.kind === 'boolean' && a.refines !== undefined,
+  );
+  if (modifierAxes.length > 0) {
+    lines.push(';; ---------------------------------------------------------------');
+    lines.push(';; Modifier refinement constraints');
+    lines.push(';; ---------------------------------------------------------------');
+    for (const axis of modifierAxes) {
+      lines.push(
+        `(assert (=> ${sym(axis.key)} (= ${sym(axis.refines.key)} ${sym(axis.refines.value)})))   ; ${axis.key} refines ${axis.refines.key}=${axis.refines.value}`,
+      );
+    }
+    lines.push('');
+  }
+
   if (undeclaredEnumValues.length > 0) {
     lines.push(
       `;; WARNING: predicates name enum values facts.json does not declare: ${JSON.stringify(undeclaredEnumValues)}`,
