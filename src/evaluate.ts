@@ -291,15 +291,80 @@ export function evaluateDisplay(
   const modalities: Record<string, Modality> = {};
   for (const e of applied) modalities[e.id] = resolveModality(e, facts);
 
-  // rel:exempts — the referenced requirement does not apply (30(e)).
-  const exempted: { id: string; by: string }[] = [];
-  for (const e of applied) {
-    if (modalities[e.id] !== 'exempt') continue;
-    for (const ref of e['rel:exempts'] ?? []) {
-      if (appliedIds.has(ref)) exempted.push({ id: ref, by: e.id });
+  // rel:exempts and rel:overrides interact: an exempt entry that is itself
+  // displaced by an override must not exempt its own targets (CodeRabbit,
+  // PR #36 review). Neither relation's result is knowable without the
+  // other, so this resolves in two passes: first overriddenIds ignoring
+  // exemption (an exempting source can't itself be exempted-away at this
+  // point, so the omission is safe), then the real exemptedIds using that,
+  // then the real overriddenIds using the real exemptedIds. colregs' own
+  // CI (REQ-CAT-3) keeps rel:overrides acyclic, so each pass terminates.
+  function computeExempted(overriddenIds: ReadonlySet<string>) {
+    const exempted: { id: string; by: string }[] = [];
+    for (const e of applied) {
+      if (modalities[e.id] !== 'exempt') continue;
+      if (overriddenIds.has(e.id)) continue; // a displaced entry's exemptions don't fire
+      for (const ref of e['rel:exempts'] ?? []) {
+        if (appliedIds.has(ref)) exempted.push({ id: ref, by: e.id });
+      }
     }
+    return { exempted, exemptedIds: new Set(exempted.map((x) => x.id)) };
   }
-  const exemptedIds = new Set(exempted.map((x) => x.id));
+
+  // rel:overrides — directional displacement between two entries that both
+  // apply: X overrides Y means Y's lights are displaced while X applies.
+  // Unlike rel:excludes below, an override fires only from an obligation
+  // (shall / shall-if-practicable), never from a `may`, and only reaches
+  // other applied entries — never a one_of import option or a rel:includes
+  // import, which are not applied. isOverridden is recursive (an
+  // overridden entry's own rel:overrides do not fire, so a chain stops at
+  // the first displacement) and memoised; colregs' own CI (REQ-CAT-3) keeps
+  // this data acyclic, so the memo cache alone is enough to terminate.
+  function computeOverridden(exemptedIds: ReadonlySet<string>) {
+    const overriddenCache = new Map<string, boolean>();
+    const overriddenBy = new Map<string, string>();
+    function isOverridden(id: string): boolean {
+      if (overriddenCache.has(id)) return overriddenCache.get(id)!;
+      overriddenCache.set(id, false); // placeholder: makes recursion terminate
+      let result = false;
+      if (appliedIds.has(id) && !exemptedIds.has(id)) {
+        for (const e of applied) {
+          const m = modalities[e.id];
+          if (m !== 'shall' && m !== 'shall-if-practicable') continue;
+          if (exemptedIds.has(e.id)) continue;
+          if (!(e['rel:overrides'] ?? []).includes(id)) continue;
+          if (isOverridden(e.id)) continue; // a displaced entry's overrides don't fire
+          result = true;
+          overriddenBy.set(id, e.id);
+          break;
+        }
+      }
+      overriddenCache.set(id, result);
+      return result;
+    }
+    // Reported in data order of the overrider, then the overrider's own
+    // rel:overrides order (not the target's data order).
+    const overridden: { id: string; by: string }[] = [];
+    for (const e of applied) {
+      const m = modalities[e.id];
+      if (m !== 'shall' && m !== 'shall-if-practicable') continue;
+      if (exemptedIds.has(e.id)) continue;
+      if (isOverridden(e.id)) continue;
+      for (const ref of e['rel:overrides'] ?? []) {
+        if (!appliedIds.has(ref) || exemptedIds.has(ref)) continue;
+        if (isOverridden(ref) && overriddenBy.get(ref) === e.id) {
+          overridden.push({ id: ref, by: e.id });
+        }
+      }
+    }
+    return { overridden, overriddenIds: new Set(overridden.map((x) => x.id)) };
+  }
+
+  const preliminaryOverridden = computeOverridden(new Set());
+  const { exempted, exemptedIds } = computeExempted(
+    preliminaryOverridden.overriddenIds,
+  );
+  const { overridden, overriddenIds } = computeOverridden(exemptedIds);
 
   // A required (non-alternative) entry's rel:excludes suppresses the
   // referenced applied entries outright: 26(a) "shall exhibit only the
@@ -309,6 +374,7 @@ export function evaluateDisplay(
   // both as applied entries and as one_of import options.
   const requiredExcludes = new Map<string, string>();
   for (const e of applied) {
+    if (overriddenIds.has(e.id)) continue; // a displaced entry's excludes don't fire either
     const m = modalities[e.id];
     if (m !== 'shall' && m !== 'shall-if-practicable') continue;
     const replacesApplied = (e['rel:in_lieu_of'] ?? []).some((r) =>
@@ -333,7 +399,8 @@ export function evaluateDisplay(
     (e) =>
       modalities[e.id] !== 'exempt' &&
       !exemptedIds.has(e.id) &&
-      !excludedIds.has(e.id),
+      !excludedIds.has(e.id) &&
+      !overriddenIds.has(e.id),
   );
 
   for (const e of active) {
@@ -577,6 +644,7 @@ export function evaluateDisplay(
     applied: applied.map((e) => e.id),
     exempted,
     excluded,
+    overridden,
     displays,
     optional_additions: optionalAdditions,
     optionalAdditions,
