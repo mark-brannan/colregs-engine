@@ -1,5 +1,5 @@
 {
-  "about": "✎ PENCIL. Hand-maintained, read by queries.ts. Each query below is what the exhaustive enumeration (research/conformance/) observed on the date given, untriaged: it names the finding and what would settle it, and takes no position on the cause. If findings/triage.json becomes the one home for a finding's status, fold `triaged` and `finding` into it.",
+  "about": "✎ PENCIL. Hand-maintained, read by queries.ts. Each query below is what the exhaustive enumeration (research/conformance/) observed on the date given: it names the finding and what would settle it, or, once `triaged` flips to true, the ruling itself, taking no other position on the cause. If findings/triage.json becomes the one home for a finding's status, fold `triaged` and `finding` into it.",
   "status": "pencil",
   "marker": "✎",
   "defaults": {
