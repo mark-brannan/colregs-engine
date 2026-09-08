@@ -10,6 +10,7 @@
     "research/conformance/README.md": 197,
     "research/z3/README.md": 89,
     "docs/adr/0001-api-shape.md": 170,
+    "docs/adr/0002-trace-and-region-api.md": 190,
     "required": true,
     "must_budget": [
       "README.md",
@@ -80,7 +81,8 @@
     ],
     "allow": [
       "Foster/Gleirscher",
-      "Foster, Gleirscher"
+      "Foster, Gleirscher",
+      "no-robust-policy-in-model"
     ]
   },
   "headers": {

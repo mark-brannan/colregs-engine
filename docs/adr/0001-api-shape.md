@@ -116,21 +116,19 @@ part of this shape yet.
 ### 5. What this shape does not evaluate
 
 Scoped to `evaluateDisplay`/`evaluateEncounter` as defined here, not a ceiling
-on the package — `conduct` (kinematic/temporal evaluation over a trace) is
-out of *this* shape because it needs a different input and tool, not because
-it's excluded.
+on the package. Kinematic and temporal evaluation gets its own two verbs in
+ADR 0002.
 
 - **`conduct`.** Rules 8, 13(a)'s action, 14(a), 16, 17: what a vessel shall
   *do*. Their predicates read a trace — 8(b)'s "readily apparent" alteration,
   17(a)(ii)'s "as soon as it becomes apparent" — and colregs declares
   `kin:rot_deg_min` as read "by a conduct monitor rather than by a predicate at
-  a point". Monitoring is a different function with a different input (a
-  sequence of situations) and a different formal tool (STL/TLA+ per the
-  programme). It is anticipated future work, not a third verb on this API.
+  a point". A different input (a sequence of situations) and a different tool
+  (STL/TLA+), so a different verb: `evaluateConduct`, ADR 0002.
 - **`care` and `meta`.** Rules 2(a) and 2(b) are in colregs'
   `represented_paragraphs` registry precisely so nothing computes them.
-- **The Rule 2 region solver** (R0/R1/R2) and the status alphabet's semantics.
-  Research under `research/` until it earns a repository.
+- **The Rule 2 region solver** (R0/R1/R2). Research under `research/`; its
+  runtime face is `evaluateRegion`, ADR 0002.
 - **Time.** Freshness, hysteresis and the 13(d) latch's clock are the caller's
   (searoom's switching plugin). The engine receives `hist:*` as facts; it does
   not maintain them.
@@ -166,5 +164,5 @@ resolution, and validation of the situation record.
 | `appliedEncounterEntries` as the fixture-replay companion | ✎ | the situation-fixture replay being written |
 | `EncounterEvaluation` field set (§4) | ✎ | building it; Q-35, Q-36, Q-43 in colregs |
 | `encounter` absent vs the ADR 0005 §5 status alphabet | ✎ | Q-43 |
-| `conduct` is a separate package, not a third verb | ✎ | the first conduct monitor being written |
+| `conduct` is a separate package, not a third verb | ✎ | superseded by ADR 0002: a third and fourth verb, in this package |
 | Geometry-consistency validation (REQ-VERIFY-8) in the engine's validator | ? | deciding whether it is data-suite-only |

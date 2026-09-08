@@ -93,10 +93,10 @@ the same terms.
 
 `display` is colregs' own category name (ADR 0005, not yet settled) for
 this case: one vessel's facts in, her signals out, lights and day shapes
-together. The two-vessel categories, `classification` and `precedence`, read
-a *situation* and will share one verb, `evaluateEncounter`; `conduct` is a
-trace, not a point evaluation, and is not evaluated here at all. The shape
-and the reasons are [ADR 0001](docs/adr/0001-api-shape.md).
+together. It is the first of four verbs, one per input: `evaluateDisplay`
+(built), `evaluateEncounter` over a two-vessel situation (next),
+`evaluateConduct` over a trace, `evaluateRegion` under a kinematic model.
+[ADR 0001](docs/adr/0001-api-shape.md) has the first two, [ADR 0002](docs/adr/0002-trace-and-region-api.md) the rest.
 
 `evaluateDisplay` reads applicability data from the colregs release this
 package resolves; pass `opts.data` to override — the conformance harness
