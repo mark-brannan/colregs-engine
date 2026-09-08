@@ -118,6 +118,10 @@ export interface DisplayEvaluation {
   exempted: { id: string; by: string }[];
   /** Applied entries suppressed by a required entry's rel:excludes. */
   excluded: { id: string; by: string }[];
+  /** Applied entries displaced by another applied obligation's
+   * rel:overrides, with the overriding id — mirrors the same-named field
+   * ADR 0001 §4 defines on `EncounterEvaluation`. */
+  overridden: { id: string; by: string }[];
   /** Every complete lawful display (alternatives unresolved, REQ-MODEL-8). */
   displays: Display[];
   /**

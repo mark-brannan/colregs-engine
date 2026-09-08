@@ -8,7 +8,7 @@ so they can be reviewed as decisions, not archaeology.
 colregs defines predicate semantics and the five relations, and leaves
 final composition to the consumer (REQ-CONS-3). The evaluator in
 `src/evaluate.ts` implements the predicate layer exactly as the
-colregs README states it, replaying all 53 fixture cases verbatim in CI.
+colregs README states it, replaying every fixture case verbatim in CI.
 Each composition decision below is tested in `test/displays.test.ts`.
 
 ## Applied-entry layer (from the data, no decisions)
@@ -29,15 +29,23 @@ Each composition decision below is tested in `test/displays.test.ts`.
    is removed from every display and reported as exempted. Exempts
    relieve; they don't forbid.
 
-2. **A mandatory rule can veto lights another rule would add, and the
-   veto is recorded with its source.** 26(b)(i) is `shall` and excludes
-   30(a)/30(b): the anchor lights are removed from composition and
-   reported as excluded, with the excluder named — that is Rule 26(a)'s
-   "only the lights prescribed in this Rule". The same bar applies to
-   one_of import options (a fishing vessel aground does not import the
-   Rule 30 anchor lights 26(a) forbids). When the excluder is itself an
-   alternative (25(b) vs 25(c)), exclusion is a co-occurrence constraint
-   between displays instead.
+2. **A superior rule displaces the lights of the rule it overrides, and
+   the displacement is recorded with its source.** `rel:overrides` is
+   directional (X overrides Y, not the reverse) and fires only from an
+   obligation — an applied entry resolving `shall` or
+   `shall-if-practicable`, un-exempted and itself un-overridden; a `may`
+   overrider is inert. It reaches only other applied entries, never a
+   one_of import option or a `rel:includes` import, since neither is
+   applied. The displaced entry leaves composition entirely and is
+   reported in `overridden` with the overriding id; a displaced entry's
+   own `rel:excludes`/`rel:overrides` then don't fire either, so a chain
+   stops at the first displacement. `rel:excludes` between two
+   alternatives (25(b) vs 25(c)) stays a co-occurrence constraint between
+   displays, not a removal. The pinned colregs release still carries Rule
+   26(a) as `rel:excludes`, not `rel:overrides`: there, a `shall` excluder
+   vetoes its targets outright, including one_of import options (a
+   fishing vessel aground does not import the Rule 30 anchor lights
+   26(a) forbids) — that veto path goes when the pin moves.
 
 3. **Genuine alternatives split into separate displays, one per lawful
    choice.** An applied entry whose `rel:in_lieu_of` references applied
@@ -57,9 +65,14 @@ Each composition decision below is tested in `test/displays.test.ts`.
    rule text, and a mine-clearance vessel at anchor shows Rule 30 lights,
    not mastheads.
 
-5. **A "pick one of these" group picks exactly one, or none when the
-   whole group is optional.** `one_of` (30(d): anchor lights per 30(a)
-   *or* 30(b)) chooses exactly one — or none, when the carrier is `may`
+5. **A "pick one of these" group yields one display per available
+   option, and the union is returned — never a single, arbitrarily
+   picked option.** `one_of` (30(d): anchor lights per 30(a) *or* 30(b))
+   produces one display per option that is available for this vessel: a
+   vessel aground below 50 m gets one display with 30(a)'s two lights
+   and one with 30(b)'s single light; at 50 m and above only 30(a) is
+   available, so there is exactly one. The group's carrier can also be
+   `may`, adding a "none chosen" display alongside the options'
    (25(d)(ii): sailing lights, or failing that the carrier's own torch;
    choosing an option replaces the carrier's own lights). An option that
    is itself applied satisfies the group by its own dynamics. A
