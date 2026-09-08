@@ -58,8 +58,6 @@ jobs:
   # in mark-brannan/dotfiles; test/docs.test.ts runs the same engine locally.
   prose-budget:
     uses: mark-brannan/.github/.github/workflows/prose-budget.yml@main
-    with:
-      dotfiles-ref: claude/prose-budget
 
   # The single required status check, shared across repositories: the
   # `gate` job of mark-brannan/.github's reusable ci-gate workflow, which fails
