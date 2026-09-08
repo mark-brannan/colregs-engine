@@ -1,6 +1,6 @@
 {
   "name": "colregs-engine",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "Evaluation engine for structured COLREGS 72 data and national amalgamations",
   "license": "Apache-2.0",
