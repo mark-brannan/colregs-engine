@@ -5,7 +5,7 @@
   "cites": [],
   "records": 190080,
   "status": "human-reviewed",
-  "note": "Mark ruled 2026-09-07: keep position:moored as one value; add a boolean modifier fact:on_mooring_buoy that refines it, the way fact:making_way refines position:underway. Alongside (Rule 3(i)'s made-fast-to-shore) prescribes no lights, so this gap is correct; the buoy case gets the anchor lights under the jurisdiction that says so (US 33 CFR 90.5). Data change pending in colregs; see issue #24.",
+  "note": "2026-09-07: keep position:moored as one value; add boolean modifier fact:on_mooring_buoy refining it, like fact:making_way refines underway. Rule 3(i) prescribes no lights alongside, so this gap is correct; the buoy case gets anchor lights under US 33 CFR 90.5. Data change pending, see #24.",
   "facts": {
     "fact:activity": "activity:none",
     "fact:composite_unit": true,

@@ -8,7 +8,7 @@
   ],
   "records": 114048,
   "status": "human-reviewed",
-  "note": "Mark ruled 2026-09-07: rel:excludes means pick-one (as 25(b)/25(c)), so two 'shall' entries excluding each other is a data error and this check is right to fire. Fishing-over-anchor (26(a)) moves to rel:overrides; trawling + anchored is an impossible fact pair, to be declared at the facts level, not as a rule relation. Data change pending in colregs.",
+  "note": "2026-09-07: rel:excludes means pick-one (25(b)/25(c)); two 'shall' entries excluding each other is a data error, the check is right to fire. Fishing-over-anchor (26(a)) moves to rel:overrides; trawling + anchored is an impossible fact pair, declared at facts level. Data change pending in colregs.",
   "facts": {
     "fact:activity": "activity:trawling",
     "fact:composite_unit": true,
