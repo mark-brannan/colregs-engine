@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.2.0 data/facts.json
+ * Source: colregs@0.2.2 data/facts.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned data disagree.
  */
@@ -16,6 +16,7 @@ export const FACT_SPEC = {
   'fact:activity': { kind: 'enum', values: ['activity:none', 'activity:fishing', 'activity:trawling', 'activity:towing', 'activity:pushing', 'activity:being_towed', 'activity:nuc', 'activity:ram', 'activity:ram_underwater', 'activity:cbd', 'activity:mine', 'activity:pilot', 'activity:diving'] },
   'fact:position': { kind: 'enum', values: ['position:underway', 'position:anchored', 'position:aground', 'position:moored'] },
   'fact:making_way': { kind: 'boolean', refines: { key: 'fact:position', value: 'position:underway' } },
+  'fact:on_mooring_buoy': { kind: 'boolean', refines: { key: 'fact:position', value: 'position:moored' } },
   'fact:length_m': { kind: 'number' },
   'fact:tow_length_m': { kind: 'number' },
   'fact:max_speed_kn': { kind: 'number' },

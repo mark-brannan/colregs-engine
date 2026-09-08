@@ -18,7 +18,7 @@ const fixtures = situationFixturesJson as unknown as {
 
 describe('colregs situation fixtures (verbatim assignability)', () => {
   it('has the full fixture set', () => {
-    expect(fixtures.cases.length).toBe(79);
+    expect(fixtures.cases.length).toBe(80);
   });
 
   for (const c of fixtures.cases) {

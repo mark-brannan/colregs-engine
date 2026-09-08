@@ -26,6 +26,7 @@ describe('AXIS_FACTS derivation from facts.json', () => {
         'fact:activity',
         'fact:position',
         'fact:making_way',
+        'fact:on_mooring_buoy',
       ]),
     );
   });

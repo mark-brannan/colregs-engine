@@ -140,14 +140,44 @@ describe('lawful display composition', () => {
     expect(e.displays[0].entries).toContain('30a');
   });
 
-  it('trawler at anchor: Rule 30 anchor lights suppressed by 26(a)', () => {
+  // colregs-engine#32: a fishing vessel aground gets Rule 30's aground
+  // lights and no Rule 26 lights at all -- 26(a) never reaches her (Rule
+  // 3(i): aground is neither underway nor at anchor, and colregs@0.2.2
+  // gated every ungated Rule 26 lights entry to `not: position:aground`).
+  // This is the open doctrinal question in #32 (should a fishing vessel
+  // aground show fishing-vessel identification too?), pinned here as what
+  // the engine actually does today, not a ruling on what it should do.
+  it('aground and fishing 30 m: Rule 30 aground lights only, no Rule 26 lights (#32, unruled)', () => {
+    const e = evaluate(applicability, {
+      'fact:propulsion': 'propulsion:power',
+      'fact:activity': 'activity:fishing',
+      'fact:position': 'position:aground',
+      'fact:length_m': 30,
+    });
+    expect(e.displays).toHaveLength(2);
+    expect(e.overridden).toEqual([]);
+    for (const d of e.displays) {
+      expect(d.entries).toContain('30d-red');
+      expect(d.entries.some((id) => id.startsWith('26'))).toBe(false);
+      expect(
+        d.entries.includes('30a') !== d.entries.includes('30b'),
+      ).toBe(true);
+    }
+  });
+
+  it('trawler at anchor: Rule 30 anchor lights displaced by 26(a) (rel:overrides)', () => {
     const e = evaluate(applicability, {
       'fact:propulsion': 'propulsion:power',
       'fact:activity': 'activity:trawling',
       'fact:position': 'position:anchored',
       'fact:length_m': 30,
     });
-    expect(e.excluded.map((x) => x.id).sort()).toEqual(['30a', '30b']);
+    // colregs@0.2.2: 26c-id now carries rel:overrides (not rel:excludes)
+    // against 30a/30b -- both obligations, so the referencing norm's
+    // obligation displaces the referenced one rather than the two
+    // conflicting. That's `overridden`, not `excluded`.
+    expect(e.excluded).toEqual([]);
+    expect(e.overridden.map((x) => x.id).sort()).toEqual(['30a', '30b']);
     for (const d of e.displays) {
       expect(d.entries).not.toContain('30a');
       expect(d.entries).not.toContain('30b');
@@ -294,11 +324,12 @@ describe('lawful display composition', () => {
   });
 });
 
-// rel:overrides is dormant on the pinned colregs 0.2.0 data (only
-// precedence entries carry it there), so these cases build synthetic
-// tables by cloning applicability.json and rewriting entries -- the
-// mechanism a later colregs release exercises for real when 26(a) moves
-// from rel:excludes to rel:overrides.
+// colregs@0.2.2 made 26(a) live via rel:overrides (the 'trawler at anchor'
+// case above exercises it against real data); these cases still build
+// synthetic tables by cloning applicability.json and rewriting entries so
+// the mechanism itself -- multi-target overrides, an inert `may` overrider,
+// exemption interaction -- is pinned independent of which real entries
+// happen to carry the relation.
 describe('rel:overrides', () => {
   function cloneData(): ApplicabilityData {
     return structuredClone(applicability);
@@ -403,17 +434,6 @@ describe('rel:overrides', () => {
     const allEntries = result.displays.flatMap((d) => d.entries);
     expect(allEntries).toContain('30a');
     expect(allEntries).toContain('30b');
-  });
-
-  it('is dormant on the pinned release: rel:excludes still fires, rel:overrides does not', () => {
-    const result = evaluateDisplay({
-      'fact:propulsion': 'propulsion:power',
-      'fact:activity': 'activity:trawling',
-      'fact:position': 'position:anchored',
-      'fact:length_m': 30,
-    });
-    expect(result.excluded.map((x) => x.id).sort()).toEqual(['30a', '30b']);
-    expect(result.overridden).toEqual([]);
   });
 });
 
