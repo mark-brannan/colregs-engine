@@ -108,7 +108,6 @@ own vocabulary and do not move when colregs releases data.
 | [`Display`](src/types.ts), [`DisplayLight`](src/types.ts) | one lawful display and one light in it, each light citing `source_entry`, `via` and `modality` |
 | [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
 | [`Modality`](src/generated/applicability.ts) | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them |
-| `evaluate`, `appliedEntries`, `Evaluation` | deprecated aliases of the above, kept for one release |
 
 `colregs-engine/schema` ([src/schema.ts](src/schema.ts)) is the colregs data
 shapes generated from that package's JSON Schema: `Entry`, `Predicate`,
