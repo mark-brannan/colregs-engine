@@ -66,16 +66,22 @@ to the walker.
 ```ts
 interface Situation {
   own: Subject;
-  other: Subject;
+  other?: Subject;
   pair?: Pair;
 }
-interface Subject { fact?: FactRecord; kin?: Kinematics; geo?: DirectionalGeometry; hist?: History; }
+interface Subject { fact: FactRecord; kin?: Kinematics; geo?: DirectionalGeometry; hist?: History; }
 interface Pair    { geo?: PairGeometry; env?: Environment; }
 ```
 
-- `own` and `other` are required: a situation is two vessels by definition.
-  Every class inside a subject is optional, and every key inside a class is
-  optional — absent is absent, the same rule `FactRecord` already follows.
+- `own` is required; `other` is not. colregs' own fixture schema
+  (`situation-fixtures.schema.json`, `colregs@0.2.0`) only requires `own` —
+  it is already the "first consumer that legitimately has one vessel and a
+  `pair`" the register named below, which settles that row: a single-vessel
+  scope entry (e.g. Rule 19) can be represented without a caller synthesizing
+  a dummy `other`. `Subject.fact` is required, matching `Vessel.fact`
+  upstream; every other class inside a subject stays optional, and every key
+  inside a class is optional — absent is absent, the same rule `FactRecord`
+  already follows.
 - Keys keep their full colregs identifier (`'kin:heading_deg'`, not
   `heading_deg`), as `FactRecord` keeps `'fact:length_m'`. A fixture's
   `situation` object is then assignable to `Situation` unedited.
@@ -162,7 +168,7 @@ resolution, and validation of the situation record.
 | `FactRecord` keeps its name | ink | — |
 | `Situation` nested by subject and class, generated from `facts.json` | ink | — |
 | Verb name `evaluateEncounter`; result name `EncounterEvaluation` | ✎ | colregs renaming the `pair` subject or the `encounter` effect |
-| `own`/`other` required, classes optional | ✎ | the first consumer that legitimately has one vessel and a `pair` |
+| `own` required, `other` optional, `Subject.fact` required | ✎ | revised 2026-09-07 from "own/other both required": colregs' own `situation-fixtures.schema.json` (`0.2.0`, pinned here) only requires `own` — Mark to confirm before it goes to ink |
 | `appliedEncounterEntries` as the fixture-replay companion | ✎ | the situation-fixture replay being written |
 | `EncounterEvaluation` field set (§4) | ✎ | building it; Q-35, Q-36, Q-43 in colregs |
 | `encounter` absent vs the ADR 0005 §5 status alphabet | ✎ | Q-43 |
