@@ -119,21 +119,21 @@ ADR 0005 §5's status alphabet is the fix, and is not part of this shape yet.
 ### 5. What this shape does not evaluate
 
 Scoped to `evaluateDisplay`/`evaluateEncounter` as defined here, not a ceiling
-on the package. Kinematic and temporal evaluation gets its own two verbs in
-ADR 0002.
+on the package; kinematic and temporal evaluation gets two verbs in ADR 0002.
 
 - **`conduct`.** Rules 8, 13(a)'s action, 14(a), 16, 17: what a vessel shall
   *do*. Their predicates read a trace — 8(b)'s "readily apparent" alteration,
   17(a)(ii)'s "as soon as it becomes apparent" — and colregs declares
   `kin:rot_deg_min` read "by a conduct monitor, not by a predicate at a point".
-  A different input and a different tool (STL/TLA+): `evaluateConduct`, ADR 0002.
+  A different input (a trace: a sequence of situations) and a different tool
+  (STL/TLA+): `evaluateConduct`, ADR 0002.
 - **`care` and `meta`.** Rules 2(a) and 2(b) are in colregs'
   `represented_paragraphs` registry precisely so nothing computes them.
 - **The Rule 2 region solver** (R0/R1/R2, research-ontology labels, not API).
   Research under `research/`; its runtime face is `evaluateRule2Departure`,
   ADR 0002.
-- **Time.** Freshness, hysteresis and the 13(d) latch's clock are the caller's.
-  The engine receives `hist:*` as facts; it does not maintain them.
+- **Time.** Freshness, hysteresis and the 13(d) latch's clock are the caller's;
+  the engine receives `hist:*` as facts and does not maintain them.
 - **Choosing.** No verb picks a display or a role; every lawful answer is
   returned (REQ-MODEL-8).
 
@@ -146,9 +146,9 @@ resolution, and validation of the situation record.
 - The README paragraph promising separate classification and precedence
   entry points is replaced by a pointer here.
 - The next PR builds `Situation` generation and validation; the one after
-  builds `appliedEncounterEntries` against `situation-fixtures.json`; only then
+  `appliedEncounterEntries` against `situation-fixtures.json`; only then
   `evaluateEncounter`. Composition decisions the data leaves open go in
-  `docs/engine-notes.md` as the display ones did.
+  `docs/engine-notes.md`, as the display ones did.
 - `colregs-engine/schema` stays the home of mirrored colregs shapes; `Situation`
   and `EncounterEvaluation` are engine vocabulary, exported from the root.
 
