@@ -31,13 +31,13 @@ const data = applicabilityJson as unknown as ApplicabilityData;
 const rules = rulesJson as unknown as RulesData;
 
 // The status ladder a human climbs by hand: candidate (found, unreviewed) ->
-// agent-verified -> human-reviewed -> landed. buildRegister() below owns
+// agent-verified -> triaged -> human-reviewed -> landed. buildRegister() below owns
 // every other column; this is the one thing a run must never overwrite, so
 // it lives in its own hand-maintained file, keyed by the same
 // `${check}::${groupKey}` identity the harness groups findings under (not
 // by FIND-nn id, which is just a position in sorted order and shifts
 // whenever a finding appears or disappears).
-type TriageStatus = 'candidate' | 'agent-verified' | 'human-reviewed' | 'landed';
+type TriageStatus = 'candidate' | 'agent-verified' | 'triaged' | 'human-reviewed' | 'landed';
 interface TriageEntry {
   status: TriageStatus;
   note?: string;
@@ -420,9 +420,12 @@ predicate-level check for [issue #6](https://github.com/mark-brannan/colregs-eng
 
 Status ladder: **candidate** (found by the harness, unreviewed) ->
 **agent-verified** (a second agent pass confirmed it's real and not a
-harness bug) -> **human-reviewed** (a person triaged it: data bug, genuine
-ambiguity, or engine bug) -> **landed** (fixed as a fixture, an ADR, or a
-requirement change).
+harness bug) -> **triaged** (an agent classified it and wrote the reason,
+including "harness false positive"; a person has not yet ruled) ->
+**human-reviewed** (a person ruled: data bug, genuine ambiguity, engine
+bug, or harness bug) -> **landed** (fixed as a fixture, an ADR, or a
+requirement change). A finding may skip agent-verified and go straight to
+triaged when the agent's read is that the harness, not the data, is wrong.
 
 Agents never edit colregs normatively; these are candidates for a human to
 triage, not fixes.
