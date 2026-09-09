@@ -18,36 +18,34 @@
 // enum target) but has no test of its own either, so it's pinned here
 // alongside its non-enum counterpart.
 
-import { describe, expect, it, vi } from "vitest";
-import type { ApplicabilityData } from "../src/types.js";
+import { describe, expect, it, vi } from 'vitest';
+import type { ApplicabilityData } from '../src/types.js';
 
-describe("extractAxes: a modifier axis refining a non-enum target", () => {
-  it("throws, naming the offending axis and its declared (non-enum) target kind", async () => {
+describe('extractAxes: a modifier axis refining a non-enum target', () => {
+  it('throws, naming the offending axis and its declared (non-enum) target kind', async () => {
     vi.resetModules();
-    vi.doMock("../src/generated/fact-record.js", () => ({
+    vi.doMock('../src/generated/fact-record.js', () => ({
       FACT_SPEC: {
         // The refinement target: declared, but not an enum.
-        "fact:speed_kn": { kind: "number" },
+        'fact:speed_kn': { kind: 'number' },
         // The modifier: refines a value no numeric axis can ever equal by
         // string comparison.
-        "fact:racing": {
-          kind: "boolean",
-          refines: { key: "fact:speed_kn", value: "fast" },
+        'fact:racing': {
+          kind: 'boolean',
+          refines: { key: 'fact:speed_kn', value: 'fast' },
         },
       },
     }));
 
-    const { extractAxes } = await import(
-      "../research/conformance/enumerate.js"
-    );
+    const { extractAxes } = await import('../research/conformance/enumerate.js');
     const data = {
       entries: [
         {
-          id: "synthetic-racing",
-          cite: "test fixture",
-          category: "display",
-          modality: "shall",
-          when: { "fact:racing": true },
+          id: 'synthetic-racing',
+          cite: 'test fixture',
+          category: 'display',
+          modality: 'shall',
+          when: { 'fact:racing': true },
         },
       ],
     } as unknown as ApplicabilityData;
@@ -56,24 +54,24 @@ describe("extractAxes: a modifier axis refining a non-enum target", () => {
       /fact:racing refines fact:speed_kn, but that axis is not an enum axis \(declared kind: number\)/,
     );
 
-    vi.doUnmock("../src/generated/fact-record.js");
+    vi.doUnmock('../src/generated/fact-record.js');
     vi.resetModules();
   });
 });
 
-describe("buildEncoding: the modifier-refinement Z3 implication assert", () => {
-  it("emits (assert (=> modifier (= target value))) for a modifier axis", async () => {
-    const { buildEncoding } = await import("../research/z3/encode.js");
+describe('buildEncoding: the modifier-refinement Z3 implication assert', () => {
+  it('emits (assert (=> modifier (= target value))) for a modifier axis', async () => {
+    const { buildEncoding } = await import('../research/z3/encode.js');
     const data = {
       entries: [
         {
-          id: "synthetic-underway",
-          cite: "test fixture",
-          category: "display",
-          modality: "shall",
+          id: 'synthetic-underway',
+          cite: 'test fixture',
+          category: 'display',
+          modality: 'shall',
           when: {
-            "fact:making_way": true,
-            "fact:position": "position:underway",
+            'fact:making_way': true,
+            'fact:position': 'position:underway',
           },
         },
       ],
@@ -82,7 +80,7 @@ describe("buildEncoding: the modifier-refinement Z3 implication assert", () => {
     const { base } = buildEncoding(data);
 
     expect(base).toContain(
-      "(assert (=> |fact:making_way| (= |fact:position| |position:underway|)))   ; fact:making_way refines fact:position=position:underway",
+      '(assert (=> |fact:making_way| (= |fact:position| |position:underway|)))   ; fact:making_way refines fact:position=position:underway',
     );
   });
 });
