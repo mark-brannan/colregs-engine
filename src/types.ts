@@ -1,4 +1,4 @@
-// The engine's own output vocabulary — Display, DisplayLight, Evaluation.
+// The engine's own output vocabulary — Display, DisplayLight, DisplayEvaluation.
 //
 // These mirror nothing in colregs. They are this implementation's answers,
 // and they are what `colregs-engine` promises to keep stable.
@@ -153,11 +153,6 @@ export interface DisplayEvaluation {
   /** Resolved modality per applied/imported entry id. */
   modalities: Record<string, Modality>;
 }
-
-/** @deprecated Renamed to {@link DisplayEvaluation} — `display` is colregs'
- * own category name for the one-vessel lights-and-shapes case, and the
- * two-subject cases return different shapes. Removed in a later 0.x. */
-export type Evaluation = DisplayEvaluation;
 
 /**
  * The input a two-subject rule reads (ADR 0001 §3, mirroring colregs' ADR

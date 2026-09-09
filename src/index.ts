@@ -13,10 +13,6 @@
 export {
   appliedDisplayEntries,
   evaluateDisplay,
-  // Deprecated aliases of the two above, kept for one release so searoom can
-  // migrate on its own schedule.
-  appliedEntries,
-  evaluate,
 } from './evaluate.js';
 export type { EvaluateOptions } from './evaluate.js';
 
@@ -24,8 +20,6 @@ export type {
   Display,
   DisplayEvaluation,
   DisplayLight,
-  /** @deprecated Renamed to DisplayEvaluation. */
-  Evaluation,
   Situation,
   Subject,
   Pair,

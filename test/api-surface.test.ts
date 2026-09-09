@@ -1,13 +1,10 @@
-// The public entry points: data resolution, the version stamp's `source`,
-// and the deprecated aliases agreeing with what they forward to.
+// The public entry points: data resolution and the version stamp's `source`.
 
 import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json';
 import colregsPackage from 'colregs/package.json';
 import {
   appliedDisplayEntries,
-  appliedEntries,
-  evaluate,
   evaluateDisplay,
 } from '../src/evaluate';
 import type { ApplicabilityData, FactRecord } from '../src/types';
@@ -45,20 +42,8 @@ describe('data resolution', () => {
   });
 });
 
-describe('deprecated aliases', () => {
-  it('evaluate(data, facts) forwards to evaluateDisplay', () => {
-    expect(evaluate(applicability, sloop12)).toEqual(
-      evaluateDisplay(sloop12, { data: applicability }),
-    );
-  });
-
-  it('appliedEntries(data, facts) forwards to appliedDisplayEntries', () => {
-    expect(appliedEntries(applicability, sloop12)).toEqual(
-      appliedDisplayEntries(sloop12, { data: applicability }),
-    );
-  });
-
-  it('the camelCase field aliases carry what the snake_case fields carry', () => {
+describe('camelCase field aliases', () => {
+  it('carry what the snake_case fields carry', () => {
     const result = evaluateDisplay(sloop12);
     expect(result.optionalAdditions).toEqual(result.optional_additions);
     const lights = result.displays.flatMap((d) => d.lights);

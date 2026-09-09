@@ -4,10 +4,19 @@
 
 import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json';
-import { appliedEntries, evaluate, evaluateDisplay } from '../src/evaluate';
-import type { ApplicabilityData, Entry, FactRecord } from '../src/types';
+import { appliedDisplayEntries, evaluateDisplay } from '../src/evaluate';
+import type { ApplicabilityData, DisplayEvaluation, Entry, FactRecord } from '../src/types';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
+
+// Local positional-arg wrappers, matching this suite's existing call shape —
+// evaluateDisplay/appliedDisplayEntries take facts first and data via opts.
+function evaluate(data: ApplicabilityData, facts: FactRecord): DisplayEvaluation {
+  return evaluateDisplay(facts, { data });
+}
+function appliedEntries(data: ApplicabilityData, facts: FactRecord): string[] {
+  return appliedDisplayEntries(facts, { data });
+}
 
 const sloop12: FactRecord = {
   'fact:propulsion': 'propulsion:sail',

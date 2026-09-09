@@ -15,7 +15,7 @@ import fixturesJson from 'colregs/fixtures/applicability-fixtures.json' with { t
 import rulesJson from 'colregs/data/rules.json' with { type: 'json' };
 import triageJson from './findings/triage.json' with { type: 'json' };
 
-import { evaluate, predicateMatches } from '../../src/evaluate.js';
+import { evaluateDisplay, predicateMatches } from '../../src/evaluate.js';
 import type { ApplicabilityData, Entry, FactRecord, RulesData } from '../../src/types.js';
 
 import { extractAxes, enumerateRecords, totalRecords, formatAxisTable } from './enumerate.js';
@@ -201,7 +201,7 @@ for (const facts of enumerateRecords(axes)) {
   if (sampleSize && n >= sampleSize) break;
   n++;
 
-  const evalResult = evaluate(data, facts);
+  const evalResult = evaluateDisplay(facts, { data });
   const engineApplied = evalResult.applied;
   const refApplied = referenceAppliedEntries(data, facts);
 
