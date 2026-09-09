@@ -68,7 +68,7 @@ from a live sensor feed rather than a fixture.
 - The engine is a pure function of its input fact record and the `colregs`
   data it's evaluated against — no I/O, no network, no filesystem access at
   call time.
-- The conformance suite (`npm run conformance`) and the TLA+/Z3 formal-methods
+- The conformance suite (`npm run conformance`) and the Z3 formal-methods
   work (`npm run z3`) check the rule set itself for consistency and
   completeness, independent of any code path a caller can reach.
 - `npm test` runs against the committed fixtures with the network
