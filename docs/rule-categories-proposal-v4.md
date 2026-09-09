@@ -282,7 +282,7 @@ Stockholm (1956) is one reviewer's tier-3 candidate, unverified.
 
 Additive; every existing entry, fixture and test stays valid unchanged:
 
-```
+```text
 norm = { id, jurisdiction, cite,
          category:  scope | definition | standard | display | classification
                     | precedence | conduct                                (default display)
