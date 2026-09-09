@@ -1,22 +1,22 @@
 # colregs-engine
 
-You describe a vessel: how long, what it's doing, whether it's under way. It
-gives back every set of lights and shapes that vessel may lawfully show
-under the COLREGS. Where the rules allow a choice you get all the options;
-picking one is up to the skipper.
+Two vessels are closing.   *What must they do?  Who gives way?  What must they display?*
 
-The rules themselves live as data in the
-[colregs](https://github.com/mark-brannan/colregs) package. This is the part
-that reads them. It checks each entry's conditions against your vessel, then
-works out how the surviving entries interact: a display can include another,
-replace it, rule it out, or exempt the vessel from showing anything. What
-comes out is the set of complete lawful displays.
+The COLREGS, the International Regulations for Preventing Collisions at Sea, answer all three.  This project
+transforms the colregs so that a machine can evaluate and reason about them *deterministically*:
+the whole of the rules as structured data, so the same situation always yields the same result,
+and every result can be traced back to the rule that produced it.  Going further, the engine
+and the rules are then *checked with formal methods*, which means mathematically proving the rule set
+is consistent and complete rather than just testing it a bunch and hoping it all works out.
 
-Sister packages: [searoom](https://github.com/mark-brannan/searoom) is the
-study tool built on this engine, with a
-[live demo](https://mark-brannan.github.io/searoom/);
-[nav-wright](https://github.com/mark-brannan/nav-wright) will draw the
-vessels and their lights.
+Related packages:
+* [colregs](https://github.com/mark-brannan/colregs) - the data and JSON Schema
+* [colregs-engine](https://github.com/mark-brannan/colregs-engine) - the engine that evaluates rules
+* [colregs-mcp](https://github.com/mark-brannan/colregs-mcp) - an MCP server so AI can use the engine
+* [nav-wright](https://github.com/mark-brannan/nav-wright) - draws vessels and displays (stub)
+* [searoom](https://github.com/mark-brannan/searoom) - a study tool demo
+
+See a [live demo](https://mark-brannan.github.io/searoom/) of searoom and the colregs data/engine.
 
 ## Usage
 
@@ -130,7 +130,7 @@ which is what the next section is about.
   in it says whether a sloop carries a tricolour lantern, so nothing in it
   could settle Rule 25(b) against 25(c). Narrowing the set would take a fact
   the engine is not given. Composition itself is a different matter — the
-  engine makes seven judgment calls the data leaves open, each recorded in
+  engine makes the judgment calls the data leaves open, each recorded in
   [docs/engine-notes.md](docs/engine-notes.md).
 - **Traceable.** Every entry in an output cites the paragraph it came from.
 
@@ -151,8 +151,8 @@ before.
    paragraph. Whatever it finds is printed as a readable vessel and saved as a
    fixture in [`research/conformance/`](research/conformance/), which explains
    how to run it and how a finding is triaged.
-2. The same properties handed to a solver: Z3 over the applicability table,
-   Alloy for the encounter sectors. This is for anyone who distrusts "we ran
+2. The same properties handed to a solver: Z3 over the applicability table
+   ([`research/z3/`](research/z3/)), Alloy for the encounter sectors. This is for anyone who distrusts "we ran
    a lot of tests", which is a reasonable thing to distrust.
 3. A Rocq proof that partitioning at the thresholds misses nothing, which
    promotes step 1 from a big test to an actual proof.
