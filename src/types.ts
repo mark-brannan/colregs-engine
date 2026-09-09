@@ -8,7 +8,7 @@
 // (src/schema.ts). This module re-exports them for internal use and for the
 // tests, which read applicability.json directly.
 
-import type { Modality } from './generated/applicability.js';
+import type { EffectRole, EntryId, Modality } from './generated/applicability.js';
 import type { LightSpec } from './schema.js';
 import type { FactRecord } from './generated/fact-record.js';
 import type {
@@ -177,4 +177,153 @@ export interface Situation {
   own: Subject;
   other?: Subject;
   pair?: Pair;
+}
+
+// ---------------------------------------------------------------------------
+// The three verbs ADR 0001 §4 and ADR 0002 name but do not build. Their
+// shapes live here, exported and compiler-checked, from the day they are
+// named; the verbs themselves are stubs in encounter.ts, conduct.ts and
+// rule2.ts. Every field below is pencil until the verb that fills it is
+// written — see each ADR's register for what would settle it.
+// ---------------------------------------------------------------------------
+
+/** A Rules paragraph cite: `'17(c)'`. `EntryId` is the other vocabulary a
+ * string field can hold; which one a field means is fixed by its type
+ * (ADR 0001 §4), not by the compiler. */
+export type ParagraphCite = string;
+
+/** One role a subject holds in an encounter, citing the entry that assigned
+ * it. Roles are a set per subject: a sailing vessel meeting a
+ * constrained-by-draught vessel holds `stand-on` and `shall-not-impede` at
+ * once (colregs Q-36). */
+export interface SubjectRole {
+  role: EffectRole;
+  by: EntryId;
+}
+
+/** The result of `evaluateEncounter`: two vessels at one instant
+ * (ADR 0001 §4). */
+export interface EncounterEvaluation {
+  colregs: { version: string; source: 'resolved' | 'caller' };
+  /** Entries whose predicate matched, in data order. */
+  applied: EntryId[];
+  /** Applied `scope` entries — what put the rest in play. */
+  scope: EntryId[];
+  /** Absent when no classification entry fired: "cannot say", not "none"
+   * (colregs Q-43). */
+  encounter?: 'head-on' | 'crossing' | 'overtaking' | 'none';
+  /** Rule 7(a) lets an entry add a ground and never deny one, so the
+   * grounds ride with the assertion. */
+  risk_of_collision: { asserted: boolean; by: EntryId[] };
+  roles: { own: SubjectRole[]; other: SubjectRole[] };
+  /** Applied entries displaced by another applied obligation's
+   * `rel:overrides`. */
+  overridden: { id: EntryId; by: EntryId }[];
+  modalities: Record<EntryId, Modality>;
+}
+
+/** One instant of a trace. `t_s` is seconds on the caller's clock; the
+ * engine reads differences only. */
+export interface TraceSample {
+  t_s: number;
+  situation: Situation;
+}
+
+/** The input `conduct` reads: a window over the situation, not a session.
+ * Non-empty, strictly increasing `t_s`, the same two vessels throughout —
+ * the last of which the engine cannot check, because a `Situation` names no
+ * vessel (ADR 0002 §2). */
+export interface Trace {
+  samples: TraceSample[];
+}
+
+/** One conduct entry's verdict for one subject over the window. `pending`
+ * means the window ended before the duty could be judged; an entry that
+ * never attached is absent, not `pending`. */
+export interface ConductVerdict {
+  id: EntryId;
+  subject: 'own' | 'other';
+  verdict: 'kept' | 'breached' | 'pending';
+  /** When the entry attached the role being judged. */
+  attached_at_s?: number;
+  /** When a breach began, or when the duty was met. */
+  decided_at_s?: number;
+  /** The STL margin the monitor computed, so a near miss and a wide pass do
+   * not look alike. */
+  robustness?: { value: number; unit: string };
+}
+
+/** A transition of the Rule 13(d)/17 protocol state machine. `phase` is a
+ * paragraph cite, never an entry id: several phases have no entry. */
+export interface ConductPhaseChange {
+  subject: 'own' | 'other';
+  phase: ParagraphCite;
+  at_s: number;
+}
+
+/** The result of `evaluateConduct`: verdicts over the window the caller
+ * handed over (ADR 0002 §3). */
+export interface ConductEvaluation {
+  colregs: { version: string; source: 'resolved' | 'caller' };
+  /** What window this result saw. */
+  window: { from_s: number; to_s: number; samples: number };
+  applied: EntryId[];
+  verdicts: ConductVerdict[];
+  phases: ConductPhaseChange[];
+}
+
+/** The axes the Rule 2 sensitivity matrix varies. The field set is a claim
+ * about what that matrix is (colregs Q-17 to Q-22). */
+export interface SolverParameters {
+  dynamics: string[];
+  horizon_s: number;
+  cadence_s: number;
+  separation_m: number;
+  information: 'full' | 'partial';
+  adversary: 'compliant' | 'physics';
+}
+
+/** One solved region grid, named immutably by `version`. Required and
+ * positional on `evaluateRule2Departure`: a grid has no default. Any field
+ * beyond these is the artefact's own, not API. */
+export interface Rule2DepartureModel extends SolverParameters {
+  version: string;
+  /** The colregs release the grid was solved against. A mismatch with
+   * `rules.colregs.version` is reported, not refused. */
+  colregs_version: string;
+}
+
+/** What the model knows, as a closed alphabet colregs' ADR 0005 §5 owns and
+ * this package may not rename. `not-flagged` means "not flagged by this
+ * model", never "the rules suffice". */
+export type Rule2DepartureStatus =
+  | 'not-flagged'
+  | 'model-rule-conflict'
+  | 'no-robust-policy-in-model'
+  | 'inconclusive-in-model';
+
+/** One escape the grid holds. Information, not a prescription. */
+export interface Rule2DepartureAdvisory {
+  action: { alter_deg?: number; sog_kn?: number };
+  margin_m: number;
+  /** The paragraphs this action breaks. Cites, never entry ids. */
+  breaches: ParagraphCite[];
+  envelope: { holds_until_s: number };
+}
+
+/** The result of `evaluateRule2Departure` (ADR 0002 §4). The rule-derived
+ * obligations sit in `rules` unchanged, so a reader sees what the Rules
+ * said; advisories are ranked best margin first, and are empty under
+ * `no-robust-policy-in-model`. */
+export interface Rule2DepartureFinding {
+  status: Rule2DepartureStatus;
+  rules: EncounterEvaluation;
+  advisories: Rule2DepartureAdvisory[];
+  model: {
+    version: string;
+    colregs_version: string;
+    parameters: SolverParameters;
+    /** Display text, never matched on. */
+    assumptions_violated: string[];
+  };
 }

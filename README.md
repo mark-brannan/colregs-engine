@@ -90,9 +90,11 @@ the honest answer for a vessel that lawfully shows nothing, and the two must
 not look alike. `appliedDisplayEntries(facts)` returns just the matching
 entry ids, without composing displays, and validates on the same terms.
 
-The verb names, the planned `evaluateEncounter`, `evaluateConduct` and
-`evaluateRule2Departure`, and the `opts.data` / `colregs.source` contract are
-settled in [ADR 0001](docs/adr/0001-api-shape.md) and
+`evaluateEncounter`, `evaluateConduct` and `evaluateRule2Departure` are
+exported and throw `NotImplementedError`: their envelopes are fixed and
+compiler-checked, their bodies are not built. The verb names, those shapes
+and the `opts.data` / `colregs.source` contract are settled in
+[ADR 0001](docs/adr/0001-api-shape.md) and
 [ADR 0002](docs/adr/0002-trace-and-rule2-departure-api.md).
 
 ## Entry points
@@ -108,6 +110,7 @@ own vocabulary and do not move when colregs releases data.
 | [`Display`](src/types.ts), [`DisplayLight`](src/types.ts) | one lawful display and one light in it, each light citing `source_entry`, `via` and `modality` |
 | [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
 | [`Modality`](src/generated/applicability.ts) | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them |
+| [`evaluateEncounter`](src/encounter.ts), [`evaluateConduct`](src/conduct.ts), [`evaluateRule2Departure`](src/rule2.ts) | the other three verbs, with their companions and envelopes. Stubs: each throws [`NotImplementedError`](src/errors.ts) |
 
 `colregs-engine/schema` ([src/schema.ts](src/schema.ts)) is the colregs data
 shapes generated from that package's JSON Schema: `Entry`, `Predicate`,
