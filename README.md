@@ -1,6 +1,6 @@
 # colregs-engine
 
-Two vessels are closing.   *What must they do?  Who gives way?  What must they display?*
+Two vessels are closing.  *What must they do?  Who gives way?  What must they display?*
 
 The COLREGS, the International Regulations for Preventing Collisions at Sea, answer all three.  This project
 transforms the colregs so that a machine can evaluate and reason about them *deterministically*:
