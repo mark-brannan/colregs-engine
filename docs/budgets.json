@@ -1,7 +1,7 @@
 {
   "$comment": "Prose budgets enforced by prose-budget (dotfiles .local/bin). Raising a number or adding an exception is a deliberate, reviewable diff. narration.disable drops the engine's built-in issue pattern: research notes cite issue #N legitimately.",
   "lines": {
-    "README.md": 180,
+    "README.md": 200,
     "AGENTS.md": 29,
     "docs/engine-notes.md": 110,
     "docs/formal-methods-glossary.md": 190,

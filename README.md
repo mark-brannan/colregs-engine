@@ -1,20 +1,26 @@
 # colregs-engine
 
-You describe a vessel: how long, what it's doing, whether it's under way. It
-gives back every set of lights and shapes that vessel may lawfully show
-under the COLREGS. Where the rules allow a choice you get all the options;
-picking one is up to the skipper.
+Two vessels are closing. *What must they do? Who gives way? What must they
+display?*
 
-The rules themselves live as data in the
-[colregs](https://github.com/mark-brannan/colregs) package. This is the part
+These are the COLREGS (Collision Regulations), and this project makes that
+answer deterministic: the whole of the rules as structured data, so the same
+situation always yields the same result, and every result can be traced back
+to the rule that produced it. The rules are then checked with formal methods,
+which means mathematically proving the rule set is consistent and complete
+rather than testing it and hoping it works. colregs-engine is the evaluator.
+
+The rules themselves live as data in the colregs package. This is the part
 that reads them. It checks each entry's conditions against your vessel, then
 works out how the surviving entries interact: a display can include another,
 replace it, rule it out, or exempt the vessel from showing anything. What
 comes out is the set of complete lawful displays.
 
-The evaluator now lives here, in `src/`, extracted from searoom on
-2026-09-05; [searoom](https://github.com/mark-brannan/searoom) will consume
-it as a package once it's published.
+Sister packages:
+
+* [colregs](https://github.com/mark-brannan/colregs) - the data and JSON schema
+* [searoom](https://github.com/mark-brannan/searoom) - a study tool demo, [live](https://mark-brannan.github.io/searoom/) on the colregs data and this engine
+* [nav-wright](https://github.com/mark-brannan/nav-wright) - draws vessels and their displays (stub)
 
 ## Usage
 
