@@ -11,6 +11,16 @@
     "research/z3/README.md": 89,
     "docs/adr/0001-api-shape.md": 170,
     "docs/adr/0002-trace-and-rule2-departure-api.md": 200,
+    "docs/proposals/2026-09-04-rule-categories-v2.md": 274,
+    "docs/proposals/2026-09-04-rule-categories-v3.md": 261,
+    "docs/proposals/2026-09-04-rule-categories-v4.md": 340,
+    "docs/proposals/2026-09-04-rule-kinds.md": 187,
+    "docs/proposals/reviews/2026-09-04-v1-claude-subagents.md": 85,
+    "docs/proposals/reviews/2026-09-04-v2-codex.md": 17,
+    "docs/proposals/reviews/2026-09-04-v2-gemini.md": 35,
+    "docs/proposals/reviews/2026-09-04-v3-codex.md": 30,
+    "docs/proposals/reviews/2026-09-04-v3-gemini.md": 30,
+    "docs/proposals/reviews/2026-09-04-v4-codex.md": 49,
     "required": true,
     "must_budget": [
       "README.md",
@@ -52,12 +62,30 @@
       "research/**/*.ts"
     ],
     "grandfathered": [
-      { "file": "research/z3/encode.ts", "match": "P2.1" },
-      { "file": "research/z3/encode.ts", "match": "P1.3" },
-      { "file": "research/z3/encode.ts", "match": "P3.1" },
-      { "file": "research/z3/queries.ts", "match": "P1.3" },
-      { "file": "research/z3/run.ts", "match": "P2.1" },
-      { "file": "research/z3/run.ts", "match": "P3.1" }
+      {
+        "file": "research/z3/encode.ts",
+        "match": "P2.1"
+      },
+      {
+        "file": "research/z3/encode.ts",
+        "match": "P1.3"
+      },
+      {
+        "file": "research/z3/encode.ts",
+        "match": "P3.1"
+      },
+      {
+        "file": "research/z3/queries.ts",
+        "match": "P1.3"
+      },
+      {
+        "file": "research/z3/run.ts",
+        "match": "P2.1"
+      },
+      {
+        "file": "research/z3/run.ts",
+        "match": "P3.1"
+      }
     ],
     "disable": [
       "issue"
@@ -81,7 +109,13 @@
     "allow": [
       "Foster/Gleirscher",
       "Foster, Gleirscher",
-      "no-robust-policy-in-model"
+      "no-robust-policy-in-model",
+      "a compliant robust policy exists in this model",
+      "every robust safe policy breaches at least one Rules 4\u201319 constraint",
+      "no robust safe policy exists in this model",
+      "no robust escape was",
+      "no robust policy against",
+      "lacking a compliant robust policy"
     ]
   },
   "headers": {
