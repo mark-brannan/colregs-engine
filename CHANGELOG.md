@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.3](https://github.com/mark-brannan/colregs-engine/compare/v0.1.2...v0.1.3) (2026-09-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* evaluate, appliedEntries, and the Evaluation type alias are removed from the public API. Use evaluateDisplay, appliedDisplayEntries, and DisplayEvaluation instead.
+
+### Added
+
+* remove deprecated evaluate/appliedEntries/Evaluation aliases ([#51](https://github.com/mark-brannan/colregs-engine/issues/51)) ([35a149a](https://github.com/mark-brannan/colregs-engine/commit/35a149a6e670c9b162cee09ecda296e36e1cd2b1))
+
 ## [0.1.2](https://github.com/mark-brannan/colregs-engine/compare/v0.1.1...v0.1.2) (2026-09-08)
 
 
