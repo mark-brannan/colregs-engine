@@ -10,14 +10,13 @@ and the rules are then *checked with formal methods*, which means mathematically
 is consistent and complete rather than just testing it a bunch and hoping it all works out.
 
 Related packages:
-* [colregs](https://github.com/mark-brannan/colregs) - the data and json schema
+* [colregs](https://github.com/mark-brannan/colregs) - the data and JSON Schema
 * [colregs-engine](https://github.com/mark-brannan/colregs-engine) - the engine that evaluates rules
-* [colregs-mcp](https://github.com/mark-brannan/colregs-mcp) - An MCP server so AI can use the engine
+* [colregs-mcp](https://github.com/mark-brannan/colregs-mcp) - an MCP server so AI can use the engine
 * [nav-wright](https://github.com/mark-brannan/nav-wright) - draws vessels and displays (stub)
 * [searoom](https://github.com/mark-brannan/searoom) - a study tool demo
 
-
-See a [live demo](https://mark-brannan.github.io/searoom/) of searoom and the colregs data/engine
+See a [live demo](https://mark-brannan.github.io/searoom/) of searoom and the colregs data/engine.
 
 ## Usage
 
@@ -131,7 +130,7 @@ which is what the next section is about.
   in it says whether a sloop carries a tricolour lantern, so nothing in it
   could settle Rule 25(b) against 25(c). Narrowing the set would take a fact
   the engine is not given. Composition itself is a different matter — the
-  engine makes seven judgment calls the data leaves open, each recorded in
+  engine makes the judgment calls the data leaves open, each recorded in
   [docs/engine-notes.md](docs/engine-notes.md).
 - **Traceable.** Every entry in an output cites the paragraph it came from.
 
@@ -152,8 +151,8 @@ before.
    paragraph. Whatever it finds is printed as a readable vessel and saved as a
    fixture in [`research/conformance/`](research/conformance/), which explains
    how to run it and how a finding is triaged.
-2. The same properties handed to a solver: Z3 over the applicability table,
-   Alloy for the encounter sectors. This is for anyone who distrusts "we ran
+2. The same properties handed to a solver: Z3 over the applicability table
+   ([`research/z3/`](research/z3/)), Alloy for the encounter sectors. This is for anyone who distrusts "we ran
    a lot of tests", which is a reasonable thing to distrust.
 3. A Rocq proof that partitioning at the thresholds misses nothing, which
    promotes step 1 from a big test to an actual proof.
