@@ -263,16 +263,6 @@ export function appliedDisplayEntries(
   return appliedEntryList(opts.data ?? RESOLVED_DATA, facts).map((e) => e.id);
 }
 
-/** @deprecated Renamed to {@link appliedDisplayEntries}, which resolves the
- * applicability data itself and takes it as `opts.data` instead of a
- * positional argument. Removed in a later 0.x. */
-export function appliedEntries(
-  data: ApplicabilityData,
-  facts: FactRecord,
-): string[] {
-  return appliedDisplayEntries(facts, { data });
-}
-
 /**
  * Evaluates one vessel's `facts`, returning every lawful display.
  *
@@ -661,14 +651,4 @@ export function evaluateDisplay(
     optionalAdditions,
     modalities,
   };
-}
-
-/** @deprecated Renamed to {@link evaluateDisplay}, which resolves the
- * applicability data itself and takes it as `opts.data` instead of a
- * positional argument. Removed in a later 0.x. */
-export function evaluate(
-  data: ApplicabilityData,
-  facts: FactRecord,
-): DisplayEvaluation {
-  return evaluateDisplay(facts, { data });
 }

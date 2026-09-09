@@ -6,10 +6,14 @@ import { describe, expect, it } from 'vitest';
 import fixturesJson from 'colregs/fixtures/applicability-fixtures.json';
 import applicabilityJson from 'colregs/data/applicability.json';
 import colregsPackage from 'colregs/package.json';
-import { evaluate } from '../src/evaluate';
-import type { ApplicabilityData, FactRecord } from '../src/types';
+import { evaluateDisplay } from '../src/evaluate';
+import type { ApplicabilityData, DisplayEvaluation, FactRecord } from '../src/types';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
+
+function evaluate(data: ApplicabilityData, facts: FactRecord): DisplayEvaluation {
+  return evaluateDisplay(facts, { data });
+}
 
 interface FixtureCase {
   name: string;

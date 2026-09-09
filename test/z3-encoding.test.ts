@@ -13,8 +13,12 @@ import { init } from 'z3-solver';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { appliedEntries, predicateMatches, resolveModality } from '../src/evaluate.js';
+import { appliedDisplayEntries, predicateMatches, resolveModality } from '../src/evaluate.js';
 import type { ApplicabilityData, Constraint, Entry, FactRecord, FactValue, Predicate } from '../src/types.js';
+
+function appliedEntries(data: ApplicabilityData, facts: FactRecord): string[] {
+  return appliedDisplayEntries(facts, { data });
+}
 import { extractAxes, type Axis } from '../research/conformance/enumerate.js';
 import {
   APPLIES,

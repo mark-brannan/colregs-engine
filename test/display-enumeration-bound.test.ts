@@ -8,10 +8,14 @@
 // iterates billions of combos.
 
 import { describe, expect, it } from 'vitest';
-import { evaluate } from '../src/evaluate';
-import type { ApplicabilityData, Entry, FactRecord } from '../src/types';
+import { evaluateDisplay } from '../src/evaluate';
+import type { ApplicabilityData, DisplayEvaluation, Entry, FactRecord } from '../src/types';
 
 const facts: FactRecord = {};
+
+function evaluate(data: ApplicabilityData, facts: FactRecord): DisplayEvaluation {
+  return evaluateDisplay(facts, { data });
+}
 
 function relationalMayPair(i: number): Entry[] {
   // A 'may' entry whose own rel:excludes names a sibling applied node is
