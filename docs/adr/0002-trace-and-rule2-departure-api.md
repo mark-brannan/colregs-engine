@@ -1,9 +1,8 @@
 # ADR 0002 — The trace and Rule 2 departure verbs: kinematic and temporal evaluation
 
-Date: 2026-09-07
-Status: draft, full stop. It names the verbs and frames their inputs and
-results so the programme has a target to build toward; it does not build
-them, and it expects to be broken while the package is 0.x.
+Date: 2026-09-07. Amended 2026-09-09 by Solace: stub first (Consequences).
+Status: accepted. It names the four verbs, fixes their inputs and results,
+and ships them from `src/` as stubs; expect breakage while this is 0.x.
 
 ## Context
 
@@ -33,9 +32,9 @@ offline or runtime (Q-22), the conduct effect shape, a trace fixture schema.
 | input | verb | result | status |
 |---|---|---|---|
 | `FactRecord` — one vessel | `evaluateDisplay` | `DisplayEvaluation` | built |
-| `Situation` — two vessels, one instant | `evaluateEncounter` | `EncounterEvaluation` | target |
-| `Trace` — the situation over time | `evaluateConduct` | `ConductEvaluation` | named here |
-| `Situation` under a `Rule2DepartureModel` | `evaluateRule2Departure` | `Rule2DepartureFinding` | named here |
+| `Situation` — two vessels, one instant | `evaluateEncounter` | `EncounterEvaluation` | stub |
+| `Trace` — the situation over time | `evaluateConduct` | `ConductEvaluation` | stub |
+| `Situation` under a `Rule2DepartureModel` | `evaluateRule2Departure` | `Rule2DepartureFinding` | stub |
 
 The two new verbs live **in this package**, superseding ADR 0001's pencilled
 "separate package": a function of a trace and a lookup in a precomputed grid are
@@ -174,15 +173,16 @@ trace becomes a fixture; a certified grid, a `Rule2DepartureModel`.
 
 - README's roadmap paragraph names all four verbs and their status; ADR 0001
   §5's `conduct` and Rule 2 bullets and its register row point here.
-- Order of work, each step shipping something a consumer can call:
+- **Stub first.** Every verb and envelope here is exported the day it is named,
+  so the shapes above are compiler-checked rather than read as prose. An
+  unbuilt verb's stub throws `NotImplementedError`; it returns no value.
+- Order of work, each step replacing a stub's throw with a body:
   1. colregs: a trace fixture schema and the first `conduct` entries (16,
      17, 8(b)) with an effect shape, as `situation-fixtures.json` did.
   2. `Trace`, `appliedConductEntries` against those fixtures — phase 3
      starts here.
   3. `evaluateConduct` with verdicts and phases; the constants above.
-  4. `evaluateRule2Departure` once a grid exists. Until then the name is
-     reserved and nothing exported: a stub answering `inconclusive-in-model`
-     is a stub wearing a status.
+  4. `evaluateRule2Departure` once a grid exists.
 
 ## Register
 
@@ -197,4 +197,4 @@ trace becomes a fixture; a certified grid, a `Rule2DepartureModel`.
 | Vague-quantity constants live in colregs; `SolverParameters` on the model and echoed on the finding, `colregs_version` naming the release solved against; nothing else on the model is API | ✎ | the first constant a conduct entry reads; Q-19's sensitivity matrix |
 | `Rule2DepartureFinding` field set — `rules`, `Rule2DepartureAdvisory[]`, no banner cite (it is a function of `status`); the status alphabet is colregs' (ADR 0005 §5), not this package's to rename | ✎ | proposal v4 §4's sensitivity matrix; Q-19, Q-20 |
 | No *situation* input names a departure; the grid does, and is named in every finding | ✎ | — |
-| Nothing exported until a fixture backs it; exports then carry TSDoc's `@beta` release tag | ✎ | — |
+| Stub first: a named verb is exported and throws from that day, under `@alpha`, and waits on no fixture. A stub that returned a plausible envelope would be the hedge; one that throws is a line in the sand, and at 0.x nothing downstream is reading it yet | ink | Solace, 2026-09-09 |

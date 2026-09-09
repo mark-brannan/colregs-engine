@@ -23,7 +23,7 @@ This ADR fixes the shape. It does not build it.
 | input | verb | result | status |
 |---|---|---|---|
 | `FactRecord` — one vessel | `evaluateDisplay` | `DisplayEvaluation` | built |
-| `Situation` — two vessels and the encounter | `evaluateEncounter` | `EncounterEvaluation` | target |
+| `Situation` — two vessels and the encounter | `evaluateEncounter` | `EncounterEvaluation` | stub |
 
 A verb is named for the thing it evaluates, in colregs' own vocabulary: a
 *display* is what one vessel shows, an *encounter* is what colregs calls the
@@ -83,7 +83,7 @@ interface Pair    { geo?: PairGeometry; env?: Environment; }
   JSON is rejected on the same terms as a fact record.
 - `FactRecord` is reused, not copied, as `Subject.fact`.
 
-### 4. `EncounterEvaluation`, the target result
+### 4. `EncounterEvaluation`, the result shape
 
 ```ts
 type EntryId = string;       // a colregs entry id: '13a', '18b'
@@ -145,10 +145,10 @@ resolution, and validation of the situation record.
 
 - The README paragraph promising separate classification and precedence
   entry points is replaced by a pointer here.
-- The next PR builds `Situation` generation and validation; the one after
-  `appliedEncounterEntries` against `situation-fixtures.json`; only then
-  `evaluateEncounter`. Composition decisions the data leaves open go in
-  `docs/engine-notes.md`, as the display ones did.
+- `evaluateEncounter` and `appliedEncounterEntries` are exported now and
+  throw (ADR 0002, stub first). The bodies come after `Situation` validation,
+  then the `situation-fixtures.json` replay. Composition decisions the data
+  leaves open go in `docs/engine-notes.md`, as the display ones did.
 - `colregs-engine/schema` stays the home of mirrored colregs shapes; `Situation`
   and `EncounterEvaluation` are engine vocabulary, exported from the root.
 
