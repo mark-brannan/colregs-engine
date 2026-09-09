@@ -2,7 +2,7 @@
 
 Two vessels are closing.   *What must they do?  Who gives way?  What must they display?*
 
-The COLREGS (Collision Regulations) answer this, in international law.  This project
+The COLREGS, the International Regulations for Preventing Collisions at Sea, answer all three.  This project
 transforms the colregs so that a machine can evaluate and reason about them *deterministically*:
 the whole of the rules as structured data, so the same situation always yields the same result,
 and every result can be traced back to the rule that produced it.  Going further, the engine
