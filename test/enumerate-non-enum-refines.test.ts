@@ -37,25 +37,27 @@ describe('extractAxes: a modifier axis refining a non-enum target', () => {
       },
     }));
 
-    const { extractAxes } = await import('../research/conformance/enumerate.js');
-    const data = {
-      entries: [
-        {
-          id: 'synthetic-racing',
-          cite: 'test fixture',
-          category: 'display',
-          modality: 'shall',
-          when: { 'fact:racing': true },
-        },
-      ],
-    } as unknown as ApplicabilityData;
+    try {
+      const { extractAxes } = await import('../research/conformance/enumerate.js');
+      const data = {
+        entries: [
+          {
+            id: 'synthetic-racing',
+            cite: 'test fixture',
+            category: 'display',
+            modality: 'shall',
+            when: { 'fact:racing': true },
+          },
+        ],
+      } as unknown as ApplicabilityData;
 
-    expect(() => extractAxes(data)).toThrow(
-      /fact:racing refines fact:speed_kn, but that axis is not an enum axis \(declared kind: number\)/,
-    );
-
-    vi.doUnmock('../src/generated/fact-record.js');
-    vi.resetModules();
+      expect(() => extractAxes(data)).toThrow(
+        /fact:racing refines fact:speed_kn, but that axis is not an enum axis \(declared kind: number\)/,
+      );
+    } finally {
+      vi.doUnmock('../src/generated/fact-record.js');
+      vi.resetModules();
+    }
   });
 });
 
