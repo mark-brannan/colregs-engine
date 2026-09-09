@@ -12,9 +12,11 @@ works out how the surviving entries interact: a display can include another,
 replace it, rule it out, or exempt the vessel from showing anything. What
 comes out is the set of complete lawful displays.
 
-The evaluator now lives here, in `src/`, extracted from searoom on
-2026-09-05; [searoom](https://github.com/mark-brannan/searoom) will consume
-it as a package once it's published.
+Sister packages: [searoom](https://github.com/mark-brannan/searoom) is the
+study tool built on this engine, with a
+[live demo](https://mark-brannan.github.io/searoom/);
+[nav-wright](https://github.com/mark-brannan/nav-wright) will draw the
+vessels and their lights.
 
 ## Usage
 
@@ -83,43 +85,34 @@ evaluateDisplay({ propulsion: 'sail' } as unknown as FactRecord);
 // Error: unknown fact key 'propulsion'; did you mean 'fact:propulsion'? …
 ```
 
-That is a change of behaviour: such a record used to evaluate to one empty
-display, which is also the honest answer for a vessel that lawfully shows
-nothing. The two must not look alike. `appliedDisplayEntries(facts)` returns
-just the matching entry ids, without composing displays, and validates on
-the same terms.
+A malformed record is an error, not an empty display; an empty display is
+the honest answer for a vessel that lawfully shows nothing, and the two must
+not look alike. `appliedDisplayEntries(facts)` returns just the matching
+entry ids, without composing displays, and validates on the same terms.
 
-## Why `display`, and the data behind it
-
-`display` is colregs' own category name (ADR 0005, not yet settled) for
-this case: one vessel's facts in, her signals out, lights and day shapes
-together. It is the first of four verbs, one per input: `evaluateDisplay`
-(built), `evaluateEncounter` over a two-vessel situation (next), and, named but
-not exported yet, `evaluateConduct` over a trace and `evaluateRule2Departure`
-against a solver model. [ADR 0001](docs/adr/0001-api-shape.md) has the first two, [ADR 0002](docs/adr/0002-trace-and-rule2-departure-api.md) the rest.
-
-`evaluateDisplay` reads applicability data from the colregs release this
-package resolves; pass `opts.data` to override — the conformance harness
-injects synthetic tables, and other jurisdictions will arrive as separate
-files. Every result carries `colregs.version` and `colregs.source`:
-`'resolved'` means the version describes the data exactly, `'caller'` means
-you supplied it and the version only names what this package resolved —
-colregs' schema has no version field, so the two may disagree unnoticed.
+The verb names, the planned `evaluateEncounter`, `evaluateConduct` and
+`evaluateRule2Departure`, and the `opts.data` / `colregs.source` contract are
+settled in [ADR 0001](docs/adr/0001-api-shape.md) and
+[ADR 0002](docs/adr/0002-trace-and-rule2-departure-api.md).
 
 ## Entry points
 
-- `colregs-engine` — `evaluateDisplay`, `appliedDisplayEntries`, and the
-  engine's own output vocabulary: `DisplayEvaluation`, `Display`,
-  `DisplayLight`, `FactRecord`, `Modality`. This is what most consumers
-  want, and it does not move when colregs releases data. `evaluate`,
-  `appliedEntries` and `Evaluation` still exist as deprecated aliases.
-- `colregs-engine/schema` — the colregs data shapes, generated from that
-  package's JSON Schema: `Entry`, `Predicate`, `LightSpec`, `LightDef`,
-  `ApplicabilityData` and the rest. Import these only if you read the data
-  files yourself; they change when the data changes.
+From `colregs-engine` ([src/index.ts](src/index.ts)). These are the engine's
+own vocabulary and do not move when colregs releases data.
 
-The composition decisions the engine makes on top of the data are recorded
-in [docs/engine-notes.md](docs/engine-notes.md).
+| Export | What you get |
+| --- | --- |
+| [`evaluateDisplay(facts, opts?)`](src/evaluate.ts) | every complete lawful display for one vessel, plus which entries applied and which were excluded and by whom |
+| [`appliedDisplayEntries(facts, opts?)`](src/evaluate.ts) | just the ids of the entries whose conditions hold, no composition |
+| [`DisplayEvaluation`](src/types.ts) | the result: `applied`, `excluded`, `displays`, and the `colregs` version stamp |
+| [`Display`](src/types.ts), [`DisplayLight`](src/types.ts) | one lawful display and one light in it, each light citing `source_entry`, `via` and `modality` |
+| [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
+| [`Modality`](src/generated/applicability.ts) | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them |
+
+`colregs-engine/schema` ([src/schema.ts](src/schema.ts)) is the colregs data
+shapes generated from that package's JSON Schema: `Entry`, `Predicate`,
+`LightSpec`, `ApplicabilityData` and the rest. Import these only if you read
+the data files yourself; they change when the data changes.
 
 ## Constraints
 
