@@ -1,0 +1,1 @@
+renumber the 21 ADR 0001/0002 citations in src/ and test/ that the first push missed; bare form, since a bare ADR number now means colregs
