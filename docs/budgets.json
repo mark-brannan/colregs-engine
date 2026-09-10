@@ -105,17 +105,6 @@
       "research/**/README.md",
       "research/**/*.json",
       "docs/**/*.json"
-    ],
-    "allow": [
-      "Foster/Gleirscher",
-      "Foster, Gleirscher",
-      "no-robust-policy-in-model",
-      "a compliant robust policy exists in this model",
-      "every robust safe policy breaches at least one Rules 4\u201319 constraint",
-      "no robust safe policy exists in this model",
-      "no robust escape was",
-      "no robust policy against",
-      "lacking a compliant robust policy"
     ]
   },
   "headers": {
