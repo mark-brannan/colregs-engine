@@ -11,7 +11,7 @@
 // key and value unions are derived from it at the type level, and
 // validateFacts() reads the same object at runtime, so the compile-time and
 // run-time answers cannot diverge. §situation's five classes (kin/hist/geo
-// own+pair/env, ADR 0001 §3) get the same treatment, in the same run, from
+// own+pair/env, colregs ADR 0011 §3) get the same treatment, in the same run, from
 // the same source file.
 //
 // The schema (which keys are *allowed to exist*) is generated separately by

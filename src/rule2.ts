@@ -1,4 +1,4 @@
-// evaluateRule2Departure — a lookup in a solved region grid. Stub; ADR 0002
+// evaluateRule2Departure — a lookup in a solved region grid. Stub; ADR 0012
 // §4 fixes the model and the finding. The solver itself never moves into
 // src/: what moves is its output, a certified grid, as a Rule2DepartureModel.
 
@@ -23,5 +23,5 @@ export function evaluateRule2Departure(
   _model: Rule2DepartureModel,
   _opts?: EvaluateOptions,
 ): Rule2DepartureFinding {
-  throw new NotImplementedError('evaluateRule2Departure', 'ADR 0002 §4');
+  throw new NotImplementedError('evaluateRule2Departure', 'ADR 0012 §4');
 }

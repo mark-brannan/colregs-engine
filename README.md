@@ -94,8 +94,8 @@ entry ids, without composing displays, and validates on the same terms.
 exported and throw `NotImplementedError`: their envelopes are fixed and
 compiler-checked, their bodies are not built. The verb names, those shapes
 and the `opts.data` / `colregs.source` contract are settled in
-[ADR 0001](docs/adr/0001-api-shape.md) and
-[ADR 0002](docs/adr/0002-trace-and-rule2-departure-api.md).
+colregs [ADR 0011](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0011-api-shape.md) and
+[ADR 0012](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0012-trace-and-rule2-departure-api.md).
 
 ## Entry points
 

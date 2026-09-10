@@ -48,7 +48,7 @@ describe('colregs applicability fixtures (verbatim replay)', () => {
     // the first national delta, 30a-buoy/30b-buoy (`us/inland`), reached
     // only via `fact:on_mooring_buoy`. This engine has no jurisdiction
     // parameter or filter yet -- a real API-design question (its own ADR,
-    // like ADR 0001's scoping), not fallout to absorb under a dependency
+    // like ADR 0011's scoping), not fallout to absorb under a dependency
     // bump -- and neither does research/conformance/reference.ts, the
     // ground truth it's diffed against elsewhere. So a case that turns on
     // jurisdiction (a non-`intl` declaration, or a fact:on_mooring_buoy

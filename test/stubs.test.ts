@@ -46,6 +46,6 @@ describe('an unbuilt verb', () => {
   });
 
   it('throws a subclass of Error, so a catch-all handler still sees it', () => {
-    expect(new NotImplementedError('x', 'ADR 0001 §1')).toBeInstanceOf(Error);
+    expect(new NotImplementedError('x', 'ADR 0011 §1')).toBeInstanceOf(Error);
   });
 });
