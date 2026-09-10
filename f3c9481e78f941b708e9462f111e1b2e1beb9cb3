@@ -1,1 +1,6 @@
-renumber the 21 ADR 0001/0002 citations in src/ and test/ that the first push missed; bare form, since a bare ADR number now means colregs
+Revision history for #63:
+
+rev 2 (content) 2026-09-10 01:31 UTC — renumber the 21 ADR 0001/0002 citations in src/ and test/ that the first push missed; bare form, since a bare ADR number now means colregs
+rev 1 (initial) 2026-09-10 01:31 UTC
+
+<!-- mergify-revision-data: {"schema_version":1,"pull_number":63,"entries":[{"number":1,"change_type":"initial","old_sha":null,"new_sha":"bc3873d6582f32fab409dd7de6e74de604f44137","timestamp_iso":"2026-09-10T01:31:18Z","reason":"","replay_sha":null,"compare_url":null},{"number":2,"change_type":"content","old_sha":"bc3873d6582f32fab409dd7de6e74de604f44137","new_sha":"f3c9481e78f941b708e9462f111e1b2e1beb9cb3","timestamp_iso":"2026-09-10T01:31:18Z","reason":"renumber the 21 ADR 0001/0002 citations in src/ and test/ that the first push missed; bare form, since a bare ADR number now means colregs","replay_sha":null,"compare_url":"https://github.com/mark-brannan/colregs-engine/compare/bc3873d6582f32fab409dd7de6e74de604f44137...f3c9481e78f941b708e9462f111e1b2e1beb9cb3"}]} -->
