@@ -1,5 +1,5 @@
 // validateSituation() extends validateFacts()'s "did you mean" checking to a
-// situation's kin/geo/hist/env classes (ADR 0001 §3) — same failure mode,
+// situation's kin/geo/hist/env classes (ADR 0011 §3) — same failure mode,
 // same fix: an un-namespaced or misspelt key must not silently match nothing.
 
 import { describe, expect, it } from 'vitest';

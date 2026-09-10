@@ -1,4 +1,4 @@
-// evaluateEncounter — two vessels at one instant. Stub; ADR 0001 §4 fixes
+// evaluateEncounter — two vessels at one instant. Stub; ADR 0011 §4 fixes
 // the signature and EncounterEvaluation, and the body comes after Situation
 // validation and the situation-fixture replay.
 
@@ -17,7 +17,7 @@ export function evaluateEncounter(
   _situation: Situation,
   _opts?: EvaluateOptions,
 ): EncounterEvaluation {
-  throw new NotImplementedError('evaluateEncounter', 'ADR 0001 §4');
+  throw new NotImplementedError('evaluateEncounter', 'ADR 0011 §4');
 }
 
 /**
@@ -31,5 +31,5 @@ export function appliedEncounterEntries(
   _situation: Situation,
   _opts?: EvaluateOptions,
 ): EntryId[] {
-  throw new NotImplementedError('appliedEncounterEntries', 'ADR 0001 §1');
+  throw new NotImplementedError('appliedEncounterEntries', 'ADR 0011 §1');
 }

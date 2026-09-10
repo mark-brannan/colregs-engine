@@ -238,7 +238,7 @@ function isDisplay(e: Entry): boolean {
 // `jurisdiction` field (`intl` throughout, `us/inland` for the new
 // mooring-buoy delta, 30a-buoy/30b-buoy). This package has no jurisdiction
 // parameter or filter of any kind yet -- adding one is real API-design work
-// (an ADR, like ADR 0001's own scoping), not something to freelance under a
+// (an ADR, like ADR 0011's own scoping), not something to freelance under a
 // dependency bump -- and research/conformance/reference.ts, the ground
 // truth this engine is diffed against, doesn't filter by it either. So
 // `jurisdiction` is deliberately left unread here for now: a caller whose

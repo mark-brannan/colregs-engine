@@ -91,7 +91,7 @@ export interface DisplayLight {
   source_entry: string;
   /** @deprecated Renamed to {@link DisplayLight.source_entry} — field names
    * are snake_case with unit suffixes across this API and colregs' own keys
-   * (ADR 0001 §4). Carries the same value; removed in a later 0.x. */
+   * (ADR 0011 §4). Carries the same value; removed in a later 0.x. */
   sourceEntry: string;
   /** Entry that pulled it in, when different (rel:includes / one_of import). */
   via?: string;
@@ -132,7 +132,7 @@ export interface DisplayEvaluation {
   excluded: { id: string; by: string }[];
   /** Applied entries displaced by another applied obligation's
    * rel:overrides, with the overriding id — mirrors the same-named field
-   * ADR 0001 §4 defines on `EncounterEvaluation`. */
+   * ADR 0011 §4 defines on `EncounterEvaluation`. */
   overridden: { id: string; by: string }[];
   /** Every complete lawful display (alternatives unresolved, REQ-MODEL-8). */
   displays: Display[];
@@ -148,14 +148,14 @@ export interface DisplayEvaluation {
     cite: string;
   }[];
   /** @deprecated Renamed to {@link DisplayEvaluation.optional_additions} —
-   * see ADR 0001 §4. Carries the same array; removed in a later 0.x. */
+   * see ADR 0011 §4. Carries the same array; removed in a later 0.x. */
   optionalAdditions: DisplayEvaluation['optional_additions'];
   /** Resolved modality per applied/imported entry id. */
   modalities: Record<string, Modality>;
 }
 
 /**
- * The input a two-subject rule reads (ADR 0001 §3, mirroring colregs' ADR
+ * The input a two-subject rule reads (ADR 0011 §3, mirroring colregs' ADR
  * 0005). Nested by subject and class, not flat by predicate namespace, so a
  * fixture's `situation` object is assignable here unedited — the flat
  * `own:fact:activity` form stays internal to the walker.
@@ -180,7 +180,7 @@ export interface Situation {
 }
 
 // ---------------------------------------------------------------------------
-// The three verbs ADR 0001 §4 and ADR 0002 name but do not build. Their
+// The three verbs ADR 0011 §4 and ADR 0012 name but do not build. Their
 // shapes live here, exported and compiler-checked, from the day they are
 // named; the verbs themselves are stubs in encounter.ts, conduct.ts and
 // rule2.ts. Every field below is pencil until the verb that fills it is
@@ -189,7 +189,7 @@ export interface Situation {
 
 /** A Rules paragraph cite: `'17(c)'`. `EntryId` is the other vocabulary a
  * string field can hold; which one a field means is fixed by its type
- * (ADR 0001 §4), not by the compiler. */
+ * (ADR 0011 §4), not by the compiler. */
 export type ParagraphCite = string;
 
 /** One role a subject holds in an encounter, citing the entry that assigned
@@ -202,7 +202,7 @@ export interface SubjectRole {
 }
 
 /** The result of `evaluateEncounter`: two vessels at one instant
- * (ADR 0001 §4). */
+ * (ADR 0011 §4). */
 export interface EncounterEvaluation {
   colregs: { version: string; source: 'resolved' | 'caller' };
   /** Entries whose predicate matched, in data order. */
@@ -232,7 +232,7 @@ export interface TraceSample {
 /** The input `conduct` reads: a window over the situation, not a session.
  * Non-empty, strictly increasing `t_s`, the same two vessels throughout —
  * the last of which the engine cannot check, because a `Situation` names no
- * vessel (ADR 0002 §2). */
+ * vessel (ADR 0012 §2). */
 export interface Trace {
   samples: TraceSample[];
 }
@@ -262,7 +262,7 @@ export interface ConductPhaseChange {
 }
 
 /** The result of `evaluateConduct`: verdicts over the window the caller
- * handed over (ADR 0002 §3). */
+ * handed over (ADR 0012 §3). */
 export interface ConductEvaluation {
   colregs: { version: string; source: 'resolved' | 'caller' };
   /** What window this result saw. */
@@ -311,7 +311,7 @@ export interface Rule2DepartureAdvisory {
   envelope: { holds_until_s: number };
 }
 
-/** The result of `evaluateRule2Departure` (ADR 0002 §4). The rule-derived
+/** The result of `evaluateRule2Departure` (ADR 0012 §4). The rule-derived
  * obligations sit in `rules` unchanged, so a reader sees what the Rules
  * said; advisories are ranked best margin first, and are empty under
  * `no-robust-policy-in-model`. */

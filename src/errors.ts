@@ -1,6 +1,6 @@
 // The one error a named-but-unbuilt verb throws.
 //
-// ADR 0002 ships every verb as a stub from the day it is named, so the
+// ADR 0012 ships every verb as a stub from the day it is named, so the
 // envelopes are compiler-checked rather than read as prose. A stub throws
 // rather than returning a value: an envelope of empty arrays and a default
 // status is indistinguishable from a computed one, and a caller has no way

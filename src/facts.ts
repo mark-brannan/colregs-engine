@@ -1,4 +1,4 @@
-// Runtime validation of a fact record — and, per ADR 0001 §3, a situation's
+// Runtime validation of a fact record — and, per ADR 0011 §3, a situation's
 // five generated classes — against colregs' vocabulary.
 //
 // The types in src/generated/fact-record.ts and src/generated/situation.ts
@@ -162,9 +162,9 @@ function validateSubject(which: 'own' | 'other', subject: Subject): void {
 
 /**
  * Throws on the same terms as validateFacts(), extended to a situation's
- * `kin`/`geo`/`hist`/`env` classes (ADR 0001 §3): an unknown key or a value
+ * `kin`/`geo`/`hist`/`env` classes (ADR 0011 §3): an unknown key or a value
  * outside its accepted set is rejected with a "did you mean" hint, for both
- * subjects and the pair. `own`/`own.fact` are ADR 0001 §3's two required
+ * subjects and the pair. `own`/`own.fact` are ADR 0011 §3's two required
  * fields, so a missing one is named directly rather than surfacing as
  * whatever TypeError reading a property of `undefined` happens to throw.
  */

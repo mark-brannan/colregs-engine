@@ -1,4 +1,4 @@
-// evaluateConduct — what a vessel did over a window. Stub; ADR 0002 §2-§3
+// evaluateConduct — what a vessel did over a window. Stub; ADR 0012 §2-§3
 // fix Trace and ConductEvaluation. STL monitors are the verdict function;
 // the phase machine is programme phase 4's TLA+/UPPAAL model.
 
@@ -16,7 +16,7 @@ export function evaluateConduct(
   _trace: Trace,
   _opts?: EvaluateOptions,
 ): ConductEvaluation {
-  throw new NotImplementedError('evaluateConduct', 'ADR 0002 §3');
+  throw new NotImplementedError('evaluateConduct', 'ADR 0012 §3');
 }
 
 /**
@@ -29,5 +29,5 @@ export function appliedConductEntries(
   _trace: Trace,
   _opts?: EvaluateOptions,
 ): EntryId[] {
-  throw new NotImplementedError('appliedConductEntries', 'ADR 0002 §3');
+  throw new NotImplementedError('appliedConductEntries', 'ADR 0012 §3');
 }

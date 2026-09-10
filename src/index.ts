@@ -16,7 +16,7 @@ export {
 } from './evaluate.js';
 export type { EvaluateOptions } from './evaluate.js';
 
-// The three verbs ADR 0001 §4 and ADR 0002 name. Exported from the day they
+// The three verbs ADR 0011 §4 and ADR 0012 name. Exported from the day they
 // are named so their shapes are compiler-checked and a consumer can build
 // against them; every one throws NotImplementedError until its body lands.
 export { appliedEncounterEntries, evaluateEncounter } from './encounter.js';
