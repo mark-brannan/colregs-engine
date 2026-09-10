@@ -90,8 +90,7 @@
     ],
     "allow": [
       "Foster/Gleirscher",
-      "Foster, Gleirscher",
-      "no-robust-policy-in-model"
+      "Foster, Gleirscher"
     ]
   },
   "headers": {
