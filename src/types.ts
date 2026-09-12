@@ -9,7 +9,7 @@
 // tests, which read applicability.json directly.
 
 import type { EffectRole, EntryId, Modality } from './generated/applicability.js';
-import type { LightSpec } from './schema.js';
+import type { LightSpec, RepresentedParagraph, RuleCategory } from './schema.js';
 import type { FactRecord } from './generated/fact-record.js';
 import type {
   DirectionalGeometry,
@@ -84,6 +84,35 @@ export interface ApplicabilityData extends Omit<SchemaApplicabilityData, 'entrie
   entries: Entry[];
 }
 
+/**
+ * What an evaluation read, and therefore what its answer does not cover.
+ * Provenance, not hedging: an evaluation that silently narrows the data it
+ * matches against leaves a consumer unable to tell a rule that did not fire
+ * from a rule that was never offered.
+ */
+export interface EvaluationProvenance {
+  /**
+   * Entry categories this verb evaluated. Entries of every other category
+   * were filtered out before matching, so `applied` is "what this vessel
+   * shows", not "every entry whose predicate holds".
+   */
+  evaluated_categories: RuleCategory[];
+  /**
+   * Jurisdictions of the entries that were eligible to match, in data order.
+   * The engine has no jurisdiction parameter: every jurisdiction present in
+   * the data was eligible, and a caller who needs one must narrow
+   * `opts.data` itself. Descriptive of what was offered — never a claim that
+   * a filter ran.
+   */
+  jurisdictions: string[];
+  /**
+   * Paragraphs the data represents but no verb evaluates — Rule 2(a) `care`,
+   * Rule 2(b) `meta`. Carried so a reader sees they exist and were not
+   * computed; a represented paragraph never becomes a status or a finding.
+   */
+  represented: RepresentedParagraph[];
+}
+
 /** One light as it appears in a resolved display, with its provenance. */
 export interface DisplayLight {
   spec: LightSpec;
@@ -152,6 +181,17 @@ export interface DisplayEvaluation {
   optionalAdditions: DisplayEvaluation['optional_additions'];
   /** Resolved modality per applied/imported entry id. */
   modalities: Record<string, Modality>;
+  /**
+   * Category per applied/imported entry id, over the same key set as
+   * {@link DisplayEvaluation.modalities}. Every value here is `display`
+   * while `evaluateDisplay` is the only verb; it is stated rather than
+   * assumed because colregs leaves `category` absent on a display entry, and
+   * a consumer reading `applied` against the data has no other way to learn
+   * which default was applied.
+   */
+  categories: Record<string, RuleCategory>;
+  /** What this evaluation read, and what it therefore does not answer. */
+  provenance: EvaluationProvenance;
 }
 
 /**

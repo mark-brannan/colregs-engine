@@ -106,7 +106,9 @@ own vocabulary and do not move when colregs releases data.
 | --- | --- |
 | [`evaluateDisplay(facts, opts?)`](src/evaluate.ts) | every complete lawful display for one vessel, plus which entries applied and which were excluded and by whom |
 | [`appliedDisplayEntries(facts, opts?)`](src/evaluate.ts) | just the ids of the entries whose conditions hold, no composition |
-| [`DisplayEvaluation`](src/types.ts) | the result: `applied`, `excluded`, `displays`, and the `colregs` version stamp |
+| [`DisplayEvaluation`](src/types.ts) | the result: `applied`, `excluded`, `displays`, the per-entry `categories`, the `provenance` block and the `colregs` version stamp |
+| [`EvaluationProvenance`](src/types.ts), [`RuleCategory`](src/schema.ts), [`RepresentedParagraph`](src/schema.ts) | what the evaluation read: the categories it matched, the jurisdictions it offered, and Rule 2(a)/2(b) as represented but never computed |
+| [`Rule2DepartureStatus`](src/types.ts) | the closed status alphabet colregs' ADR 0005 §5 fixes, for the reserved `evaluateRule2Departure`; no field of `DisplayEvaluation` carries one |
 | [`Display`](src/types.ts), [`DisplayLight`](src/types.ts) | one lawful display and one light in it, each light citing `source_entry`, `via` and `modality` |
 | [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
 | [`Modality`](src/generated/applicability.ts) | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them |

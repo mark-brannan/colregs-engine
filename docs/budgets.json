@@ -62,30 +62,12 @@
       "research/**/*.ts"
     ],
     "grandfathered": [
-      {
-        "file": "research/z3/encode.ts",
-        "match": "P2.1"
-      },
-      {
-        "file": "research/z3/encode.ts",
-        "match": "P1.3"
-      },
-      {
-        "file": "research/z3/encode.ts",
-        "match": "P3.1"
-      },
-      {
-        "file": "research/z3/queries.ts",
-        "match": "P1.3"
-      },
-      {
-        "file": "research/z3/run.ts",
-        "match": "P2.1"
-      },
-      {
-        "file": "research/z3/run.ts",
-        "match": "P3.1"
-      }
+      { "file": "research/z3/encode.ts", "match": "P2.1" },
+      { "file": "research/z3/encode.ts", "match": "P1.3" },
+      { "file": "research/z3/encode.ts", "match": "P3.1" },
+      { "file": "research/z3/queries.ts", "match": "P1.3" },
+      { "file": "research/z3/run.ts", "match": "P2.1" },
+      { "file": "research/z3/run.ts", "match": "P3.1" }
     ],
     "disable": [
       "issue"
@@ -108,14 +90,7 @@
     ],
     "allow": [
       "Foster/Gleirscher",
-      "Foster, Gleirscher",
-      "no-robust-policy-in-model",
-      "a compliant robust policy exists in this model",
-      "every robust safe policy breaches at least one Rules 4\u201319 constraint",
-      "no robust safe policy exists in this model",
-      "no robust escape was",
-      "no robust policy against",
-      "lacking a compliant robust policy"
+      "Foster, Gleirscher"
     ]
   },
   "headers": {
