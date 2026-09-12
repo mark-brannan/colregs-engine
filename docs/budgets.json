@@ -89,7 +89,9 @@
     ],
     "allow": [
       "Foster/Gleirscher",
-      "Foster, Gleirscher"
+      "Foster, Gleirscher",
+      "no-robust-policy-in-model",
+      "lacking a compliant robust policy"
     ]
   },
   "headers": {
