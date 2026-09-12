@@ -26,8 +26,7 @@
       "README.md",
       "AGENTS.md",
       "docs/**/*.md",
-      "research/conformance/README.md",
-      "research/z3/README.md"
+      "research/**/README.md"
     ]
   },
   "json_prose": {
