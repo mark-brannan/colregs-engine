@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/mark-brannan/colregs-engine/compare/v0.1.3...v0.1.4) (2026-09-12)
+
+
+### Added
+
+* stub first — export the three unbuilt verbs, and amend ADR 0002 to say so ([#60](https://github.com/mark-brannan/colregs-engine/issues/60)) ([7628a0c](https://github.com/mark-brannan/colregs-engine/commit/7628a0c1e3b450e67a23d7f6911f31d87ad3ea6a))
+
 ## [0.1.3](https://github.com/mark-brannan/colregs-engine/compare/v0.1.2...v0.1.3) (2026-09-09)
 
 
