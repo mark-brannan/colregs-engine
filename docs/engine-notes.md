@@ -89,46 +89,21 @@ Each composition decision below is tested in `test/displays.test.ts`.
    fingerprint, and every display records which choices produced it —
    that is the data behind the elimination UX.
 
-## Encounter decisions (`src/encounter.ts`)
+## Encounter, conduct and Rule 2 decisions
 
-8. **A bare predicate key means `own:`, and `fact:rule18_class` is
-   decoded per subject before matching**, from facts.json's `derived`
-   table, first row wins, no row means absent.
-
-9. **An override fires from any obligation, `shall-not-impede`
-   included.** Rule 9(b) is written with that modality and overrides
-   18(a)(iv); only a `may` overrider is inert. Chains stop at the first
-   displacement, as in display.
-
-10. **A `none` effect confers no role.** 8(f)(iii) still appears in
-    `applied`; `roles` lists only duties held, so an empty list means
-    no duty was conferred.
-
-11. **Two classifications at once resolve overtaking over head-on over
-    crossing.** 13(d) forbids reclassifying a latched overtaking, and
-    14(c) errs toward head-on. Absent when none fired.
-
-12. **A stated `pair:geo:risk_of_collision` counts as asserted with no
-    entry ground.** Rule 7(a) makes it the caller's judgement; 7(d)(i)
-    can add a ground, never remove one.
-
-## Conduct and Rule 2 decisions (`src/conduct.ts`, `src/rule2.ts`)
-
-13. **Phases are read off roles.** give-way is `16`, stand-on `17(a)(i)`,
-    a stand-on vessel turning or with a changed heading `17(a)(ii)`,
-    shall-not-impede `8(f)(i)`, keep-clear `18(f)(i)`, a latched
-    overtaking `13(d)`. `17(b)` needs a threshold colregs does not
-    declare and is not emitted. A subject holding several roles at once
-    is phased by the strongest duty: give-way, then keep-clear, then
-    stand-on, then shall-not-impede (a sailing vessel meeting a CBD
-    vessel is in `17(a)(i)`, not `8(f)(i)`).
-
-14. **Every conduct verdict is `pending`** until a monitor exists; a
-    conduct entry attaches at the first sample its predicate holds.
-
-15. **A Rule 2 grid is a first-match list of predicate regions.** No
-    regions, or no match, is `inconclusive-in-model`, named in
-    `assumptions_violated`; nothing in the situation names a departure.
+8. **Bare keys mean `own:`; `fact:rule18_class` is decoded per subject first.**
+9. **Any obligation overrides, `shall-not-impede` included** (9(b) is
+   written with it and overrides 18(a)(iv)); only a `may` overrider is inert.
+10. **A `none` effect confers no role.** 8(f)(iii) still appears in `applied`.
+11. **Competing classifications resolve overtaking, head-on, crossing, in
+    that order:** 13(d) forbids reclassifying a latch, 14(c) errs head-on.
+12. **A stated `pair:geo:risk_of_collision` counts as asserted, `by: []`.**
+13. **Phases follow roles:** give-way `16`, stand-on `17(a)(i)`, turning
+    stand-on `17(a)(ii)`, shall-not-impede `8(f)(i)`, keep-clear `18(f)(i)`,
+    latch `13(d)`, strongest first in that order; `17(b)` is not emitted.
+14. **Every conduct verdict is `pending`** until a monitor exists.
+15. **A Rule 2 grid is a first-match list of predicate regions.** None, or
+    no match, is `inconclusive-in-model`, named in `assumptions_violated`.
 
 If any of these turn out to disagree with the data's intent, that is a
 colregs conversation (an issue with the failing fact record), not a
