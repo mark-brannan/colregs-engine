@@ -153,15 +153,15 @@ strategies. For a situation *s*:
 
 | region | definition | meaning |
 |---|---|---|
-| **R0 rules-suffice** | ∃ compliant σown ∀ σother ∈ A: Safe | a compliant robust policy exists in this model |
-| **R1 departure-required-in-model** | ¬R0 ∧ ∃ σown ∀ σother ∈ A: Safe | every robust safe policy breaches at least one Rules 4–19 constraint |
-| **R2 unwinnable-in-model** | ¬∃ σown ∀ σother ∈ A: Safe | no robust safe policy exists in this model; Mark's tier 4, or a model artifact |
+| **R0 rules-suffice** | ∃ compliant σown ∀ σother ∈ A: Safe | a compliant policy exists in this model |
+| **R1 departure-required-in-model** | ¬R0 ∧ ∃ σown ∀ σother ∈ A: Safe | every safe policy breaches at least one Rules 4–19 constraint |
+| **R2 unwinnable-in-model** | ¬∃ σown ∀ σother ∈ A: Safe | no safe policy exists in this model; Mark's tier 4, or a model artifact |
 
 "Compliant" means satisfying the encoded Rules 4–19 constraints; Rule 2
 is not in that predicate, or the definition is circular. R1 is a model
 finding that supplies evidence relevant to Rule 2(b), not a legal
 classification. In R1 the tools can say *what* the escape is and which
-paragraphs it breaches; in R2 they can only say no robust escape was
+paragraphs it breaches; in R2 they can only say no escape was
 certified.
 
 `✎ adversary and horizon` — *A* is computed two ways from the start:
@@ -253,7 +253,7 @@ how findable is it by a human. Working tiers, applied to R0 and R1:
 2. findable with time, not under duress;
 3. likely missed even with time: every solution counterintuitive.
 
-R2 is tier 4 *in the model*: no robust policy against *A* under the
+R2 is tier 4 *in the model*: no policy holds against *A* under the
 assumptions. It is not a claim that no human could recover.
 
 Proxies per situation, all model-derived, none legal:
