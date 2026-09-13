@@ -8,6 +8,7 @@
     "docs/formal-methods-reading-list.md": 70,
     "docs/normative-language.md": 130,
     "research/conformance/README.md": 197,
+    "research/conformance/findings/README.md": 60,
     "research/z3/README.md": 89,
     "docs/adr/0001-api-shape.md": 6,
     "docs/adr/0002-trace-and-rule2-departure-api.md": 6,
@@ -26,6 +27,7 @@
       "README.md",
       "AGENTS.md",
       "docs/**/*.md",
+      "!docs/proposals/**",
       "research/**/README.md"
     ]
   },
@@ -83,6 +85,7 @@
       "README.md",
       "AGENTS.md",
       "docs/**/*.md",
+      "!docs/proposals/**",
       "research/**/README.md",
       "research/**/*.json",
       "docs/**/*.json"
