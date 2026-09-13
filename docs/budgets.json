@@ -26,6 +26,7 @@
       "README.md",
       "AGENTS.md",
       "docs/**/*.md",
+      "!docs/proposals/**",
       "research/**/README.md"
     ]
   },
