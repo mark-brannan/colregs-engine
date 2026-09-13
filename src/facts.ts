@@ -17,7 +17,7 @@ import {
   HIST_SPEC,
   KIN_SPEC,
 } from './generated/situation.js';
-import type { Situation, Subject } from './types.js';
+import type { Situation, Subject, Trace } from './types.js';
 
 /** Every generated spec, widened for lookup by an arbitrary runtime key. */
 type Spec =
@@ -184,4 +184,40 @@ export function validateSituation(situation: Situation): void {
       checkRecord(situation.pair.env, ENV, ENV_KEYS, 'env');
     }
   }
+}
+
+/**
+ * Throws on what a trace's validator can see (ADR 0012 §2): a non-array or
+ * empty `samples`, a `t_s` that is not a finite number or does not strictly
+ * increase, a sample whose situation fails validateSituation(), or `other`
+ * present in some samples and not others. Pair identity is the caller's.
+ */
+export function validateTrace(trace: Trace): void {
+  if (typeof trace !== 'object' || trace === null || !Array.isArray(trace.samples)) {
+    throw new Error(`trace.samples must be an array, got ${JSON.stringify(trace)}.`);
+  }
+  if (trace.samples.length === 0) throw new Error('trace.samples must not be empty.');
+  let hasOther: boolean | undefined;
+  trace.samples.forEach((sample, i) => {
+    if (typeof sample !== 'object' || sample === null) {
+      throw new Error(`trace.samples[${i}] must be an object, got ${JSON.stringify(sample)}.`);
+    }
+    if (typeof sample.t_s !== 'number' || !Number.isFinite(sample.t_s)) {
+      throw new Error(`trace.samples[${i}].t_s must be a finite number, got ${JSON.stringify(sample.t_s)}.`);
+    }
+    if (i > 0 && !(sample.t_s > trace.samples[i - 1].t_s)) {
+      throw new Error(
+        `trace.samples[${i}].t_s (${sample.t_s}) must be greater than samples[${i - 1}].t_s (${trace.samples[i - 1].t_s}).`,
+      );
+    }
+    if (typeof sample.situation !== 'object' || sample.situation === null) {
+      throw new Error(`trace.samples[${i}].situation is required and must be an object.`);
+    }
+    validateSituation(sample.situation);
+    const other = sample.situation.other !== undefined;
+    if (hasOther === undefined) hasOther = other;
+    else if (hasOther !== other) {
+      throw new Error(`trace.samples[${i}] ${other ? 'has' : 'lacks'} \`other\` while earlier samples do not; the same two vessels must run through the window.`);
+    }
+  });
 }

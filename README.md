@@ -90,11 +90,16 @@ the honest answer for a vessel that lawfully shows nothing, and the two must
 not look alike. `appliedDisplayEntries(facts)` returns just the matching
 entry ids, without composing displays, and validates on the same terms.
 
-`evaluateEncounter`, `evaluateConduct` and `evaluateRule2Departure` are
-exported and throw `NotImplementedError`: their envelopes are fixed and
-compiler-checked, their bodies are not built. The verb names, those shapes
-and the `opts.data` / `colregs.source` contract are settled in
-colregs [ADR 0011](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0011-api-shape.md) and
+`evaluateEncounter(situation)` reads two vessels at one instant and returns
+the encounter type, each vessel's roles and what overrode what; it replays
+every case of colregs' `situation-fixtures.json`. `evaluateConduct(trace)`
+and `evaluateRule2Departure(situation, model)` are partial: the first
+validates the window and reports the Rule 13(d)/17 phases but every verdict
+is `pending`, the second answers `inconclusive-in-model` unless the model
+carries `regions`. Neither throws for want of data; the envelope says what
+it could not decide. The shapes and the `opts.data` / `colregs.source`
+contract are settled in colregs
+[ADR 0011](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0011-api-shape.md) and
 [ADR 0012](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0012-trace-and-rule2-departure-api.md).
 
 ## Entry points
@@ -112,7 +117,8 @@ own vocabulary and do not move when colregs releases data.
 | [`Display`](src/types.ts), [`DisplayLight`](src/types.ts) | one lawful display and one light in it, each light citing `source_entry`, `via` and `modality` |
 | [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
 | [`Modality`](src/generated/applicability.ts) | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them |
-| [`evaluateEncounter`](src/encounter.ts), [`evaluateConduct`](src/conduct.ts), [`evaluateRule2Departure`](src/rule2.ts) | the other three verbs, with their companions and envelopes. Stubs: each throws [`NotImplementedError`](src/errors.ts) |
+| [`evaluateEncounter(situation, opts?)`](src/encounter.ts) | scope, encounter type, risk-of-collision grounds, roles per vessel and `rel:overrides` between the applied entries; `appliedEncounterEntries` is its fixture-contract companion |
+| [`evaluateConduct(trace, opts?)`](src/conduct.ts), [`evaluateRule2Departure(situation, model, opts?)`](src/rule2.ts) | the trace and Rule 2 verbs, partial: window, attachment and phases; region lookup in a model's `regions`, else `inconclusive-in-model` |
 
 `colregs-engine/schema` ([src/schema.ts](src/schema.ts)) is the colregs data
 shapes generated from that package's JSON Schema: `Entry`, `Predicate`,

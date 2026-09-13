@@ -34,7 +34,7 @@ import colregsPackage from 'colregs/package.json' with { type: 'json' };
 import factsData from 'colregs/data/facts.json' with { type: 'json' };
 import applicabilityData from 'colregs/data/applicability.json' with { type: 'json' };
 
-const COLREGS_VERSION: string = colregsPackage.version;
+export const COLREGS_VERSION: string = colregsPackage.version;
 
 // The applicability data this package resolves. Loading it here rather than
 // taking it as a required argument is what makes COLREGS_VERSION mean
@@ -43,7 +43,7 @@ const COLREGS_VERSION: string = colregsPackage.version;
 // it -- the conformance harness injects synthetic tables, and other
 // jurisdictions will arrive as separate files -- but an override is recorded
 // as `source: 'caller'` instead of being invisible.
-const RESOLVED_DATA = applicabilityData as unknown as ApplicabilityData;
+export const RESOLVED_DATA = applicabilityData as unknown as ApplicabilityData;
 
 /** Options common to every evaluation entry point. */
 export interface EvaluateOptions {
@@ -239,7 +239,7 @@ function isDisplay(e: Entry): boolean {
 /** An entry's category, with colregs' default applied: absent is `display`.
  * The default lives here, not at each reading site, so the envelope's
  * `categories` and the `isDisplay` filter can never disagree about it. */
-function entryCategory(e: Entry): RuleCategory {
+export function entryCategory(e: Entry): RuleCategory {
   return e.category ?? 'display';
 }
 
@@ -252,10 +252,13 @@ const DISPLAY_CATEGORIES: readonly RuleCategory[] = ['display'];
 /** What the evaluation was allowed to match, read off the data it matched
  * against. `jurisdictions` describes what was offered, not a filter that ran:
  * the engine has no jurisdiction parameter (see the note above). */
-function provenanceOf(data: ApplicabilityData): EvaluationProvenance {
-  const eligible = data.entries.filter(isDisplay);
+export function provenanceOf(
+  data: ApplicabilityData,
+  categories: readonly RuleCategory[] = DISPLAY_CATEGORIES,
+): EvaluationProvenance {
+  const eligible = data.entries.filter((e) => categories.includes(entryCategory(e)));
   return {
-    evaluated_categories: [...DISPLAY_CATEGORIES],
+    evaluated_categories: [...categories],
     jurisdictions: [...new Set(eligible.map((e) => e.jurisdiction))],
     represented: (data.represented_paragraphs ?? []).map(
       ({ id, jurisdiction, cite, category }) => ({

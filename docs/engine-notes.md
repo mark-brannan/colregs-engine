@@ -2,7 +2,7 @@
 
 **In plain terms:** the colregs data says which lighting rules apply to
 a vessel. Turning those rules into complete, lawful light displays needed
-seven judgment calls that the data does not make. This file records them
+the judgment calls that the data does not make. This file records them
 so they can be reviewed as decisions, not archaeology.
 
 colregs defines predicate semantics and the five relations, and leaves
@@ -88,6 +88,44 @@ Each composition decision below is tested in `test/displays.test.ts`.
    produced it.** Displays are deduplicated by entry set + light
    fingerprint, and every display records which choices produced it —
    that is the data behind the elimination UX.
+
+## Encounter decisions (`src/encounter.ts`)
+
+8. **A bare predicate key means `own:`, and `fact:rule18_class` is
+   decoded per subject before matching**, from facts.json's `derived`
+   table, first row wins, no row means absent.
+
+9. **An override fires from any obligation, `shall-not-impede`
+   included.** Rule 9(b) is written with that modality and overrides
+   18(a)(iv); only a `may` overrider is inert. Chains stop at the first
+   displacement, as in display.
+
+10. **A `none` effect confers no role.** 8(f)(iii) still appears in
+    `applied`; `roles` lists only duties held, so an empty list means
+    no duty was conferred.
+
+11. **Two classifications at once resolve overtaking over head-on over
+    crossing.** 13(d) forbids reclassifying a latched overtaking, and
+    14(c) errs toward head-on. Absent when none fired.
+
+12. **A stated `pair:geo:risk_of_collision` counts as asserted with no
+    entry ground.** Rule 7(a) makes it the caller's judgement; 7(d)(i)
+    can add a ground, never remove one.
+
+## Conduct and Rule 2 decisions (`src/conduct.ts`, `src/rule2.ts`)
+
+13. **Phases are read off roles.** give-way is `16`, stand-on `17(a)(i)`,
+    a stand-on vessel turning or with a changed heading `17(a)(ii)`,
+    shall-not-impede `8(f)(i)`, keep-clear `18(f)(i)`, a latched
+    overtaking `13(d)`. `17(b)` needs a threshold colregs does not
+    declare and is not emitted.
+
+14. **Every conduct verdict is `pending`** until a monitor exists; a
+    conduct entry attaches at the first sample its predicate holds.
+
+15. **A Rule 2 grid is a first-match list of predicate regions.** No
+    regions, or no match, is `inconclusive-in-model`, named in
+    `assumptions_violated`; nothing in the situation names a departure.
 
 If any of these turn out to disagree with the data's intent, that is a
 colregs conversation (an issue with the failing fact record), not a

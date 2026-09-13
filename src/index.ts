@@ -16,13 +16,15 @@ export {
 } from './evaluate.js';
 export type { EvaluateOptions } from './evaluate.js';
 
-// The three verbs ADR 0011 §4 and ADR 0012 name. Exported from the day they
-// are named so their shapes are compiler-checked and a consumer can build
-// against them; every one throws NotImplementedError until its body lands.
+// The three verbs ADR 0011 §4 and ADR 0012 name, built partially: each
+// answers an envelope from the data it has, and says in the envelope what it
+// could not decide. NotImplementedError stays exported for consumers that
+// catch it; no verb throws it any more.
 export { appliedEncounterEntries, evaluateEncounter } from './encounter.js';
 export { appliedConductEntries, evaluateConduct } from './conduct.js';
 export { evaluateRule2Departure } from './rule2.js';
 export { NotImplementedError } from './errors.js';
+export { validateSituation, validateTrace } from './facts.js';
 
 export type {
   ConductEvaluation,
@@ -37,6 +39,7 @@ export type {
   Rule2DepartureAdvisory,
   Rule2DepartureFinding,
   Rule2DepartureModel,
+  Rule2DepartureRegion,
   Rule2DepartureStatus,
   SolverParameters,
   SubjectRole,

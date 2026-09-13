@@ -260,6 +260,11 @@ export interface EncounterEvaluation {
    * `rel:overrides`. */
   overridden: { id: EntryId; by: EntryId }[];
   modalities: Record<EntryId, Modality>;
+  /** Category per applied entry id, over the same key set as `modalities`:
+   * which of the three categories this verb reads each id came from. */
+  categories: Record<EntryId, RuleCategory>;
+  /** What this evaluation read, and what it therefore does not answer. */
+  provenance: EvaluationProvenance;
 }
 
 /** One instant of a trace. `t_s` is seconds on the caller's clock; the
@@ -331,6 +336,21 @@ export interface Rule2DepartureModel extends SolverParameters {
   /** The colregs release the grid was solved against. A mismatch with
    * `rules.colregs.version` is reported, not refused. */
   colregs_version: string;
+  /** The one grid encoding this package can read: regions of situation
+   * space as predicates over the flat `<subject>:<class>:<key>` namespace,
+   * first match wins, no match is `inconclusive-in-model`. A grid in any
+   * other encoding is the artefact's own and is not read. */
+  regions?: Rule2DepartureRegion[];
+}
+
+/** One region of a solved grid: the situations it covers and what the
+ * solver found there. `when` is the ordinary predicate language. */
+export interface Rule2DepartureRegion {
+  when: Predicate;
+  status: Rule2DepartureStatus;
+  advisories?: Rule2DepartureAdvisory[];
+  /** Display text, never matched on. */
+  assumptions_violated?: string[];
 }
 
 /** What the model knows, as a closed alphabet colregs' ADR 0005 §5 owns and
