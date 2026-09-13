@@ -53,6 +53,33 @@ describe('evaluateConduct', () => {
     expect(r.phases.filter((p) => p.subject === 'own')).toHaveLength(1);
   });
 
+  it('a subject holding give-way and shall-not-impede at once is phased by give-way', () => {
+    // A fishing vessel overtaking in a narrow channel: 13(a) gives her
+    // give-way, 9(c) shall-not-impede, and neither overrides the other.
+    const situation: Situation = {
+      own: {
+        fact: {
+          'fact:propulsion': 'propulsion:power',
+          'fact:activity': 'activity:fishing',
+          'fact:position': 'position:underway',
+        },
+        hist: { 'hist:was_overtaking': false },
+      },
+      other: {
+        fact: {
+          'fact:propulsion': 'propulsion:power',
+          'fact:activity': 'activity:none',
+          'fact:position': 'position:underway',
+        },
+        geo: { 'geo:rel_bearing_deg': 200 },
+      },
+      pair: { geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300 }, env: { 'env:narrow_channel': true } },
+    };
+    const r = evaluateConduct({ samples: [{ t_s: 0, situation }] });
+    expect(r.phases).toContainEqual({ subject: 'own', phase: '16', at_s: 0 });
+    expect(r.phases.filter((p) => p.subject === 'own')).toHaveLength(1);
+  });
+
   it('a latched overtaking vessel is in the 13(d) phase', () => {
     const latch = fixtures.cases.find((c) => c.name.startsWith('13(d) latch'))!.situation;
     const r = evaluateConduct({ samples: [{ t_s: 0, situation: latch }] });
