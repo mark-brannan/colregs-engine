@@ -17,11 +17,26 @@ interface DecodeRow {
   value: string;
 }
 
-const RULE18_DECODE: DecodeRow[] = (
-  factsData.derived as unknown as {
-    'fact:rule18_class': { decode: DecodeRow[] };
+/** facts.json's decode table for the derived Rule 18 class, checked for
+ * shape at import so a colregs release that moves it fails by name. */
+function loadRule18Decode(): DecodeRow[] {
+  const derived = (factsData as { derived?: Record<string, unknown> }).derived;
+  const spec = derived?.['fact:rule18_class'] as { decode?: unknown } | undefined;
+  const rows = spec?.decode;
+  const wellFormed =
+    Array.isArray(rows) &&
+    rows.every(
+      (r) => typeof r === 'object' && r !== null && typeof r.value === 'string' && typeof r.when === 'object',
+    );
+  if (!wellFormed) {
+    throw new Error(
+      "colregs facts.json: expected derived['fact:rule18_class'].decode to be a list of { when, value } rows",
+    );
   }
-)['fact:rule18_class'].decode;
+  return rows as DecodeRow[];
+}
+
+const RULE18_DECODE: DecodeRow[] = loadRule18Decode();
 
 /** A vessel's rank under Rule 18, or undefined when no decode row matches
  * (a vessel under oars, a record with no propulsion): absent is absent. */

@@ -10,6 +10,7 @@ import {
   entryCategory,
   provenanceOf,
   resolveModality,
+  resolveOverrides,
   type EvaluateOptions,
 } from './evaluate.js';
 import { validateSituation } from './facts.js';
@@ -33,8 +34,9 @@ export const ENCOUNTER_CATEGORIES: readonly RuleCategory[] = [
   'precedence',
 ];
 
-/** A modality that carries an obligation, and so lets an entry's
- * rel:overrides fire; a `may` overrider is inert, as in display. */
+/** The modalities that let an encounter entry's rel:overrides fire: wider
+ * than display's, because 9(b) is written `shall-not-impede` and overrides
+ * 18(a)(iv). A `may` overrider is inert, as in display. */
 const OBLIGATIONS: ReadonlySet<Modality> = new Set<Modality>([
   'shall',
   'shall-if-practicable',
@@ -73,43 +75,6 @@ export function appliedEncounterEntries(
   return appliedEntries(opts.data ?? RESOLVED_DATA, flattenSituation(situation)).map((e) => e.id);
 }
 
-/** rel:overrides between applied entries: fires only from an un-displaced
- * obligation, reaches only applied entries, and a displaced entry's own
- * overrides do not fire. The data is acyclic, so the memo terminates. */
-function resolveOverrides(
-  applied: Entry[],
-  modalities: Record<EntryId, Modality>,
-): { id: EntryId; by: EntryId }[] {
-  const appliedIds = new Set(applied.map((e) => e.id));
-  const cache = new Map<EntryId, boolean>();
-  const by = new Map<EntryId, EntryId>();
-  function isOverridden(id: EntryId): boolean {
-    if (cache.has(id)) return cache.get(id)!;
-    cache.set(id, false);
-    let result = false;
-    for (const e of applied) {
-      if (!OBLIGATIONS.has(modalities[e.id])) continue;
-      if (!(e['rel:overrides'] ?? []).includes(id)) continue;
-      if (isOverridden(e.id)) continue;
-      result = true;
-      by.set(id, e.id);
-      break;
-    }
-    cache.set(id, result);
-    return result;
-  }
-  const overridden: { id: EntryId; by: EntryId }[] = [];
-  for (const e of applied) {
-    if (!OBLIGATIONS.has(modalities[e.id]) || isOverridden(e.id)) continue;
-    for (const ref of e['rel:overrides'] ?? []) {
-      if (appliedIds.has(ref) && isOverridden(ref) && by.get(ref) === e.id) {
-        overridden.push({ id: ref, by: e.id });
-      }
-    }
-  }
-  return overridden;
-}
-
 /**
  * Every `scope`, `classification` and `precedence` entry whose predicate
  * holds for `situation`, with roles, risk-of-collision grounds and
@@ -135,9 +100,8 @@ export function evaluateEncounter(
     categories[e.id] = entryCategory(e);
   }
 
-  const overridden = resolveOverrides(applied, modalities);
-  const displaced = new Set(overridden.map((o) => o.id));
-  const standing = applied.filter((e) => !displaced.has(e.id));
+  const { overridden, overriddenIds } = resolveOverrides(applied, modalities, OBLIGATIONS);
+  const standing = applied.filter((e) => !overriddenIds.has(e.id));
 
   const scope: EntryId[] = [];
   const riskBy: EntryId[] = [];

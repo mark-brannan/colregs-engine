@@ -282,6 +282,68 @@ export function provenanceOf(
 // facts happen to match 30a-buoy/30b-buoy's predicate gets those lights
 // regardless of jurisdiction, same as before this field existed. No
 // jurisdiction parameter exists yet -- open gap, not a decision.
+/** The modalities that let a display entry's rel:overrides fire. */
+const DISPLAY_OBLIGATIONS: ReadonlySet<Modality> = new Set<Modality>([
+  'shall',
+  'shall-if-practicable',
+]);
+
+/**
+ * rel:overrides — directional displacement between two entries that both
+ * apply: X overrides Y means Y is displaced while X applies. An override
+ * fires only from an entry whose resolved modality is in `obligations`
+ * (never from a `may`), never from or onto an exempted entry, and only
+ * reaches other applied entries — never a one_of import option or a
+ * rel:includes import, which are not applied. A displaced entry's own
+ * overrides do not fire, so a chain stops at the first displacement;
+ * colregs' own CI (REQ-CAT-3) keeps the data acyclic, so the memo alone
+ * terminates. Shared by evaluateDisplay and evaluateEncounter so the two
+ * verbs cannot drift on it.
+ */
+export function resolveOverrides(
+  applied: readonly Entry[],
+  modalities: Readonly<Record<string, Modality>>,
+  obligations: ReadonlySet<Modality>,
+  exemptedIds: ReadonlySet<string> = new Set(),
+): { overridden: { id: string; by: string }[]; overriddenIds: Set<string> } {
+  const appliedIds = new Set(applied.map((e) => e.id));
+  const overriddenCache = new Map<string, boolean>();
+  const overriddenBy = new Map<string, string>();
+  function isOverridden(id: string): boolean {
+    if (overriddenCache.has(id)) return overriddenCache.get(id)!;
+    overriddenCache.set(id, false); // placeholder: makes recursion terminate
+    let result = false;
+    if (appliedIds.has(id) && !exemptedIds.has(id)) {
+      for (const e of applied) {
+        if (!obligations.has(modalities[e.id])) continue;
+        if (exemptedIds.has(e.id)) continue;
+        if (!(e['rel:overrides'] ?? []).includes(id)) continue;
+        if (isOverridden(e.id)) continue; // a displaced entry's overrides don't fire
+        result = true;
+        overriddenBy.set(id, e.id);
+        break;
+      }
+    }
+    overriddenCache.set(id, result);
+    return result;
+  }
+  // Reported in data order of the overrider, then the overrider's own
+  // rel:overrides order (not the target's data order).
+  const overridden: { id: string; by: string }[] = [];
+  for (const e of applied) {
+    if (!obligations.has(modalities[e.id])) continue;
+    if (exemptedIds.has(e.id)) continue;
+    if (isOverridden(e.id)) continue;
+    for (const ref of e['rel:overrides'] ?? []) {
+      if (!appliedIds.has(ref) || exemptedIds.has(ref)) continue;
+      if (isOverridden(ref) && overriddenBy.get(ref) === e.id) {
+        overridden.push({ id: ref, by: e.id });
+      }
+    }
+  }
+  return { overridden, overriddenIds: new Set(overridden.map((x) => x.id)) };
+}
+
 /** The predicate layer alone: entries whose `when` matches, without the
  * relation/display composition that follows. Factored out of `evaluate` so
  * a caller can inspect just this layer's result. */
@@ -349,54 +411,8 @@ export function evaluateDisplay(
     return { exempted, exemptedIds: new Set(exempted.map((x) => x.id)) };
   }
 
-  // rel:overrides — directional displacement between two entries that both
-  // apply: X overrides Y means Y's lights are displaced while X applies.
-  // Unlike rel:excludes below, an override fires only from an obligation
-  // (shall / shall-if-practicable), never from a `may`, and only reaches
-  // other applied entries — never a one_of import option or a rel:includes
-  // import, which are not applied. isOverridden is recursive (an
-  // overridden entry's own rel:overrides do not fire, so a chain stops at
-  // the first displacement) and memoised; colregs' own CI (REQ-CAT-3) keeps
-  // this data acyclic, so the memo cache alone is enough to terminate.
-  function computeOverridden(exemptedIds: ReadonlySet<string>) {
-    const overriddenCache = new Map<string, boolean>();
-    const overriddenBy = new Map<string, string>();
-    function isOverridden(id: string): boolean {
-      if (overriddenCache.has(id)) return overriddenCache.get(id)!;
-      overriddenCache.set(id, false); // placeholder: makes recursion terminate
-      let result = false;
-      if (appliedIds.has(id) && !exemptedIds.has(id)) {
-        for (const e of applied) {
-          const m = modalities[e.id];
-          if (m !== 'shall' && m !== 'shall-if-practicable') continue;
-          if (exemptedIds.has(e.id)) continue;
-          if (!(e['rel:overrides'] ?? []).includes(id)) continue;
-          if (isOverridden(e.id)) continue; // a displaced entry's overrides don't fire
-          result = true;
-          overriddenBy.set(id, e.id);
-          break;
-        }
-      }
-      overriddenCache.set(id, result);
-      return result;
-    }
-    // Reported in data order of the overrider, then the overrider's own
-    // rel:overrides order (not the target's data order).
-    const overridden: { id: string; by: string }[] = [];
-    for (const e of applied) {
-      const m = modalities[e.id];
-      if (m !== 'shall' && m !== 'shall-if-practicable') continue;
-      if (exemptedIds.has(e.id)) continue;
-      if (isOverridden(e.id)) continue;
-      for (const ref of e['rel:overrides'] ?? []) {
-        if (!appliedIds.has(ref) || exemptedIds.has(ref)) continue;
-        if (isOverridden(ref) && overriddenBy.get(ref) === e.id) {
-          overridden.push({ id: ref, by: e.id });
-        }
-      }
-    }
-    return { overridden, overriddenIds: new Set(overridden.map((x) => x.id)) };
-  }
+  const computeOverridden = (exemptedIds: ReadonlySet<string>) =>
+    resolveOverrides(applied, modalities, DISPLAY_OBLIGATIONS, exemptedIds);
 
   const preliminaryOverridden = computeOverridden(new Set());
   const { exempted, exemptedIds } = computeExempted(

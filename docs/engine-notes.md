@@ -118,7 +118,10 @@ Each composition decision below is tested in `test/displays.test.ts`.
     a stand-on vessel turning or with a changed heading `17(a)(ii)`,
     shall-not-impede `8(f)(i)`, keep-clear `18(f)(i)`, a latched
     overtaking `13(d)`. `17(b)` needs a threshold colregs does not
-    declare and is not emitted.
+    declare and is not emitted. A subject holding several roles at once
+    is phased by the strongest duty: give-way, then keep-clear, then
+    stand-on, then shall-not-impede (a sailing vessel meeting a CBD
+    vessel is in `17(a)(i)`, not `8(f)(i)`).
 
 14. **Every conduct verdict is `pending`** until a monitor exists; a
     conduct entry attaches at the first sample its predicate holds.
