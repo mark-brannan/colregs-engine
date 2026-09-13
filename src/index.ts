@@ -32,6 +32,7 @@ export type {
   DisplayEvaluation,
   DisplayLight,
   EncounterEvaluation,
+  EvaluationProvenance,
   ParagraphCite,
   Rule2DepartureAdvisory,
   Rule2DepartureFinding,
@@ -48,3 +49,7 @@ export type {
 export type { EffectRole, EntryId } from './generated/applicability.js';
 export type { FactRecord } from './generated/fact-record.js';
 export type { Modality } from './generated/applicability.js';
+// colregs' own vocabulary, re-exported here because the envelope's
+// `categories` and `provenance.represented` are typed in it — the same
+// reason Modality is above, and not a widening of `colregs-engine/schema`.
+export type { RepresentedParagraph, RuleCategory } from './schema.js';

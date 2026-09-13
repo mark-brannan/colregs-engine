@@ -17,12 +17,14 @@ import type {
   DisplayLight,
   DisplayEvaluation,
   Entry,
+  EvaluationProvenance,
   FactRecord,
   FactValue,
   Modality,
   NotConstraint,
   NumericConstraint,
   Predicate,
+  RuleCategory,
 } from './types';
 import { validateFacts } from './facts.js';
 // Read at import time, from the colregs release actually resolved here.
@@ -231,7 +233,39 @@ function displayLights(node: Node): DisplayLight[] {
 // mirrors that exactly so `applied` keeps meaning "what does this vessel
 // show", not "every paragraph whose predicate is satisfied".
 function isDisplay(e: Entry): boolean {
-  return (e.category ?? 'display') === 'display';
+  return entryCategory(e) === 'display';
+}
+
+/** An entry's category, with colregs' default applied: absent is `display`.
+ * The default lives here, not at each reading site, so the envelope's
+ * `categories` and the `isDisplay` filter can never disagree about it. */
+function entryCategory(e: Entry): RuleCategory {
+  return e.category ?? 'display';
+}
+
+// The categories `evaluateDisplay` matches. A one-element list rather than a
+// bare string because the field it feeds is a list on every verb: ADR 0001's
+// evaluateEncounter reads scope, classification and precedence in one
+// predicate pass.
+const DISPLAY_CATEGORIES: readonly RuleCategory[] = ['display'];
+
+/** What the evaluation was allowed to match, read off the data it matched
+ * against. `jurisdictions` describes what was offered, not a filter that ran:
+ * the engine has no jurisdiction parameter (see the note above). */
+function provenanceOf(data: ApplicabilityData): EvaluationProvenance {
+  const eligible = data.entries.filter(isDisplay);
+  return {
+    evaluated_categories: [...DISPLAY_CATEGORIES],
+    jurisdictions: [...new Set(eligible.map((e) => e.jurisdiction))],
+    represented: (data.represented_paragraphs ?? []).map(
+      ({ id, jurisdiction, cite, category }) => ({
+        id,
+        jurisdiction,
+        cite,
+        category,
+      }),
+    ),
+  };
 }
 
 // NOTE (colregs@0.2.2, ADR 0008): every entry now also carries a required
@@ -640,6 +674,15 @@ export function evaluateDisplay(
     cite: n.entry.cite,
   }));
 
+  // Same key set as `modalities`, filled once at the end rather than beside
+  // each write to it: a category is a property of the entry, not of how it
+  // entered the display.
+  const categories: Record<string, RuleCategory> = {};
+  for (const id of Object.keys(modalities)) {
+    const entry = byId.get(id);
+    if (entry) categories[id] = entryCategory(entry);
+  }
+
   return {
     colregs: { version: COLREGS_VERSION, source },
     applied: applied.map((e) => e.id),
@@ -650,5 +693,7 @@ export function evaluateDisplay(
     optional_additions: optionalAdditions,
     optionalAdditions,
     modalities,
+    categories,
+    provenance: provenanceOf(data),
   };
 }

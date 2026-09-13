@@ -74,6 +74,23 @@ export type {
 /** One entry of data/applicability.json: predicate -> lights, with modality. */
 export type Entry = ApplicabilityData['entries'][number];
 
+/**
+ * What a norm reads and what it produces (colregs ADR 0005 §2). Absent on an
+ * entry means `display`, so read it through the engine's own accessor rather
+ * than off the entry.
+ */
+export type RuleCategory = NonNullable<Entry['category']>;
+
+/**
+ * A paragraph colregs records but no verb evaluates: Rule 2(a) `care` and
+ * 2(b) `meta`, from `applicability.json`'s `represented_paragraphs`. The
+ * `note` is dropped — an evaluation carries the identity, not the prose.
+ */
+export type RepresentedParagraph = Omit<
+  NonNullable<ApplicabilityData['represented_paragraphs']>[number],
+  'note'
+>;
+
 /** A predicate: fact key -> constraint. Every key must match (AND). */
 export type Predicate = When;
 
