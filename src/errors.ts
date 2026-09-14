@@ -8,15 +8,15 @@
  * data: an answer that risks being wrong beats no answer.
  */
 export class NotImplementedError extends Error {
-  /** The verb that is not built. */
+  /** The verb that could not be evaluated. */
   readonly verb: string;
-  /** The ADR section that fixes its signature and result shape. */
-  readonly shapeFixedBy: string;
+  /** The data table or section that is missing, and where that gap is tracked. */
+  readonly missing: string;
 
-  constructor(verb: string, shapeFixedBy: string) {
-    super(`${verb} is not built: ${shapeFixedBy} fixes its shape, not its body`);
+  constructor(verb: string, missing: string) {
+    super(`${verb} could not be evaluated: ${missing} is missing from the resolved colregs data`);
     this.name = 'NotImplementedError';
     this.verb = verb;
-    this.shapeFixedBy = shapeFixedBy;
+    this.missing = missing;
   }
 }
