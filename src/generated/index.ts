@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.2.2 schema/*.schema.json
+ * Source: colregs@0.2.4 schema/*.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
@@ -15,6 +15,7 @@ export type * as images from './images.js';
 export type * as lights from './lights.js';
 export type * as rules from './rules.js';
 export type * as situationFixtures from './situation-fixtures.js';
+export type * as version from './version.js';
 
 export type { ApplicabilityFixtures } from './applicability-fixtures.js';
 export type { ApplicabilityData } from './applicability.js';
@@ -25,3 +26,4 @@ export type { ImagesData } from './images.js';
 export type { LightsData } from './lights.js';
 export type { RulesData } from './rules.js';
 export type { SituationFixtures } from './situation-fixtures.js';
+export type { VersionData } from './version.js';
