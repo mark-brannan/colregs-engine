@@ -55,7 +55,7 @@ function rankAdvisories(advisories: Rule2DepartureAdvisory[]): Rule2DepartureAdv
  * default and a grid does not, and every finding names the grid it came
  * from rather than the Rules.
  *
- * @beta A grid without `regions` yields `inconclusive-in-model` for every
+ * @alpha A grid without `regions` yields `inconclusive-in-model` for every
  * situation; no certified grid ships with this package.
  */
 export function evaluateRule2Departure(

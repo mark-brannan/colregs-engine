@@ -9,8 +9,6 @@
 /**
  * Thrown by an exported verb whose shape is fixed but whose body is not
  * built. Carries the verb's name and the ADR section that fixes its shape.
- * No verb throws it at present; it stays exported so a consumer's catch
- * keeps compiling, and for the next verb that is named before it is built.
  */
 export class NotImplementedError extends Error {
   /** The verb that is not built. */

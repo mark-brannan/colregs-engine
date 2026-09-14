@@ -76,7 +76,7 @@ function appliedEntries(data: ApplicabilityData, flat: FlatSituation): Entry[] {
  * — the situation-fixture contract, as `appliedDisplayEntries` is the
  * applicability-fixture one. Validates `situation` on the same terms.
  *
- * @beta
+ * @alpha
  */
 export function appliedEncounterEntries(
   situation: Situation,
@@ -92,7 +92,7 @@ export function appliedEncounterEntries(
  * `rel:overrides` resolved in one pass. `fact:rule18_class` is derived per
  * subject before matching, as colregs specifies.
  *
- * @beta
+ * @alpha
  */
 export function evaluateEncounter(
   situation: Situation,

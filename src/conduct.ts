@@ -91,7 +91,7 @@ function subjectsOf(entry: Entry): SubjectKey[] {
  * The ids of the conduct entries that attached anywhere in the window,
  * without judging them — the trace-fixture contract.
  *
- * @beta
+ * @alpha
  */
 export function appliedConductEntries(trace: Trace, opts: EvaluateOptions = {}): EntryId[] {
   validateTrace(trace);
@@ -106,7 +106,7 @@ export function appliedConductEntries(trace: Trace, opts: EvaluateOptions = {}):
  * One verdict per applied conduct entry per subject it attached to, plus
  * the Rule 13(d)/17 phase changes, over the window `trace` covers.
  *
- * @beta Verdicts are `pending`: the monitors that decide `kept` and
+ * @alpha Verdicts are `pending`: the monitors that decide `kept` and
  * `breached` are not built. Phases and attachment times are computed.
  */
 export function evaluateConduct(trace: Trace, opts: EvaluateOptions = {}): ConductEvaluation {
