@@ -36,6 +36,7 @@ const ROOT_NAMES: Record<string, string> = {
   lights: 'LightsData',
   rules: 'RulesData',
   'situation-fixtures': 'SituationFixtures',
+  version: 'VersionData',
 };
 
 const BANNER = `/**
@@ -62,7 +63,7 @@ const files = readdirSync(SCHEMA_DIR)
 const currentStems = new Set(
   files.map((f) => basename(f, '.schema.json')),
 );
-const KEEP = new Set(['fact-record.ts', 'index.ts']);
+const KEEP = new Set(['fact-record.ts', 'situation.ts', 'index.ts']);
 for (const existing of readdirSync(OUT_DIR)) {
   if (!existing.endsWith('.ts') || KEEP.has(existing)) continue;
   if (!currentStems.has(basename(existing, '.ts'))) {
