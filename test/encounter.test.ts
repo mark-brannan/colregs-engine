@@ -94,6 +94,32 @@ describe('evaluateEncounter', () => {
     expect(evaluateEncounter({ own: { fact: { ...power } } }).colregs.source).toBe('resolved');
   });
 
+  it('reports an encounter value colregs adds later, without letting it displace a known one', () => {
+    const novel = {
+      id: '13x-demo',
+      cite: '13(x)',
+      jurisdiction: 'intl',
+      category: 'classification',
+      modality: 'shall',
+      when: { 'pair:geo:in_sight': true },
+      effect: { encounter: 'overtaking-in-narrow-channel' },
+    } as unknown as ApplicabilityData['entries'][number];
+    const overtaking = fixture('13(d) latch');
+    const first: ApplicabilityData = { ...applicability, entries: [novel, ...applicability.entries] };
+    const last: ApplicabilityData = { ...applicability, entries: [...applicability.entries, novel] };
+    // The known classification wins from either position in the data.
+    expect(evaluateEncounter(overtaking, { data: first }).encounter).toBe('overtaking');
+    expect(evaluateEncounter(overtaking, { data: last }).encounter).toBe('overtaking');
+    // With nothing known applying, the new value is still reported, not dropped.
+    const onlyNovel: ApplicabilityData = {
+      ...applicability,
+      entries: [novel, ...applicability.entries.filter((e) => e.category !== 'classification')],
+    };
+    expect(evaluateEncounter(overtaking, { data: onlyNovel }).encounter).toBe(
+      'overtaking-in-narrow-channel',
+    );
+  });
+
   it('rejects a malformed situation rather than answering', () => {
     const bad = { own: { fact: { propulsion: 'power' } } } as unknown as Situation;
     expect(() => evaluateEncounter(bad)).toThrow(/did you mean 'fact:propulsion'/);

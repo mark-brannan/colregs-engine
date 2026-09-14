@@ -54,6 +54,17 @@ const ENCOUNTER_RANK: Record<string, number> = {
   none: 0,
 };
 
+/** A value colregs adds after this release ranks below every value named
+ * here, so it is still reported when nothing known applies but never
+ * displaces a known classification — and the answer stops depending on
+ * where in `entries` the new rule happens to sit. Own keys only: without
+ * that, `constructor` reads a function off the prototype. */
+function encounterRank(value: string): number {
+  return Object.prototype.hasOwnProperty.call(ENCOUNTER_RANK, value)
+    ? ENCOUNTER_RANK[value]
+    : -1;
+}
+
 function appliedEntries(data: ApplicabilityData, flat: FlatSituation): Entry[] {
   return data.entries.filter(
     (e) => ENCOUNTER_CATEGORIES.includes(entryCategory(e)) && situationMatches(e.when, flat),
@@ -118,7 +129,7 @@ export function evaluateEncounter(
         if (effect?.risk_of_collision === true) riskBy.push(e.id);
         if (typeof effect?.encounter === 'string') {
           const value = effect.encounter as NonNullable<EncounterEvaluation['encounter']>;
-          if (encounter === undefined || ENCOUNTER_RANK[value] > ENCOUNTER_RANK[encounter]) {
+          if (encounter === undefined || encounterRank(value) > encounterRank(encounter)) {
             encounter = value;
           }
         }

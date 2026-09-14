@@ -96,7 +96,7 @@ type, each vessel's roles, what overrode what; every case of colregs'
 `evaluateRule2Departure(situation, model)` are partial: the window and the
 Rule 13(d)/17 phases with every verdict `pending`, and a region lookup in
 the model's `regions`, else `inconclusive-in-model`. The envelope says what
-it could not decide; nothing throws for want of data. The shapes and the `opts.data` / `colregs.source` contract are settled in colregs
+it could not decide: nothing throws for want of data, though a malformed situation, trace or model still does. The shapes and the `opts.data` / `colregs.source` contract are settled in colregs
 [ADR 0011](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0011-api-shape.md) and [ADR 0012](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0012-trace-and-rule2-departure-api.md).
 
 ## Entry points
@@ -110,7 +110,7 @@ own vocabulary and do not move when colregs releases data.
 | [`appliedDisplayEntries(facts, opts?)`](src/evaluate.ts) | just the ids of the entries whose conditions hold, no composition |
 | [`DisplayEvaluation`](src/types.ts) | the result: `applied`, `excluded`, `displays`, the per-entry `categories`, the `provenance` block and the `colregs` version stamp |
 | [`EvaluationProvenance`](src/types.ts), [`RuleCategory`](src/schema.ts), [`RepresentedParagraph`](src/schema.ts) | what the evaluation read: the categories it matched, the jurisdictions it offered, and Rule 2(a)/2(b) as represented but never computed |
-| [`Rule2DepartureStatus`](src/types.ts) | the closed status alphabet colregs' ADR 0005 §5 fixes, for the reserved `evaluateRule2Departure`; no field of `DisplayEvaluation` carries one |
+| [`Rule2DepartureStatus`](src/types.ts) | the closed status alphabet colregs' ADR 0005 §5 fixes, for `evaluateRule2Departure`; no field of `DisplayEvaluation` carries one |
 | [`Display`](src/types.ts), [`DisplayLight`](src/types.ts) | one lawful display and one light in it, each light citing `source_entry`, `via` and `modality` |
 | [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
 | [`Modality`](src/generated/applicability.ts) | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them |
