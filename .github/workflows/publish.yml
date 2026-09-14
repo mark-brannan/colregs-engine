@@ -62,7 +62,7 @@ jobs:
             exit 1
           fi
 
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - run: npm run typecheck
       # No prose-budget engine on this runner; ci.yml's dedicated
       # prose-budget job is the gate for docs/budgets.json, so the local

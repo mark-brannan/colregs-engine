@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.2.4 schema/applicability-fixtures.schema.json
+ * Source: colregs@0.3.0 schema/applicability-fixtures.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */

@@ -36,6 +36,9 @@ const ROOT_NAMES: Record<string, string> = {
   lights: 'LightsData',
   rules: 'RulesData',
   'situation-fixtures': 'SituationFixtures',
+  corpora: 'CorporaData',
+  corpus: 'CorpusData',
+  editions: 'EditionsData',
   version: 'VersionData',
 };
 

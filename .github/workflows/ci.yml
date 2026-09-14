@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       # The data types in src/generated/ are compiled from colregs' JSON
       # Schema and checked in. If the pinned schema and the checked-in types
       # disagree, the engine is typed against a shape the data no longer has:
@@ -46,7 +46,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - run: npm run conformance
       # A run that rewrote the register has already failed above; this
       # catches anything else the harness touched in the worktree.

@@ -1,3 +1,6 @@
 node_modules/
 dist/
 research/z3/out/
+
+# colregs tracks tip of main; a lockfile would pin it to one sha
+package-lock.json
