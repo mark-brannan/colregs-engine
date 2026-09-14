@@ -56,6 +56,8 @@ describe('evaluateConduct', () => {
   it('a subject holding give-way and shall-not-impede at once is phased by give-way', () => {
     // A fishing vessel overtaking in a narrow channel: 13(a) gives her
     // give-way, 9(c) shall-not-impede, and neither overrides the other.
+    // colregs 0.2.4 gated 13(a)'s sector arm on the other vessel not holding
+    // the 13(d) latch (Q-47), so the situation has to say she does not.
     const situation: Situation = {
       own: {
         fact: {
@@ -72,6 +74,7 @@ describe('evaluateConduct', () => {
           'fact:position': 'position:underway',
         },
         geo: { 'geo:rel_bearing_deg': 200 },
+        hist: { 'hist:was_overtaking': false },
       },
       pair: { geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300 }, env: { 'env:narrow_channel': true } },
     };
