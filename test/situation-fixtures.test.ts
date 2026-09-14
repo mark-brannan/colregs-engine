@@ -27,7 +27,7 @@ const idOf = (e: Expectation) => (typeof e === 'string' ? e : e.entry);
 
 describe('colregs situation fixtures (verbatim replay)', () => {
   it('has the full fixture set', () => {
-    expect(fixtures.cases.length).toBe(80);
+    expect(fixtures.cases.length).toBe(81);
   });
 
   for (const c of fixtures.cases) {
