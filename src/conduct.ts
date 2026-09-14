@@ -46,6 +46,8 @@ function strongestRole(roles: { role: string }[]): string | undefined {
   return ROLE_RANK.find((r) => roles.some((x) => x.role === r));
 }
 
+// Role first, latch second. Reversing them is open: see issue #75.
+
 /** A stand-on vessel that is turning or has changed heading since the last
  * sample has moved from 17(a)(i) (keep course and speed) to 17(a)(ii) (may
  * take action). Only what the samples state is read. */
