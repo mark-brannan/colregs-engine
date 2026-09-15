@@ -2,7 +2,7 @@
 
 **In plain terms:** the colregs data says which lighting rules apply to
 a vessel. Turning those rules into complete, lawful light displays needed
-seven judgment calls that the data does not make. This file records them
+the judgment calls that the data does not make. This file records them
 so they can be reviewed as decisions, not archaeology.
 
 colregs defines predicate semantics and the five relations, and leaves
@@ -88,6 +88,22 @@ Each composition decision below is tested in `test/displays.test.ts`.
    produced it.** Displays are deduplicated by entry set + light
    fingerprint, and every display records which choices produced it —
    that is the data behind the elimination UX.
+
+## Encounter, conduct and Rule 2 decisions
+
+8. **Bare keys mean `own:`; `fact:rule18_class` is decoded per subject first.**
+9. **Any obligation overrides, `shall-not-impede` included** (9(b) is
+   written with it and overrides 18(a)(iv)); only a `may` overrider is inert.
+10. **A `none` effect confers no role.** 8(f)(iii) still appears in `applied`.
+11. **Competing classifications resolve overtaking, head-on, crossing, in
+    that order:** 13(d) forbids reclassifying a latch, 14(c) errs head-on.
+12. **A stated `pair:geo:risk_of_collision` counts as asserted, `by: []`.**
+13. **Phases follow roles, strongest first:** give-way `16`, keep-clear
+    `18(f)(i)`, stand-on `17(a)(i)` (`17(a)(ii)` once turning),
+    shall-not-impede `8(f)(i)`; a latch `13(d)`. `17(b)` is not emitted.
+14. **Every conduct verdict is `pending`** until a monitor exists.
+15. **A Rule 2 grid is a first-match list of predicate regions.** None, or
+    no match, is `inconclusive-in-model`, named in `assumptions_violated`.
 
 If any of these turn out to disagree with the data's intent, that is a
 colregs conversation (an issue with the failing fact record), not a

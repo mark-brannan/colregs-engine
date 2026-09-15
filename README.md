@@ -90,12 +90,14 @@ the honest answer for a vessel that lawfully shows nothing, and the two must
 not look alike. `appliedDisplayEntries(facts)` returns just the matching
 entry ids, without composing displays, and validates on the same terms.
 
-`evaluateEncounter`, `evaluateConduct` and `evaluateRule2Departure` are
-exported and throw `NotImplementedError`: their envelopes are fixed and
-compiler-checked, their bodies are not built. The verb names, those shapes
-and the `opts.data` / `colregs.source` contract are settled in
-colregs [ADR 0011](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0011-api-shape.md) and
-[ADR 0012](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0012-trace-and-rule2-departure-api.md).
+`evaluateEncounter(situation)` reads two vessels at one instant: encounter
+type, each vessel's roles, what overrode what; every case of colregs'
+`situation-fixtures.json` replays. `evaluateConduct(trace)` and
+`evaluateRule2Departure(situation, model)` are partial: the window and the
+Rule 13(d)/17 phases with every verdict `pending`, and a region lookup in
+the model's `regions`, else `inconclusive-in-model`. The envelope says what
+it could not decide: nothing throws for want of data, though a malformed situation, trace or model still does. The shapes and the `opts.data` / `colregs.source` contract are settled in colregs
+[ADR 0011](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0011-api-shape.md) and [ADR 0012](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0012-trace-and-rule2-departure-api.md).
 
 ## Entry points
 
@@ -108,11 +110,11 @@ own vocabulary and do not move when colregs releases data.
 | [`appliedDisplayEntries(facts, opts?)`](src/evaluate.ts) | just the ids of the entries whose conditions hold, no composition |
 | [`DisplayEvaluation`](src/types.ts) | the result: `applied`, `excluded`, `displays`, the per-entry `categories`, the `provenance` block and the `colregs` version stamp |
 | [`EvaluationProvenance`](src/types.ts), [`RuleCategory`](src/schema.ts), [`RepresentedParagraph`](src/schema.ts) | what the evaluation read: the categories it matched, the jurisdictions it offered, and Rule 2(a)/2(b) as represented but never computed |
-| [`Rule2DepartureStatus`](src/types.ts) | the closed status alphabet colregs' ADR 0005 §5 fixes, for the reserved `evaluateRule2Departure`; no field of `DisplayEvaluation` carries one |
+| [`Rule2DepartureStatus`](src/types.ts) | the closed status alphabet colregs' ADR 0005 §5 fixes, for `evaluateRule2Departure`; no field of `DisplayEvaluation` carries one |
 | [`Display`](src/types.ts), [`DisplayLight`](src/types.ts) | one lawful display and one light in it, each light citing `source_entry`, `via` and `modality` |
 | [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
 | [`Modality`](src/generated/applicability.ts) | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them |
-| [`evaluateEncounter`](src/encounter.ts), [`evaluateConduct`](src/conduct.ts), [`evaluateRule2Departure`](src/rule2.ts) | the other three verbs, with their companions and envelopes. Stubs: each throws [`NotImplementedError`](src/errors.ts) |
+| [`evaluateEncounter(situation, opts?)`](src/encounter.ts), [`evaluateConduct(trace, opts?)`](src/conduct.ts), [`evaluateRule2Departure(situation, model, opts?)`](src/rule2.ts) | scope, encounter type, risk grounds, roles and overrides for two vessels, with `appliedEncounterEntries` as the fixture companion; the trace and Rule 2 verbs, partial as above |
 
 `colregs-engine/schema` ([src/schema.ts](src/schema.ts)) is the colregs data
 shapes generated from that package's JSON Schema: `Entry`, `Predicate`,
