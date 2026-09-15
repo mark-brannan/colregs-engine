@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5](https://github.com/mark-brannan/colregs-engine/compare/v0.1.4...v0.1.5) (2026-09-15)
+
+
+### Added
+
+* add category, status alphabet and provenance to the display envelope ([#57](https://github.com/mark-brannan/colregs-engine/issues/57)) ([215fcb6](https://github.com/mark-brannan/colregs-engine/commit/215fcb6f39a5890e4665218388981b678e9f9cb4))
+* build evaluateEncounter, partial evaluateConduct and evaluateRule2Departure ([#71](https://github.com/mark-brannan/colregs-engine/issues/71)) ([90f38d6](https://github.com/mark-brannan/colregs-engine/commit/90f38d65d5f00240fdbba192c5612e4ff5ae1b0a))
+
 ## [0.1.4](https://github.com/mark-brannan/colregs-engine/compare/v0.1.3...v0.1.4) (2026-09-12)
 
 
