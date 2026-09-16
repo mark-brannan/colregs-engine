@@ -15,6 +15,7 @@ export {
   evaluateDisplay,
 } from './evaluate.js';
 export type { EvaluateOptions } from './evaluate.js';
+export { DataVersionMismatchError } from './errors.js';
 
 // The three verbs ADR 0011 §4 and ADR 0012 name, built partially: each
 // answers an envelope from the data it has, and says in the envelope what it

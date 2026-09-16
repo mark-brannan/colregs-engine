@@ -5,6 +5,7 @@
 // the data leaves open are recorded in docs/engine-notes.md.
 
 import {
+  checkDataVersion,
   COLREGS_VERSION,
   RESOLVED_DATA,
   entryCategory,
@@ -82,6 +83,7 @@ export function appliedEncounterEntries(
   situation: Situation,
   opts: EvaluateOptions = {},
 ): EntryId[] {
+  checkDataVersion(opts);
   validateSituation(situation);
   return appliedEntries(opts.data ?? RESOLVED_DATA, flattenSituation(situation)).map((e) => e.id);
 }
@@ -98,6 +100,7 @@ export function evaluateEncounter(
   situation: Situation,
   opts: EvaluateOptions = {},
 ): EncounterEvaluation {
+  checkDataVersion(opts);
   const data = opts.data ?? RESOLVED_DATA;
   const source: 'resolved' | 'caller' = opts.data ? 'caller' : 'resolved';
   validateSituation(situation);

@@ -27,6 +27,7 @@ import type {
   RuleCategory,
 } from './types';
 import { validateFacts } from './facts.js';
+import { DataVersionMismatchError } from './errors.js';
 // Read at import time, from the colregs release actually resolved here.
 // An evaluation carries it so "the answer changed" can be read as "the data
 // changed" without re-deriving which data was in play.
@@ -50,6 +51,35 @@ export interface EvaluateOptions {
   /** Applicability data to evaluate against, instead of this package's own
    * resolved colregs release. */
   data?: ApplicabilityData;
+  /**
+   * The version stamp that shipped alongside `data` — colregs 0.2.4's
+   * `data/version.json` (ADR 0009), one stamp for all of `data/` and
+   * `fixtures/`. Checked against this package's resolved colregs version
+   * only when both `data` and `dataVersion` are given; a mismatch throws
+   * {@link DataVersionMismatchError} rather than silently stamping the
+   * result with the wrong version (colregs-engine#77). Omit it — because
+   * the caller's own `data` predates issue #76's version stamp, or by
+   * deliberate choice — to skip the check entirely, same as before this
+   * option existed.
+   */
+  dataVersion?: string;
+}
+
+/**
+ * Guards every entry point that reads `opts.data`: when the caller also
+ * supplies `dataVersion`, it must match the colregs release this package
+ * itself resolves (`COLREGS_VERSION`) — the release `data` and `dataVersion`
+ * describe is presumed to be the same one, so this compares against the
+ * resolved version, not against the shape of `data` itself. No `data`, or
+ * no `dataVersion`, is not an error: the check is opt-in, because plenty of
+ * callers (including this package's own conformance harness) pass
+ * synthetic data with no version stamp at all.
+ */
+export function checkDataVersion(opts: EvaluateOptions): void {
+  if (opts.data === undefined || opts.dataVersion === undefined) return;
+  if (opts.dataVersion !== COLREGS_VERSION) {
+    throw new DataVersionMismatchError(COLREGS_VERSION, opts.dataVersion);
+  }
 }
 
 // AXIS_FACTS: facts.json's mechanical signal for "situational classification
@@ -358,6 +388,7 @@ export function appliedDisplayEntries(
   facts: FactRecord,
   opts: EvaluateOptions = {},
 ): string[] {
+  checkDataVersion(opts);
   validateFacts(facts);
   return appliedEntryList(opts.data ?? RESOLVED_DATA, facts).map((e) => e.id);
 }
@@ -380,6 +411,7 @@ export function evaluateDisplay(
   facts: FactRecord,
   opts: EvaluateOptions = {},
 ): DisplayEvaluation {
+  checkDataVersion(opts);
   const data = opts.data ?? RESOLVED_DATA;
   const source: 'resolved' | 'caller' = opts.data ? 'caller' : 'resolved';
   validateFacts(facts);
