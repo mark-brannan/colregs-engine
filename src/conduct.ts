@@ -29,6 +29,11 @@ import type {
 type SubjectKey = 'own' | 'other';
 const SUBJECTS: readonly SubjectKey[] = ['own', 'other'];
 
+// colregs' Situation and entry-effect fields are `self`/`other`
+// (situation.schema.json, ADR 0016); `own` is this engine's own subject
+// vocabulary.
+const DATA_KEY: Record<SubjectKey, 'self' | 'other'> = { own: 'self', other: 'other' };
+
 /** The paragraph a role puts its holder under. `keep-clear` is 18(f)(i)'s
  * and 18(e)'s duty and takes the first; 8(f) governs shall-not-impede. */
 const ROLE_PHASE: Record<string, ParagraphCite> = {
@@ -55,11 +60,11 @@ function strongestRole(roles: { role: string }[]): string | undefined {
  * sample has moved from 17(a)(i) (keep course and speed) to 17(a)(ii) (may
  * take action). Only what the samples state is read. */
 function isManoeuvring(prev: TraceSample | undefined, cur: TraceSample, subject: SubjectKey): boolean {
-  const kin = cur.situation[subject]?.kin;
+  const kin = cur.situation[DATA_KEY[subject]]?.kin;
   const rot = kin?.['kin:rot_deg_min'];
   if (typeof rot === 'number' && rot !== 0) return true;
   const heading = kin?.['kin:heading_deg'];
-  const before = prev?.situation[subject]?.kin?.['kin:heading_deg'];
+  const before = prev?.situation[DATA_KEY[subject]]?.kin?.['kin:heading_deg'];
   return typeof heading === 'number' && typeof before === 'number' && heading !== before;
 }
 
@@ -83,7 +88,7 @@ function phaseAt(
   evaluation: EncounterEvaluation,
   subject: SubjectKey,
 ): ParagraphCite | undefined {
-  const latched = cur.situation[subject]?.hist?.['hist:was_overtaking'] === true;
+  const latched = cur.situation[DATA_KEY[subject]]?.hist?.['hist:was_overtaking'] === true;
   if (latched && evaluation.encounter === 'encounter:overtaking') return '13(d)';
   const role = strongestRole(evaluation.roles[subject]);
   if (role === undefined) return undefined;
@@ -94,10 +99,6 @@ function phaseAt(
 function conductEntries(entries: Entry[]): Entry[] {
   return entries.filter((e) => entryCategory(e) === 'category:conduct');
 }
-
-// colregs' data field is `self`/`other` (ADR 0016); `own` is this engine's
-// own subject vocabulary.
-const DATA_KEY: Record<SubjectKey, 'self' | 'other'> = { own: 'self', other: 'other' };
 
 /** The subjects a conduct entry's effect addresses; an effect shape colregs
  * has not fixed yet defaults to own, the subject every one-subject entry

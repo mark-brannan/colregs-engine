@@ -63,7 +63,7 @@ const byId = new Map<string, Entry>(entries.map((e) => [e.id, e]));
 // never-fired by construction rather than by any real gap in the fact
 // space.
 function isDisplay(e: Entry): boolean {
-  return (e.category ?? 'display') === 'display';
+  return (e.category ?? 'category:display') === 'category:display';
 }
 const displayEntries = entries.filter(isDisplay);
 
@@ -148,13 +148,13 @@ const modalityByBranchTaken = new Map<string, Set<number>>();
 const oneOfEverChosen = new Set<string>();
 
 for (const e of displayEntries) {
-  if (e.modality === 'conditional' && e.modality_by) {
+  if (e.modality === 'modality:conditional' && e.modality_by) {
     modalityByBranchTaken.set(e.id, new Set());
   }
 }
 
 function trackModalityByBranch(e: Entry, facts: FactRecord) {
-  if (e.modality !== 'conditional' || !e.modality_by) return;
+  if (e.modality !== 'modality:conditional' || !e.modality_by) return;
   const taken = modalityByBranchTaken.get(e.id)!;
   if (taken.size === e.modality_by.length) return; // already saturated
   for (let i = 0; i < e.modality_by.length; i++) {
@@ -271,7 +271,7 @@ for (const facts of enumerateRecords(axes)) {
   }
 
   for (const [aId, bId] of excludingPairs) {
-    if (evalResult.modalities[aId] !== 'shall' || evalResult.modalities[bId] !== 'shall') continue;
+    if (evalResult.modalities[aId] !== 'modality:shall' || evalResult.modalities[bId] !== 'modality:shall') continue;
     if (!engineApplied.includes(aId) || !engineApplied.includes(bId)) continue;
     conflictingObligationCount++;
     record(
@@ -303,7 +303,7 @@ for (const facts of enumerateRecords(axes)) {
   ]);
   for (const id of engineApplied) {
     const m = evalResult.modalities[id];
-    if (m !== 'shall' && m !== 'shall-if-practicable') continue;
+    if (m !== 'modality:shall' && m !== 'modality:shall-if-practicable') continue;
     if (contributingIds.has(id)) continue;
     if (displacedIds.has(id)) continue;
     orphanShallCount++;
@@ -317,7 +317,7 @@ for (const facts of enumerateRecords(axes)) {
   }
 
   for (const id of engineApplied) {
-    if (evalResult.modalities[id] === 'conditional') {
+    if (evalResult.modalities[id] === 'modality:conditional') {
       unresolvedConditionalCount++;
       record(
         'consistency-unresolved-conditional',

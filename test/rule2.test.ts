@@ -7,7 +7,7 @@ import { evaluateRule2Departure } from '../src/index';
 import type { Rule2DepartureModel, Situation } from '../src/index';
 
 const situation: Situation = {
-  own: {
+  self: {
     fact: {
       'fact:propulsion': 'propulsion:power',
       'fact:activity': 'activity:none',
@@ -52,7 +52,7 @@ describe('evaluateRule2Departure', () => {
     expect(f.model.assumptions_violated).toEqual([
       expect.stringMatching(/carries no regions/),
     ]);
-    expect(f.rules.applied).toContain('8f3');
+    expect(f.rules.applied).toContain('rule:8f_iii');
   });
 
   it('a matching region gives its status, advisories best margin first', () => {

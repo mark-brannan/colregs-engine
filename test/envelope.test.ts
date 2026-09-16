@@ -142,7 +142,7 @@ describe('provenance', () => {
 
   it('carries the represented paragraphs, identity only, never the prose', () => {
     const { represented } = evaluateDisplay(sloop12).provenance;
-    expect(represented.map((p) => p.id)).toEqual(['2a', '2b']);
+    expect(represented.map((p) => p.id)).toEqual(['rule:2a', 'rule:2b']);
     expect(represented.map((p) => p.category)).toEqual(['category:care', 'category:meta']);
     expect(represented.map((p) => p.cite)).toEqual(['2(a)', '2(b)']);
     for (const p of represented) {
@@ -207,12 +207,12 @@ describe('the fields a consumer already reads', () => {
 
   it('carry what they carried: the fixture contract is untouched', () => {
     const result = evaluateDisplay(sloop12);
-    expect(result.applied).toEqual(['25a', '25b', '25c']);
+    expect(result.applied).toEqual(['rule:25a', 'rule:25b', 'rule:25c']);
     expect(result.displays.length).toBe(3);
     expect(result.exempted).toEqual([]);
     expect(result.excluded).toEqual([]);
     expect(result.overridden).toEqual([]);
-    expect(result.modalities['25a']).toBe('modality:shall');
+    expect(result.modalities['rule:25a']).toBe('modality:shall');
     expect(result.colregs.source).toBe('resolved');
   });
 

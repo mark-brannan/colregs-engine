@@ -20,8 +20,8 @@ const sloop12: FactRecord = {
 
 describe('data resolution', () => {
   it('evaluates without being handed applicability data', () => {
-    expect(evaluateDisplay(sloop12).applied).toEqual(['25a', '25b', '25c']);
-    expect(appliedDisplayEntries(sloop12)).toEqual(['25a', '25b', '25c']);
+    expect(evaluateDisplay(sloop12).applied).toEqual(['rule:25a', 'rule:25b', 'rule:25c']);
+    expect(appliedDisplayEntries(sloop12)).toEqual(['rule:25a', 'rule:25b', 'rule:25c']);
   });
 
   it('reports resolved data as its own, and caller-supplied data as theirs', () => {

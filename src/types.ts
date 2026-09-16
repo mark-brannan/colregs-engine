@@ -214,7 +214,7 @@ export interface Pair {
 }
 
 export interface Situation {
-  own: Subject;
+  self: Subject;
   other?: Subject;
   pair?: Pair;
 }

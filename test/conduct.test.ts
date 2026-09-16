@@ -12,7 +12,7 @@ const applicability = applicabilityJson as unknown as ApplicabilityData;
 const fixtures = situationFixturesJson as unknown as {
   cases: { name: string; situation: Situation }[];
 };
-const crossing = fixtures.cases.find((c) => c.name.startsWith('crossing: own power-driven'))!
+const crossing = fixtures.cases.find((c) => c.name.startsWith('crossing: self power-driven'))!
   .situation;
 
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x));
@@ -59,7 +59,7 @@ describe('evaluateConduct', () => {
     // colregs 0.2.4 gated 13(a)'s sector arm on the other vessel not holding
     // the 13(d) latch (Q-47), so the situation has to say she does not.
     const situation: Situation = {
-      own: {
+      self: {
         fact: {
           'fact:propulsion': 'propulsion:power',
           'fact:activity': 'activity:fishing',
@@ -103,7 +103,7 @@ describe('evaluateConduct', () => {
       'fact:length_m': length,
     });
     const situation: Situation = {
-      own: {
+      self: {
         fact: vessel('activity:none', 28),
         kin: { 'kin:heading_deg': 0, 'kin:rot_deg_min': 0 },
         geo: { 'geo:rel_bearing_deg': 180 },
@@ -118,7 +118,7 @@ describe('evaluateConduct', () => {
       pair: { geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300, 'geo:risk_of_collision': true } },
     };
     expect(evaluateEncounter(situation).roles.other).toContainEqual(
-      expect.objectContaining({ role: 'role:stand-on', by: '18a2' }),
+      expect.objectContaining({ role: 'role:stand-on', by: 'rule:18a_ii' }),
     );
     const turning = clone(situation);
     turning.other!.kin!['kin:rot_deg_min'] = 5;
@@ -194,13 +194,13 @@ describe('evaluateConduct', () => {
   });
 
   it('rejects `other` appearing and vanishing across the window', () => {
-    const own = { own: crossing.own };
-    const trace: Trace = { samples: [{ t_s: 0, situation: crossing }, { t_s: 1, situation: own }] };
+    const self = { self: crossing.self };
+    const trace: Trace = { samples: [{ t_s: 0, situation: crossing }, { t_s: 1, situation: self }] };
     expect(() => evaluateConduct(trace)).toThrow(/same two vessels/);
   });
 
   it('rejects a malformed sample situation', () => {
-    const trace = { samples: [{ t_s: 0, situation: { own: { fact: { propulsion: 'sail' } } } }] };
+    const trace = { samples: [{ t_s: 0, situation: { self: { fact: { propulsion: 'sail' } } } }] };
     expect(() => appliedConductEntries(trace as unknown as Trace)).toThrow(/fact:propulsion/);
   });
 });

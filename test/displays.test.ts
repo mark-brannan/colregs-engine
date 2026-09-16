@@ -34,15 +34,15 @@ function displayEntrySets(facts: FactRecord): string[][] {
 describe('lawful display composition', () => {
   it('12 m sloop under sail: exactly three lawful displays', () => {
     expect(displayEntrySets(sloop12)).toEqual([
-      ['25a'],
-      ['25a', '25c'],
-      ['25b'],
+      ['rule:25a'],
+      ['rule:25a', 'rule:25c'],
+      ['rule:25b'],
     ]);
   });
 
   it('tricolor and red-over-green never co-occur (rel:excludes)', () => {
     for (const d of evaluate(applicability, sloop12).displays) {
-      expect(d.entries.includes('25b') && d.entries.includes('25c')).toBe(
+      expect(d.entries.includes('rule:25b') && d.entries.includes('rule:25c')).toBe(
         false,
       );
     }
@@ -55,8 +55,8 @@ describe('lawful display composition', () => {
       'fact:position': 'position:underway',
       'fact:length_m': 49,
     });
-    expect(below.optional_additions.map((a) => a.id)).toContain('23a2');
-    expect(below.modalities['23a2']).toBe('may');
+    expect(below.optional_additions.map((a) => a.id)).toContain('rule:23a_ii');
+    expect(below.modalities['rule:23a_ii']).toBe('modality:may');
 
     const above = evaluate(applicability, {
       'fact:propulsion': 'propulsion:power',
@@ -64,9 +64,9 @@ describe('lawful display composition', () => {
       'fact:position': 'position:underway',
       'fact:length_m': 55,
     });
-    expect(above.modalities['23a2']).toBe('shall');
+    expect(above.modalities['rule:23a_ii']).toBe('modality:shall');
     for (const d of above.displays) {
-      expect(d.entries).toContain('23a2');
+      expect(d.entries).toContain('rule:23a_ii');
     }
   });
 
@@ -103,8 +103,8 @@ describe('lawful display composition', () => {
       'fact:length_m': 11,
     });
     const sets = e.displays.map((d) => d.entries.join(','));
-    expect(sets).toContain('23a1,23a34');
-    expect(sets).toContain('23d1');
+    expect(sets).toContain('rule:23a_i,rule:23a_iii_iv');
+    expect(sets).toContain('rule:23d_i');
     expect(e.displays).toHaveLength(2);
   });
 
@@ -118,7 +118,7 @@ describe('lawful display composition', () => {
     expect(e.displays).toHaveLength(3);
     const torchOnly = e.displays.find((d) => d.chosen.length === 0)!;
     expect(torchOnly.lights.map((l) => l.spec.light)).toEqual(['light:torch']);
-    const viaA = e.displays.find((d) => d.chosen.includes('25a'))!;
+    const viaA = e.displays.find((d) => d.chosen.includes('rule:25a'))!;
     expect(viaA.lights.map((l) => l.spec.light)).not.toContain('light:torch');
   });
 
@@ -131,9 +131,9 @@ describe('lawful display composition', () => {
     });
     expect(e.displays).toHaveLength(2);
     for (const d of e.displays) {
-      expect(d.entries).toContain('30d-red');
+      expect(d.entries).toContain('rule:30d_i');
       expect(
-        d.entries.includes('30a') !== d.entries.includes('30b'),
+        d.entries.includes('rule:30a') !== d.entries.includes('rule:30b'),
       ).toBe(true);
     }
   });
@@ -146,7 +146,7 @@ describe('lawful display composition', () => {
       'fact:length_m': 60,
     });
     expect(e.displays).toHaveLength(1);
-    expect(e.displays[0].entries).toContain('30a');
+    expect(e.displays[0].entries).toContain('rule:30a');
   });
 
   // colregs-engine#32: a fishing vessel aground gets Rule 30's aground
@@ -166,10 +166,10 @@ describe('lawful display composition', () => {
     expect(e.displays).toHaveLength(2);
     expect(e.overridden).toEqual([]);
     for (const d of e.displays) {
-      expect(d.entries).toContain('30d-red');
+      expect(d.entries).toContain('rule:30d_i');
       expect(d.entries.some((id) => id.startsWith('26'))).toBe(false);
       expect(
-        d.entries.includes('30a') !== d.entries.includes('30b'),
+        d.entries.includes('rule:30a') !== d.entries.includes('rule:30b'),
       ).toBe(true);
     }
   });
@@ -186,10 +186,10 @@ describe('lawful display composition', () => {
     // obligation displaces the referenced one rather than the two
     // conflicting. That's `overridden`, not `excluded`.
     expect(e.excluded).toEqual([]);
-    expect(e.overridden.map((x) => x.id).sort()).toEqual(['30a', '30b']);
+    expect(e.overridden.map((x) => x.id).sort()).toEqual(['rule:30a', 'rule:30b']);
     for (const d of e.displays) {
-      expect(d.entries).not.toContain('30a');
-      expect(d.entries).not.toContain('30b');
+      expect(d.entries).not.toContain('rule:30a');
+      expect(d.entries).not.toContain('rule:30b');
     }
   });
 
@@ -201,7 +201,7 @@ describe('lawful display composition', () => {
       'fact:length_m': 6,
       'fact:near_channel': false,
     });
-    expect(e.exempted.map((x) => x.id).sort()).toEqual(['30a', '30b']);
+    expect(e.exempted.map((x) => x.id).sort()).toEqual(['rule:30a', 'rule:30b']);
     expect(e.displays).toHaveLength(1);
     expect(e.displays[0].lights).toHaveLength(0);
   });
@@ -224,7 +224,7 @@ describe('lawful display composition', () => {
       'fact:position': 'position:moored',
       'fact:length_m': 30,
     });
-    expect(e.applied).toContain('26c-id');
+    expect(e.applied).toContain('rule:26c_i');
   });
 
   it('mine clearance at anchor: Rule 30 lights, no imported running lights', () => {
@@ -235,10 +235,10 @@ describe('lawful display composition', () => {
       'fact:length_m': 60,
     });
     for (const d of e.displays) {
-      expect(d.entries).not.toContain('23a1');
-      expect(d.entries).not.toContain('23a34');
-      expect(d.entries).toContain('27f');
-      expect(d.entries).toContain('30a');
+      expect(d.entries).not.toContain('rule:23a_i');
+      expect(d.entries).not.toContain('rule:23a_iii_iv');
+      expect(d.entries).toContain('rule:27f');
+      expect(d.entries).toContain('rule:30a');
     }
   });
 
@@ -251,9 +251,9 @@ describe('lawful display composition', () => {
     });
     expect(e.displays).toHaveLength(1);
     const ids = e.displays[0].entries;
-    expect(ids).toContain('29a');
-    expect(ids).toContain('23a34');
-    expect(ids).not.toContain('23a1');
+    expect(ids).toContain('rule:29a');
+    expect(ids).toContain('rule:23a_iii_iv');
+    expect(ids).not.toContain('rule:23a_i');
   });
 
   it('constrained by draught: Rule 23 lights required, three reds optional', () => {
@@ -263,10 +263,10 @@ describe('lawful display composition', () => {
       'fact:position': 'position:underway',
       'fact:length_m': 200,
     });
-    expect(e.displays.some((d) => d.entries.includes('23a1'))).toBe(true);
-    expect(e.optional_additions.map((a) => a.id)).toContain('28');
+    expect(e.displays.some((d) => d.entries.includes('rule:23a_i'))).toBe(true);
+    expect(e.optional_additions.map((a) => a.id)).toContain('rule:28');
     // at 200 m the second masthead import resolves to shall
-    for (const d of e.displays) expect(d.entries).toContain('23a2');
+    for (const d of e.displays) expect(d.entries).toContain('rule:23a_ii');
   });
 
   it('towing, tow 300 m: three mastheads in lieu, towing light over stern', () => {
@@ -362,67 +362,67 @@ describe('rel:overrides', () => {
 
   it('an obligation overriding two targets displaces both', () => {
     const data = cloneData();
-    const e = findEntry(data, '26c-id');
+    const e = findEntry(data, 'rule:26c_i');
     delete e['rel:excludes'];
-    e['rel:overrides'] = ['30a', '30b'];
+    e['rel:overrides'] = ['rule:30a', 'rule:30b'];
     const result = evaluateDisplay(anchoredFishing(30), { data });
     expect(result.displays).toHaveLength(1);
-    expect(result.displays[0].entries).toEqual(['26c-id']);
+    expect(result.displays[0].entries).toEqual(['rule:26c_i']);
     expect(result.overridden).toEqual([
-      { id: '30a', by: '26c-id' },
-      { id: '30b', by: '26c-id' },
+      { id: 'rule:30a', by: 'rule:26c_i' },
+      { id: 'rule:30b', by: 'rule:26c_i' },
     ]);
     expect(result.excluded).toEqual([]);
     for (const d of result.displays) {
-      expect(d.entries).not.toContain('30a');
-      expect(d.entries).not.toContain('30b');
+      expect(d.entries).not.toContain('rule:30a');
+      expect(d.entries).not.toContain('rule:30b');
     }
   });
 
   it('a target that is not itself applied is not reported overridden', () => {
     const data = cloneData();
-    const e = findEntry(data, '26c-id');
+    const e = findEntry(data, 'rule:26c_i');
     delete e['rel:excludes'];
-    e['rel:overrides'] = ['30a', '30b'];
+    e['rel:overrides'] = ['rule:30a', 'rule:30b'];
     // 30(b) requires length < 50 m; at 60 m it never applies, so it can't
     // be displaced.
     const result = evaluateDisplay(anchoredFishing(60), { data });
-    expect(result.overridden).toEqual([{ id: '30a', by: '26c-id' }]);
+    expect(result.overridden).toEqual([{ id: 'rule:30a', by: 'rule:26c_i' }]);
     expect(result.displays).toHaveLength(1);
   });
 
   it('a may overrider is inert', () => {
     const data = cloneData();
-    const e = findEntry(data, '26c-id');
+    const e = findEntry(data, 'rule:26c_i');
     delete e['rel:excludes'];
-    e['rel:overrides'] = ['30a', '30b'];
-    e.modality = 'may';
+    e['rel:overrides'] = ['rule:30a', 'rule:30b'];
+    e.modality = 'modality:may';
     const result = evaluateDisplay(anchoredFishing(30), { data });
     expect(result.overridden).toEqual([]);
     const allEntries = result.displays.flatMap((d) => d.entries);
-    expect(allEntries).toContain('30a');
-    expect(allEntries).toContain('30b');
+    expect(allEntries).toContain('rule:30a');
+    expect(allEntries).toContain('rule:30b');
   });
 
   it('a displaced entry leaves composition and its own overrides do not fire', () => {
     const data = cloneData();
-    const e26c = findEntry(data, '26c-id');
+    const e26c = findEntry(data, 'rule:26c_i');
     delete e26c['rel:excludes'];
-    e26c['rel:overrides'] = ['30a'];
-    findEntry(data, '30a')['rel:overrides'] = ['30c'];
+    e26c['rel:overrides'] = ['rule:30a'];
+    findEntry(data, 'rule:30a')['rel:overrides'] = ['rule:30c'];
     const result = evaluateDisplay(anchoredFishing(30), { data });
-    expect(result.overridden).toEqual([{ id: '30a', by: '26c-id' }]);
-    expect(result.applied).toContain('30c');
+    expect(result.overridden).toEqual([{ id: 'rule:30a', by: 'rule:26c_i' }]);
+    expect(result.applied).toContain('rule:30c');
   });
 
   it('an already-exempted target is not double-reported as overridden', () => {
     const data = cloneData();
-    const e = findEntry(data, '26c-id');
+    const e = findEntry(data, 'rule:26c_i');
     delete e['rel:excludes'];
-    e['rel:overrides'] = ['30a', '30b'];
+    e['rel:overrides'] = ['rule:30a', 'rule:30b'];
     const facts = anchoredFishing(6, { 'fact:near_channel': false });
     const result = evaluateDisplay(facts, { data });
-    expect(result.exempted.map((x) => x.id).sort()).toEqual(['30a', '30b']);
+    expect(result.exempted.map((x) => x.id).sort()).toEqual(['rule:30a', 'rule:30b']);
     expect(result.overridden).toEqual([]);
   });
 
@@ -432,17 +432,17 @@ describe('rel:overrides', () => {
     // would otherwise exempt 30a/30b at <7m, not-near-channel). Overriding
     // the exemption source must let 30a/30b re-emerge, not leave them
     // exempted-away by a source that never fired.
-    const e30e = findEntry(data, '30e');
-    const overrider = findEntry(data, '26c-id');
+    const e30e = findEntry(data, 'rule:30e');
+    const overrider = findEntry(data, 'rule:26c_i');
     delete overrider['rel:excludes'];
     overrider['rel:overrides'] = [e30e.id];
     const facts = anchoredFishing(6, { 'fact:near_channel': false });
     const result = evaluateDisplay(facts, { data });
-    expect(result.overridden).toEqual([{ id: e30e.id, by: '26c-id' }]);
+    expect(result.overridden).toEqual([{ id: e30e.id, by: 'rule:26c_i' }]);
     expect(result.exempted).toEqual([]);
     const allEntries = result.displays.flatMap((d) => d.entries);
-    expect(allEntries).toContain('30a');
-    expect(allEntries).toContain('30b');
+    expect(allEntries).toContain('rule:30a');
+    expect(allEntries).toContain('rule:30b');
   });
 });
 
