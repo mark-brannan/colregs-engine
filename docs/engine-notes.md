@@ -98,9 +98,10 @@ Each composition decision below is tested in `test/displays.test.ts`.
 11. **Competing classifications resolve overtaking, head-on, crossing, in
     that order:** 13(d) forbids reclassifying a latch, 14(c) errs head-on.
 12. **A stated `pair:geo:risk_of_collision` counts as asserted, `by: []`.**
-13. **Phases follow roles, strongest first:** give-way `16`, keep-clear
+13. **A latch in a classified overtaking is `13(d)`, read before any role;
+    then phases follow roles, strongest first:** give-way `16`, keep-clear
     `18(f)(i)`, stand-on `17(a)(i)` (`17(a)(ii)` once turning),
-    shall-not-impede `8(f)(i)`; a latch `13(d)`. `17(b)` is not emitted.
+    shall-not-impede `8(f)(i)`. `17(b)` is not emitted.
 14. **Every conduct verdict is `pending`** until a monitor exists.
 15. **A Rule 2 grid is a first-match list of predicate regions.** None, or
     no match, is `inconclusive-in-model`, named in `assumptions_violated`.
