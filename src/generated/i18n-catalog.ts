@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.1 schema/i18n-catalog.schema.json
+ * Source: colregs@0.3.2 schema/i18n-catalog.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
@@ -32,7 +32,7 @@ export interface I18NCatalogData {
     licence?: string;
   };
   /**
-   * One section per vocabulary. Identifier vocabularies (light) are keyed by the identifier itself, as documented in docs/identifiers.md; closed vocabularies (modality) by their bare value, as stored in data/applicability.json. Values are static strings: no interpolation, no plurals -- the consumer's i18n system owns composition.
+   * One section per vocabulary. Every section is keyed by the identifier itself, as documented in docs/identifiers.md -- light identifiers (light:) and closed-vocabulary identifiers (modality:, and any of role:/encounter:/category: that gain a catalog section) alike, as stored in data/applicability.json. Values are static strings: no interpolation, no plurals -- the consumer's i18n system owns composition.
    */
   strings: {
     light?: {

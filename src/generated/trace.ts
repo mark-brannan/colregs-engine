@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.1 schema/trace.schema.json
+ * Source: colregs@0.3.2 schema/trace.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
@@ -22,7 +22,7 @@ export interface TraceSchema {
  * Two vessels and the encounter at one instant: the input evaluateEncounter reads, nested by subject and class (ADR 0005 §2, ADR 0011 §3, ADR 0014). Structure only -- every kin:/geo:/hist:/env: key must be declared in data/facts.json §situation, checked in the tests.
  */
 export interface Situation {
-  own: Subject;
+  self: Subject;
   other?: Subject;
   pair?: {
     geo?: GeoRecord;

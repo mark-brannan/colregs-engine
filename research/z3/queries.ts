@@ -156,7 +156,7 @@ export function buildQueries(data: ApplicabilityData, expectations: Expectations
   // applied conditional entry no modality_by branch resolves, and a branch
   // that is never the first match.
   for (const e of displayEntries) {
-    if (e.modality !== 'conditional') continue;
+    if (e.modality !== 'modality:conditional') continue;
     const unresolvedId = `UNRESOLVED/${e.id}`;
     queries.push({
       id: unresolvedId,

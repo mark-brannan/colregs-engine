@@ -100,7 +100,7 @@ function replay(which: Evaluator, check: ModelCheck, facts: FactRecord): string 
       for (const id of [check.a, check.b]) {
         if (!applied.has(id)) return `${id} does not apply`;
         const m = modalityBy(which, byId.get(id)!, facts);
-        if (m !== 'shall') return `${id} resolves to '${m}', not 'shall'`;
+        if (m !== 'modality:shall') return `${id} resolves to '${m}', not 'modality:shall'`;
       }
       return null;
     }
@@ -111,7 +111,7 @@ function replay(which: Evaluator, check: ModelCheck, facts: FactRecord): string 
     case 'entry-unresolved': {
       if (!applied.has(check.id)) return `${check.id} does not apply`;
       const m = modalityBy(which, byId.get(check.id)!, facts);
-      return m === 'conditional' ? null : `${check.id} resolves to '${m}', not unresolved`;
+      return m === 'modality:conditional' ? null : `${check.id} resolves to '${m}', not unresolved`;
     }
     case 'branch-first-match': {
       if (!applied.has(check.id)) return `${check.id} does not apply`;

@@ -20,7 +20,7 @@ import type {
   ApplicabilityData,
   EncounterEvaluation,
   Entry,
-  EntryId,
+  RuleId,
   FactRecord,
   Modality,
   RuleCategory,
@@ -30,29 +30,29 @@ import type {
 
 /** The categories an encounter reads, in one pass (ADR 0011 §1). */
 export const ENCOUNTER_CATEGORIES: readonly RuleCategory[] = [
-  'scope',
-  'classification',
-  'precedence',
+  'category:scope',
+  'category:classification',
+  'category:precedence',
 ];
 
 /** The modalities that let an encounter entry's rel:overrides fire: wider
  * than display's, because 9(b) is written `shall-not-impede` and overrides
  * 18(a)(iv). A `may` overrider is inert, as in display. */
 const OBLIGATIONS: ReadonlySet<Modality> = new Set<Modality>([
-  'shall',
-  'shall-if-practicable',
-  'shall-not',
-  'shall-not-impede',
+  'modality:shall',
+  'modality:shall-if-practicable',
+  'modality:shall-not',
+  'modality:shall-not-impede',
 ]);
 
 /** When two classification entries assert different encounters at once,
  * the one that reads history wins: 13(d) says a latched overtaking is never
  * reclassified, and 14(c) errs toward head-on over crossing. */
 const ENCOUNTER_RANK: Record<string, number> = {
-  overtaking: 3,
-  'head-on': 2,
-  crossing: 1,
-  none: 0,
+  'encounter:overtaking': 3,
+  'encounter:head-on': 2,
+  'encounter:crossing': 1,
+  'encounter:none': 0,
 };
 
 /** A value colregs adds after this release ranks below every value named
@@ -82,7 +82,7 @@ function appliedEntries(data: ApplicabilityData, flat: FlatSituation): Entry[] {
 export function appliedEncounterEntries(
   situation: Situation,
   opts: EvaluateOptions = {},
-): EntryId[] {
+): RuleId[] {
   checkDataVersion(opts);
   validateSituation(situation);
   return appliedEntries(opts.data ?? RESOLVED_DATA, flattenSituation(situation)).map((e) => e.id);
@@ -107,8 +107,8 @@ export function evaluateEncounter(
   const flat = flattenSituation(situation);
   const applied = appliedEntries(data, flat);
 
-  const modalities: Record<EntryId, Modality> = {};
-  const categories: Record<EntryId, RuleCategory> = {};
+  const modalities: Record<RuleId, Modality> = {};
+  const categories: Record<RuleId, RuleCategory> = {};
   for (const e of applied) {
     modalities[e.id] = resolveModality(e, flat as unknown as FactRecord);
     categories[e.id] = entryCategory(e);
@@ -117,18 +117,18 @@ export function evaluateEncounter(
   const { overridden, overriddenIds } = resolveOverrides(applied, modalities, OBLIGATIONS);
   const standing = applied.filter((e) => !overriddenIds.has(e.id));
 
-  const scope: EntryId[] = [];
-  const riskBy: EntryId[] = [];
-  const roles: { own: SubjectRole[]; other: SubjectRole[] } = { own: [], other: [] };
+  const scope: RuleId[] = [];
+  const riskBy: RuleId[] = [];
+  const roles: { self: SubjectRole[]; other: SubjectRole[] } = { self: [], other: [] };
   let encounter: EncounterEvaluation['encounter'];
 
   for (const e of standing) {
     const effect = e.effect as Record<string, unknown> | undefined;
     switch (entryCategory(e)) {
-      case 'scope':
+      case 'category:scope':
         scope.push(e.id);
         break;
-      case 'classification':
+      case 'category:classification':
         if (effect?.risk_of_collision === true) riskBy.push(e.id);
         if (typeof effect?.encounter === 'string') {
           const value = effect.encounter as NonNullable<EncounterEvaluation['encounter']>;
@@ -137,10 +137,10 @@ export function evaluateEncounter(
           }
         }
         break;
-      case 'precedence':
-        for (const subject of ['own', 'other'] as const) {
+      case 'category:precedence':
+        for (const subject of ['self', 'other'] as const) {
           const role = effect?.[subject] as SubjectRole['role'] | undefined;
-          if (role !== undefined && role !== 'none') roles[subject].push({ role, by: e.id });
+          if (role !== undefined && role !== 'role:none') roles[subject].push({ role, by: e.id });
         }
         break;
       default:

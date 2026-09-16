@@ -12,7 +12,7 @@ const applicability = applicabilityJson as unknown as ApplicabilityData;
 const fixtures = situationFixturesJson as unknown as {
   cases: { name: string; situation: Situation }[];
 };
-const crossing = fixtures.cases.find((c) => c.name.startsWith('crossing: own power-driven'))!
+const crossing = fixtures.cases.find((c) => c.name.startsWith('crossing: self power-driven'))!
   .situation;
 
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x));
@@ -35,7 +35,7 @@ describe('evaluateConduct', () => {
   it('phases: the give-way vessel enters Rule 16, the stand-on vessel 17(a)(i)', () => {
     const r = evaluateConduct({ samples: [{ t_s: 10, situation: crossing }] });
     expect(r.phases).toEqual([
-      { subject: 'own', phase: '16', at_s: 10 },
+      { subject: 'self', phase: '16', at_s: 10 },
       { subject: 'other', phase: '17(a)(i)', at_s: 10 },
     ]);
   });
@@ -50,7 +50,7 @@ describe('evaluateConduct', () => {
       ],
     });
     expect(r.phases).toContainEqual({ subject: 'other', phase: '17(a)(ii)', at_s: 60 });
-    expect(r.phases.filter((p) => p.subject === 'own')).toHaveLength(1);
+    expect(r.phases.filter((p) => p.subject === 'self')).toHaveLength(1);
   });
 
   it('a subject holding give-way and shall-not-impede at once is phased by give-way', () => {
@@ -59,7 +59,7 @@ describe('evaluateConduct', () => {
     // colregs 0.2.4 gated 13(a)'s sector arm on the other vessel not holding
     // the 13(d) latch (Q-47), so the situation has to say she does not.
     const situation: Situation = {
-      own: {
+      self: {
         fact: {
           'fact:propulsion': 'propulsion:power',
           'fact:activity': 'activity:fishing',
@@ -79,14 +79,14 @@ describe('evaluateConduct', () => {
       pair: { geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300 }, env: { 'env:narrow_channel': true } },
     };
     const r = evaluateConduct({ samples: [{ t_s: 0, situation }] });
-    expect(r.phases).toContainEqual({ subject: 'own', phase: '16', at_s: 0 });
-    expect(r.phases.filter((p) => p.subject === 'own')).toHaveLength(1);
+    expect(r.phases).toContainEqual({ subject: 'self', phase: '16', at_s: 0 });
+    expect(r.phases.filter((p) => p.subject === 'self')).toHaveLength(1);
   });
 
   it('a latched overtaking vessel is in the 13(d) phase', () => {
     const latch = fixtures.cases.find((c) => c.name.startsWith('13(d) latch'))!.situation;
     const r = evaluateConduct({ samples: [{ t_s: 0, situation: latch }] });
-    expect(r.phases).toContainEqual({ subject: 'own', phase: '13(d)', at_s: 0 });
+    expect(r.phases).toContainEqual({ subject: 'self', phase: '13(d)', at_s: 0 });
   });
 
   it('a latched overtaking vessel is in 13(d) even when the table names her stand-on', () => {
@@ -103,7 +103,7 @@ describe('evaluateConduct', () => {
       'fact:length_m': length,
     });
     const situation: Situation = {
-      own: {
+      self: {
         fact: vessel('activity:none', 28),
         kin: { 'kin:heading_deg': 0, 'kin:rot_deg_min': 0 },
         geo: { 'geo:rel_bearing_deg': 180 },
@@ -118,7 +118,7 @@ describe('evaluateConduct', () => {
       pair: { geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300, 'geo:risk_of_collision': true } },
     };
     expect(evaluateEncounter(situation).roles.other).toContainEqual(
-      expect.objectContaining({ role: 'stand-on', by: 'rule:18a_ii' }),
+      expect.objectContaining({ role: 'role:stand-on', by: 'rule:18a_ii' }),
     );
     const turning = clone(situation);
     turning.other!.kin!['kin:rot_deg_min'] = 5;
@@ -134,7 +134,7 @@ describe('evaluateConduct', () => {
     // Own is the overtaken vessel (13b-overtaken applies to her) yet phases
     // 16 by 18a2, because the 18a* entries carry no other-latch gate. Wrong,
     // pinned so the expectation moves when the data does.
-    expect(r.phases.filter((p) => p.subject === 'own')).toEqual([{ subject: 'own', phase: '16', at_s: 0 }]);
+    expect(r.phases.filter((p) => p.subject === 'self')).toEqual([{ subject: 'self', phase: '16', at_s: 0 }]);
   });
 
   it('a latched vessel out of sight is not in 13(d): Rule 13 is Section II', () => {
@@ -155,11 +155,11 @@ describe('evaluateConduct', () => {
     // duties. If this fails the data has grown reciprocal entries and "swap
     // the subjects and evaluate again" is once more a candidate reading of
     // the other vessel's phase.
-    const burdened = ['give-way', 'keep-clear', 'shall-not-impede'];
+    const burdened = ['role:give-way', 'role:keep-clear', 'role:shall-not-impede'];
     for (const e of applicability.entries) {
-      const effect = (e as { effect?: { own?: string; other?: string } }).effect;
+      const effect = (e as { effect?: { self?: string; other?: string } }).effect;
       if (!effect) continue;
-      expect(effect.own, `${e.id}: effect.own`).not.toBe('stand-on');
+      expect(effect.self, `${e.id}: effect.self`).not.toBe('role:stand-on');
       expect(burdened, `${e.id}: effect.other`).not.toContain(effect.other);
     }
   });
@@ -169,10 +169,10 @@ describe('evaluateConduct', () => {
       id: '16',
       jurisdiction: 'intl',
       cite: '16',
-      category: 'conduct',
+      category: 'category:conduct',
       when: { 'pair:geo:risk_of_collision': true },
-      modality: 'shall',
-      effect: { own: 'give-way', other: 'none' },
+      modality: 'modality:shall',
+      effect: { self: 'role:give-way', other: 'role:none' },
     } as unknown as Entry;
     const data = { ...applicability, entries: [...applicability.entries, rule16] };
     const r = evaluateConduct(
@@ -180,7 +180,7 @@ describe('evaluateConduct', () => {
       { data },
     );
     expect(r.applied).toEqual(['16']);
-    expect(r.verdicts).toEqual([{ id: '16', subject: 'own', verdict: 'pending', attached_at_s: 5 }]);
+    expect(r.verdicts).toEqual([{ id: '16', subject: 'self', verdict: 'pending', attached_at_s: 5 }]);
     expect(r.colregs.source).toBe('caller');
   });
 
@@ -194,13 +194,13 @@ describe('evaluateConduct', () => {
   });
 
   it('rejects `other` appearing and vanishing across the window', () => {
-    const own = { own: crossing.own };
-    const trace: Trace = { samples: [{ t_s: 0, situation: crossing }, { t_s: 1, situation: own }] };
+    const self = { self: crossing.self };
+    const trace: Trace = { samples: [{ t_s: 0, situation: crossing }, { t_s: 1, situation: self }] };
     expect(() => evaluateConduct(trace)).toThrow(/same two vessels/);
   });
 
   it('rejects a malformed sample situation', () => {
-    const trace = { samples: [{ t_s: 0, situation: { own: { fact: { propulsion: 'sail' } } } }] };
+    const trace = { samples: [{ t_s: 0, situation: { self: { fact: { propulsion: 'sail' } } } }] };
     expect(() => appliedConductEntries(trace as unknown as Trace)).toThrow(/fact:propulsion/);
   });
 });

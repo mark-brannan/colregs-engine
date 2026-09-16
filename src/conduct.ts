@@ -21,27 +21,32 @@ import type {
   ConductVerdict,
   EncounterEvaluation,
   Entry,
-  EntryId,
+  RuleId,
   ParagraphCite,
   Trace,
   TraceSample,
 } from './types.js';
 
-type SubjectKey = 'own' | 'other';
-const SUBJECTS: readonly SubjectKey[] = ['own', 'other'];
+type SubjectKey = 'self' | 'other';
+const SUBJECTS: readonly SubjectKey[] = ['self', 'other'];
 
 /** The paragraph a role puts its holder under. `keep-clear` is 18(f)(i)'s
  * and 18(e)'s duty and takes the first; 8(f) governs shall-not-impede. */
 const ROLE_PHASE: Record<string, ParagraphCite> = {
-  'give-way': '16',
-  'stand-on': '17(a)(i)',
-  'shall-not-impede': '8(f)(i)',
-  'keep-clear': '18(f)(i)',
+  'role:give-way': '16',
+  'role:stand-on': '17(a)(i)',
+  'role:shall-not-impede': '8(f)(i)',
+  'role:keep-clear': '18(f)(i)',
 };
 
 /** Rank when a subject holds several roles at once: the phase named is the
  * strongest duty, so give-way outranks a mere shall-not-impede. */
-const ROLE_RANK: readonly string[] = ['give-way', 'keep-clear', 'stand-on', 'shall-not-impede'];
+const ROLE_RANK: readonly string[] = [
+  'role:give-way',
+  'role:keep-clear',
+  'role:stand-on',
+  'role:shall-not-impede',
+];
 
 function strongestRole(roles: { role: string }[]): string | undefined {
   return ROLE_RANK.find((r) => roles.some((x) => x.role === r));
@@ -65,7 +70,7 @@ function isManoeuvring(prev: TraceSample | undefined, cur: TraceSample, subject:
  * II", so a subject who was the overtaking vessel is in 13(d) whatever role
  * the table conferred on her, including the stand-on 18(a) hands a RAM
  * vessel overtaking a power-driven one. The table is one-sided: every entry
- * writes `effect.own` from {give-way, keep-clear, shall-not-impede, none}
+ * writes `effect.self` from {give-way, keep-clear, shall-not-impede, none}
  * and `effect.other` from {stand-on, none} (test/conduct.test.ts pins
  * this), so for `other` only the stand-on branch is live and reading the
  * role first threw her latch away. This check is the invariant; a data gate
@@ -80,24 +85,24 @@ function phaseAt(
   subject: SubjectKey,
 ): ParagraphCite | undefined {
   const latched = cur.situation[subject]?.hist?.['hist:was_overtaking'] === true;
-  if (latched && evaluation.encounter === 'overtaking') return '13(d)';
+  if (latched && evaluation.encounter === 'encounter:overtaking') return '13(d)';
   const role = strongestRole(evaluation.roles[subject]);
   if (role === undefined) return undefined;
-  if (role === 'stand-on' && isManoeuvring(prev, cur, subject)) return '17(a)(ii)';
+  if (role === 'role:stand-on' && isManoeuvring(prev, cur, subject)) return '17(a)(ii)';
   return ROLE_PHASE[role];
 }
 
 function conductEntries(entries: Entry[]): Entry[] {
-  return entries.filter((e) => entryCategory(e) === 'conduct');
+  return entries.filter((e) => entryCategory(e) === 'category:conduct');
 }
 
 /** The subjects a conduct entry's effect addresses; an effect shape colregs
- * has not fixed yet defaults to own, the subject every one-subject entry
+ * has not fixed yet defaults to self, the subject every one-subject entry
  * addresses. */
 function subjectsOf(entry: Entry): SubjectKey[] {
   const effect = entry.effect as Record<string, unknown> | undefined;
-  const named = SUBJECTS.filter((s) => effect?.[s] !== undefined && effect?.[s] !== 'none');
-  return named.length > 0 ? named : ['own'];
+  const named = SUBJECTS.filter((s) => effect?.[s] !== undefined && effect?.[s] !== 'role:none');
+  return named.length > 0 ? named : ['self'];
 }
 
 /**
@@ -106,7 +111,7 @@ function subjectsOf(entry: Entry): SubjectKey[] {
  *
  * @alpha
  */
-export function appliedConductEntries(trace: Trace, opts: EvaluateOptions = {}): EntryId[] {
+export function appliedConductEntries(trace: Trace, opts: EvaluateOptions = {}): RuleId[] {
   checkDataVersion(opts);
   validateTrace(trace);
   const candidates = conductEntries((opts.data ?? RESOLVED_DATA).entries);
@@ -134,7 +139,7 @@ export function evaluateConduct(trace: Trace, opts: EvaluateOptions = {}): Condu
   const flats = samples.map((s) => flattenSituation(s.situation));
 
   const verdicts: ConductVerdict[] = [];
-  const applied: EntryId[] = [];
+  const applied: RuleId[] = [];
   for (const e of conductEntries(data.entries)) {
     const at = flats.findIndex((flat) => situationMatches(e.when, flat));
     if (at < 0) continue;
@@ -145,7 +150,7 @@ export function evaluateConduct(trace: Trace, opts: EvaluateOptions = {}): Condu
   }
 
   const phases: ConductPhaseChange[] = [];
-  const current: Record<SubjectKey, ParagraphCite | undefined> = { own: undefined, other: undefined };
+  const current: Record<SubjectKey, ParagraphCite | undefined> = { self: undefined, other: undefined };
   samples.forEach((sample, i) => {
     for (const subject of SUBJECTS) {
       if (subject === 'other' && sample.situation.other === undefined) continue;

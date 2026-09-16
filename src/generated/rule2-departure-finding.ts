@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.1 schema/rule2-departure-finding.schema.json
+ * Source: colregs@0.3.2 schema/rule2-departure-finding.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
@@ -31,13 +31,13 @@ export interface EncounterEvaluation {
   colregs: Colregs;
   applied: RuleIds;
   scope: RuleIds;
-  encounter?: 'head-on' | 'crossing' | 'overtaking' | 'none';
+  encounter?: 'encounter:head-on' | 'encounter:crossing' | 'encounter:overtaking' | 'encounter:none';
   risk_of_collision: {
     asserted: boolean;
     by: RuleIds;
   };
   roles: {
-    own: SubjectRoles;
+    self: SubjectRoles;
     other: SubjectRoles;
   };
   overridden: ByEntryList;
@@ -50,7 +50,7 @@ export interface Colregs {
   source: 'resolved' | 'caller';
 }
 export interface SubjectRole {
-  role: 'give-way' | 'stand-on' | 'shall-not-impede' | 'keep-clear' | 'none';
+  role: 'role:give-way' | 'role:stand-on' | 'role:shall-not-impede' | 'role:keep-clear' | 'role:none';
   by: string;
 }
 export interface ByEntry {
@@ -62,7 +62,14 @@ export interface Modalities {
    * This interface was referenced by `Modalities`'s JSON-Schema definition
    * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
    */
-  [k: string]: 'shall' | 'may' | 'shall-if-practicable' | 'conditional' | 'exempt' | 'shall-not' | 'shall-not-impede';
+  [k: string]:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
 }
 export interface Categories {
   /**
@@ -70,7 +77,15 @@ export interface Categories {
    * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
    */
   [k: string]:
-    'definition' | 'standard' | 'scope' | 'display' | 'classification' | 'precedence' | 'conduct' | 'care' | 'meta';
+    | 'category:definition'
+    | 'category:standard'
+    | 'category:scope'
+    | 'category:display'
+    | 'category:classification'
+    | 'category:precedence'
+    | 'category:conduct'
+    | 'category:care'
+    | 'category:meta';
 }
 export interface Provenance {
   /**
@@ -78,7 +93,15 @@ export interface Provenance {
    * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
    */
   evaluated_categories: (
-    'definition' | 'standard' | 'scope' | 'display' | 'classification' | 'precedence' | 'conduct' | 'care' | 'meta'
+    | 'category:definition'
+    | 'category:standard'
+    | 'category:scope'
+    | 'category:display'
+    | 'category:classification'
+    | 'category:precedence'
+    | 'category:conduct'
+    | 'category:care'
+    | 'category:meta'
   )[];
   jurisdictions: string[];
   represented: RepresentedParagraph[];
@@ -87,7 +110,7 @@ export interface RepresentedParagraph {
   id: string;
   jurisdiction: string;
   cite: string;
-  category: 'care' | 'meta';
+  category: 'category:care' | 'category:meta';
 }
 export interface Advisory {
   action: {

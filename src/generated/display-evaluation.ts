@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.1 schema/display-evaluation.schema.json
+ * Source: colregs@0.3.2 schema/display-evaluation.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
@@ -53,7 +53,14 @@ export interface DisplayLight {
    * This interface was referenced by `Modalities`'s JSON-Schema definition
    * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
    */
-  modality: 'shall' | 'may' | 'shall-if-practicable' | 'conditional' | 'exempt' | 'shall-not' | 'shall-not-impede';
+  modality:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
 }
 export interface LightRef {
   light: string;
@@ -69,7 +76,14 @@ export interface LightRef {
    * This interface was referenced by `Modalities`'s JSON-Schema definition
    * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
    */
-  modality?: 'shall' | 'may' | 'shall-if-practicable' | 'conditional' | 'exempt' | 'shall-not' | 'shall-not-impede';
+  modality?:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
 }
 export interface Items {
   id: string;
@@ -82,7 +96,14 @@ export interface Modalities {
    * This interface was referenced by `Modalities`'s JSON-Schema definition
    * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
    */
-  [k: string]: 'shall' | 'may' | 'shall-if-practicable' | 'conditional' | 'exempt' | 'shall-not' | 'shall-not-impede';
+  [k: string]:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
 }
 export interface Categories {
   /**
@@ -90,7 +111,15 @@ export interface Categories {
    * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
    */
   [k: string]:
-    'definition' | 'standard' | 'scope' | 'display' | 'classification' | 'precedence' | 'conduct' | 'care' | 'meta';
+    | 'category:definition'
+    | 'category:standard'
+    | 'category:scope'
+    | 'category:display'
+    | 'category:classification'
+    | 'category:precedence'
+    | 'category:conduct'
+    | 'category:care'
+    | 'category:meta';
 }
 export interface Provenance {
   /**
@@ -98,7 +127,15 @@ export interface Provenance {
    * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
    */
   evaluated_categories: (
-    'definition' | 'standard' | 'scope' | 'display' | 'classification' | 'precedence' | 'conduct' | 'care' | 'meta'
+    | 'category:definition'
+    | 'category:standard'
+    | 'category:scope'
+    | 'category:display'
+    | 'category:classification'
+    | 'category:precedence'
+    | 'category:conduct'
+    | 'category:care'
+    | 'category:meta'
   )[];
   jurisdictions: string[];
   represented: RepresentedParagraph[];
@@ -107,5 +144,5 @@ export interface RepresentedParagraph {
   id: string;
   jurisdiction: string;
   cite: string;
-  category: 'care' | 'meta';
+  category: 'category:care' | 'category:meta';
 }
