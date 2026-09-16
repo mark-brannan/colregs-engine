@@ -19,7 +19,8 @@
       "docs/**/*.md",
       "!docs/proposals/**",
       "research/**/README.md"
-    ]
+    ],
+    "docs/decisions.md": 40
   },
   "json_prose": {
     "targets": [
@@ -53,12 +54,30 @@
       "research/**/*.ts"
     ],
     "grandfathered": [
-      { "file": "research/z3/encode.ts", "match": "P2.1" },
-      { "file": "research/z3/encode.ts", "match": "P1.3" },
-      { "file": "research/z3/encode.ts", "match": "P3.1" },
-      { "file": "research/z3/queries.ts", "match": "P1.3" },
-      { "file": "research/z3/run.ts", "match": "P2.1" },
-      { "file": "research/z3/run.ts", "match": "P3.1" }
+      {
+        "file": "research/z3/encode.ts",
+        "match": "P2.1"
+      },
+      {
+        "file": "research/z3/encode.ts",
+        "match": "P1.3"
+      },
+      {
+        "file": "research/z3/encode.ts",
+        "match": "P3.1"
+      },
+      {
+        "file": "research/z3/queries.ts",
+        "match": "P1.3"
+      },
+      {
+        "file": "research/z3/run.ts",
+        "match": "P2.1"
+      },
+      {
+        "file": "research/z3/run.ts",
+        "match": "P3.1"
+      }
     ],
     "disable": [
       "issue"

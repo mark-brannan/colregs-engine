@@ -78,6 +78,12 @@ export function flattenSituation(situation: Situation): FlatSituation {
       for (const [key, value] of Object.entries(record)) out[`pair:${key}`] = value;
     }
   }
+  if (situation.traffic) {
+    for (const [sector, facts] of Object.entries(situation.traffic)) {
+      if (!facts) continue;
+      for (const [key, value] of Object.entries(facts)) out[`traffic:${sector}:${key}`] = value;
+    }
+  }
   return out;
 }
 
