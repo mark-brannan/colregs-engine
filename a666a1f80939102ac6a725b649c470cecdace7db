@@ -1,0 +1,6 @@
+Revision history for #101:
+
+rev 2 (rebase) 2026-09-16 23:52 UTC
+rev 1 (initial) 2026-09-16 23:52 UTC
+
+<!-- mergify-revision-data: {"schema_version":1,"pull_number":101,"entries":[{"number":1,"change_type":"initial","old_sha":null,"new_sha":"fceb2d9bd6a561b7f8640caee04346ab05c43137","timestamp_iso":"2026-09-16T23:52:08Z","reason":"","replay_sha":null,"compare_url":null},{"number":2,"change_type":"rebase","old_sha":"fceb2d9bd6a561b7f8640caee04346ab05c43137","new_sha":"a666a1f80939102ac6a725b649c470cecdace7db","timestamp_iso":"2026-09-16T23:52:08Z","reason":"","replay_sha":null,"compare_url":"https://github.com/mark-brannan/colregs-engine/compare/fceb2d9bd6a561b7f8640caee04346ab05c43137...a666a1f80939102ac6a725b649c470cecdace7db"}]} -->
