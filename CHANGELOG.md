@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.6](https://github.com/mark-brannan/colregs-engine/compare/v0.1.5...v0.1.6) (2026-09-16)
+
+
+### Added
+
+* **research:** partition-soundness lemma in Rocq, compiled in CI ([#88](https://github.com/mark-brannan/colregs-engine/issues/88)) ([d85869a](https://github.com/mark-brannan/colregs-engine/commit/d85869a97908b619b4f00abcefda0e1881b24a78))
+
+
+### Fixed
+
+* **conduct:** read the 13(d) latch ahead of the role in phaseAt ([#85](https://github.com/mark-brannan/colregs-engine/issues/85)) ([00ba762](https://github.com/mark-brannan/colregs-engine/commit/00ba76235749efb10c5d3cf4d111312ff724d14f))
+
 ## [0.1.5](https://github.com/mark-brannan/colregs-engine/compare/v0.1.4...v0.1.5) (2026-09-15)
 
 
