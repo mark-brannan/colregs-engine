@@ -137,6 +137,18 @@ describe('evaluateConduct', () => {
     expect(r.phases.filter((p) => p.subject === 'own')).toEqual([{ subject: 'own', phase: '16', at_s: 0 }]);
   });
 
+  it('a latched vessel out of sight is not in 13(d): Rule 13 is Section II', () => {
+    // Same pair in restricted visibility: 13d does not fire (its gate keeps
+    // `pair:geo:in_sight`, Q-49), the evaluation classifies nothing, and the
+    // latch alone must not name an overtaking phase.
+    const latch = fixtures.cases.find((c) => c.name.startsWith('13(d) latch'))!.situation;
+    const fog = clone(latch);
+    fog.pair!.geo!['geo:in_sight'] = false;
+    expect(evaluateEncounter(fog).encounter).toBeUndefined();
+    const r = evaluateConduct({ samples: [{ t_s: 0, situation: fog }] });
+    expect(r.phases).toEqual([]);
+  });
+
   it('the table is one-sided: own is never stand-on, other never burdened', () => {
     // `phaseAt` reads the latch ahead of the role because `roles.other` can
     // only ever say stand-on -- the counterparty's correlative, never her own
