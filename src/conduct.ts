@@ -6,6 +6,7 @@
 // `pending`, and says when the duty attached.
 
 import {
+  checkDataVersion,
   COLREGS_VERSION,
   RESOLVED_DATA,
   entryCategory,
@@ -106,6 +107,7 @@ function subjectsOf(entry: Entry): SubjectKey[] {
  * @alpha
  */
 export function appliedConductEntries(trace: Trace, opts: EvaluateOptions = {}): EntryId[] {
+  checkDataVersion(opts);
   validateTrace(trace);
   const candidates = conductEntries((opts.data ?? RESOLVED_DATA).entries);
   const flats = trace.samples.map((s) => flattenSituation(s.situation));
@@ -122,6 +124,7 @@ export function appliedConductEntries(trace: Trace, opts: EvaluateOptions = {}):
  * `breached` are not built. Phases and attachment times are computed.
  */
 export function evaluateConduct(trace: Trace, opts: EvaluateOptions = {}): ConductEvaluation {
+  checkDataVersion(opts);
   validateTrace(trace);
   const data = opts.data ?? RESOLVED_DATA;
   const source: 'resolved' | 'caller' = opts.data ? 'caller' : 'resolved';
