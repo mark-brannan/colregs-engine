@@ -17,7 +17,8 @@ meet them. Companion: [formal-methods-reading-list.md](formal-methods-reading-li
   prose spec; a TLA+ module or a Rocq theorem is a formal one. Our specs
   use MUST / SHOULD / MAY in the sense of RFC 2119 and RFC 8174; the
   Convention's own "shall" and "may" in the data are a different vocabulary,
-  deliberately kept apart. [normative-language.md](normative-language.md)
+  deliberately kept apart. colregs'
+  [`docs/normative-language.md`](https://github.com/mark-brannan/colregs/blob/main/docs/normative-language.md)
   records that decision and where COLREGS will surprise an RFC reader.
 - **Dependability taxonomy.** Fault → error → failure is the standard chain:
   a fault is the underlying defect, an error is the incorrect state it
