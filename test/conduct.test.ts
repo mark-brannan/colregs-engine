@@ -90,11 +90,11 @@ describe('evaluateConduct', () => {
   });
 
   it('a latched overtaking vessel is in 13(d) even when the table names her stand-on', () => {
-    // Issue #84 (reopening #75): a RAM vessel overtaking a 28 m power-driven
-    // vessel from dead astern, holding the 13(d) latch. 18(a)(ii) names her
-    // stand-on from own's frame; Rule 13 applies notwithstanding Rule 18, so
-    // her phase is 13(d), and altering course inside it is not a 17(a)(ii)
-    // transition. Before the fix the latch was dropped for `other`.
+    // A RAM vessel overtaking a 28 m power-driven vessel from dead astern,
+    // holding the 13(d) latch. 18(a)(ii) names her stand-on from own's
+    // frame; Rule 13 applies notwithstanding Rule 18, so her phase is 13(d),
+    // and altering course inside it is not a 17(a)(ii) transition. Reading
+    // the role ahead of the latch dropped the latch for `other`.
     const vessel = (activity: 'activity:none' | 'activity:ram', length: number) => ({
       'fact:propulsion': 'propulsion:power' as const,
       'fact:activity': activity,
@@ -131,14 +131,18 @@ describe('evaluateConduct', () => {
     expect(r.phases.filter((p) => p.subject === 'other')).toEqual([
       { subject: 'other', phase: '13(d)', at_s: 0 },
     ]);
+    // Own is the overtaken vessel (13b-overtaken applies to her) yet phases
+    // 16 by 18a2, because the 18a* entries carry no other-latch gate. Wrong,
+    // pinned so the expectation moves when the data does.
+    expect(r.phases.filter((p) => p.subject === 'own')).toEqual([{ subject: 'own', phase: '16', at_s: 0 }]);
   });
 
   it('the table is one-sided: own is never stand-on, other never burdened', () => {
     // `phaseAt` reads the latch ahead of the role because `roles.other` can
     // only ever say stand-on -- the counterparty's correlative, never her own
-    // duties (issue #75's measurement, #84's table). If this fails the data
-    // has grown reciprocal entries and the "swap the subjects" reading of
-    // the other vessel's phase in #75 is back on the table.
+    // duties. If this fails the data has grown reciprocal entries and "swap
+    // the subjects and evaluate again" is once more a candidate reading of
+    // the other vessel's phase.
     const burdened = ['give-way', 'keep-clear', 'shall-not-impede'];
     for (const e of applicability.entries) {
       const effect = (e as { effect?: { own?: string; other?: string } }).effect;

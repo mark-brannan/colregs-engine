@@ -46,16 +46,6 @@ function strongestRole(roles: { role: string }[]): string | undefined {
   return ROLE_RANK.find((r) => roles.some((x) => x.role === r));
 }
 
-// Latch first, role second. The 13(d) latch names the encounter, not a role:
-// Rule 13 opens "notwithstanding anything contained in the Rules of Part B
-// Sections I and II", so a subject who was the overtaking vessel is in 13(d)
-// whatever role the table conferred on her -- including the stand-on that
-// 18(a) hands a RAM vessel overtaking a power-driven one. The table is
-// one-sided: every entry writes `effect.own` from {give-way, keep-clear,
-// shall-not-impede, none} and `effect.other` from {stand-on, none}, so for
-// `other` only the stand-on branch is live and reading the role first threw
-// her latch away (issue #84; test/conduct.test.ts pins the one-sidedness).
-
 /** A stand-on vessel that is turning or has changed heading since the last
  * sample has moved from 17(a)(i) (keep course and speed) to 17(a)(ii) (may
  * take action). Only what the samples state is read. */
@@ -68,13 +58,28 @@ function isManoeuvring(prev: TraceSample | undefined, cur: TraceSample, subject:
   return typeof heading === 'number' && typeof before === 'number' && heading !== before;
 }
 
+/** The paragraph a subject is under at this sample. Latch first, role
+ * second: the 13(d) latch names the encounter, not a role. Rule 13 opens
+ * "notwithstanding anything contained in the Rules of Part B Sections I and
+ * II", so a subject who was the overtaking vessel is in 13(d) whatever role
+ * the table conferred on her, including the stand-on 18(a) hands a RAM
+ * vessel overtaking a power-driven one. The table is one-sided: every entry
+ * writes `effect.own` from {give-way, keep-clear, shall-not-impede, none}
+ * and `effect.other` from {stand-on, none} (test/conduct.test.ts pins
+ * this), so for `other` only the stand-on branch is live and reading the
+ * role first threw her latch away. This check is the invariant; a data gate
+ * that keeps 18(a)'s entries from naming a latched other stand-on is the
+ * mechanism, and the two are not redundant. The latch alone does not name
+ * an overtaking: `13d` is gated on the vessels being in sight (Q-49), and
+ * the classification it produces is what makes the phase 13(d). */
 function phaseAt(
   prev: TraceSample | undefined,
   cur: TraceSample,
   evaluation: EncounterEvaluation,
   subject: SubjectKey,
 ): ParagraphCite | undefined {
-  if (cur.situation[subject]?.hist?.['hist:was_overtaking'] === true) return '13(d)';
+  const latched = cur.situation[subject]?.hist?.['hist:was_overtaking'] === true;
+  if (latched) return '13(d)';
   const role = strongestRole(evaluation.roles[subject]);
   if (role === undefined) return undefined;
   if (role === 'stand-on' && isManoeuvring(prev, cur, subject)) return '17(a)(ii)';
