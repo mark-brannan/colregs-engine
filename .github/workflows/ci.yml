@@ -52,6 +52,21 @@ jobs:
       # catches anything else the harness touched in the worktree.
       - run: git diff --exit-code -- research/conformance/findings
 
+  # Ladder step 4 (research/rocq/): the partition-soundness lemma the
+  # conformance job's representatives rest on, compiled by the distribution's
+  # Coq/Rocq -- the proof is a single stdlib-only file, so the apt package is
+  # lighter than an opam switch or the rocq-prover image. Fails on a compile
+  # or proof error, or on the generic theorem acquiring an assumption; the
+  # stdlib deprecation warnings a newer Rocq prints do not fail it.
+  partition-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends coq
+      - run: coqc research/rocq/Partition.v > partition.out
+      - run: cat partition.out && grep -q "Closed under the global context" partition.out
+
   # Prose budgets (docs/budgets.json) through the shared prose-budget engine
   # in mark-brannan/dotfiles; test/docs.test.ts runs the same engine locally.
   prose-budget:
@@ -72,7 +87,7 @@ jobs:
   # evaluate when a dependency failed or was skipped, so it reports an explicit
   # pass or fail of its own rather than inheriting the skip.
   ci-gate:
-    needs: [test, conformance, prose-budget, nonempty]
+    needs: [test, conformance, partition-proof, prose-budget, nonempty]
     if: always()
     # It reads nothing and writes nothing; the results go in as an input.
     permissions: {}

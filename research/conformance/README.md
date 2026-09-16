@@ -69,11 +69,14 @@ the run's own "processed N records" line is the true count.
 Enumeration is a mixed-radix walk over the axis list, so a record is
 addressable by its index and the pass holds one record at a time.
 
-Partitioning at the thresholds is the step that makes this a proof rather
-than a large test only if the partition lemma holds — that a predicate
-comparing a numeric against a fixed finite constant set is decided by these
-representatives. That lemma is ladder step 4 (Rocq), not yet done. Until
-then, read this as exhaustive over the partition, not over the reals.
+Partitioning at the thresholds is what makes this a proof rather than a
+large test, and it rests on the partition lemma: a predicate comparing a
+numeric against a fixed finite constant set is decided by these
+representatives. That lemma is ladder step 4, proved in
+[`research/rocq/`](../rocq/) (`partition_sound`, generic over any strict
+order; `partition_sound_R` over the reals with `numericRepresentatives`
+transcribed as its scheme, compiled in CI). So for each numeric axis the
+pass is exhaustive over the reals, not only over the partition.
 
 ## The reference evaluator
 
