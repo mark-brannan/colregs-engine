@@ -46,7 +46,15 @@ function strongestRole(roles: { role: string }[]): string | undefined {
   return ROLE_RANK.find((r) => roles.some((x) => x.role === r));
 }
 
-// Role first, latch second. Reversing them is open: see issue #75.
+// Latch first, role second. The 13(d) latch names the encounter, not a role:
+// Rule 13 opens "notwithstanding anything contained in the Rules of Part B
+// Sections I and II", so a subject who was the overtaking vessel is in 13(d)
+// whatever role the table conferred on her -- including the stand-on that
+// 18(a) hands a RAM vessel overtaking a power-driven one. The table is
+// one-sided: every entry writes `effect.own` from {give-way, keep-clear,
+// shall-not-impede, none} and `effect.other` from {stand-on, none}, so for
+// `other` only the stand-on branch is live and reading the role first threw
+// her latch away (issue #84; test/conduct.test.ts pins the one-sidedness).
 
 /** A stand-on vessel that is turning or has changed heading since the last
  * sample has moved from 17(a)(i) (keep course and speed) to 17(a)(ii) (may
@@ -66,11 +74,10 @@ function phaseAt(
   evaluation: EncounterEvaluation,
   subject: SubjectKey,
 ): ParagraphCite | undefined {
-  const latched = cur.situation[subject]?.hist?.['hist:was_overtaking'] === true;
+  if (cur.situation[subject]?.hist?.['hist:was_overtaking'] === true) return '13(d)';
   const role = strongestRole(evaluation.roles[subject]);
+  if (role === undefined) return undefined;
   if (role === 'stand-on' && isManoeuvring(prev, cur, subject)) return '17(a)(ii)';
-  if (role === undefined) return latched ? '13(d)' : undefined;
-  if (role === 'give-way' && latched) return '13(d)';
   return ROLE_PHASE[role];
 }
 
