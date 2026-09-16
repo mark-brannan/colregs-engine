@@ -35,7 +35,7 @@ describe('evaluateConduct', () => {
   it('phases: the give-way vessel enters Rule 16, the stand-on vessel 17(a)(i)', () => {
     const r = evaluateConduct({ samples: [{ t_s: 10, situation: crossing }] });
     expect(r.phases).toEqual([
-      { subject: 'own', phase: '16', at_s: 10 },
+      { subject: 'self', phase: '16', at_s: 10 },
       { subject: 'other', phase: '17(a)(i)', at_s: 10 },
     ]);
   });
@@ -50,7 +50,7 @@ describe('evaluateConduct', () => {
       ],
     });
     expect(r.phases).toContainEqual({ subject: 'other', phase: '17(a)(ii)', at_s: 60 });
-    expect(r.phases.filter((p) => p.subject === 'own')).toHaveLength(1);
+    expect(r.phases.filter((p) => p.subject === 'self')).toHaveLength(1);
   });
 
   it('a subject holding give-way and shall-not-impede at once is phased by give-way', () => {
@@ -79,14 +79,14 @@ describe('evaluateConduct', () => {
       pair: { geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300 }, env: { 'env:narrow_channel': true } },
     };
     const r = evaluateConduct({ samples: [{ t_s: 0, situation }] });
-    expect(r.phases).toContainEqual({ subject: 'own', phase: '16', at_s: 0 });
-    expect(r.phases.filter((p) => p.subject === 'own')).toHaveLength(1);
+    expect(r.phases).toContainEqual({ subject: 'self', phase: '16', at_s: 0 });
+    expect(r.phases.filter((p) => p.subject === 'self')).toHaveLength(1);
   });
 
   it('a latched overtaking vessel is in the 13(d) phase', () => {
     const latch = fixtures.cases.find((c) => c.name.startsWith('13(d) latch'))!.situation;
     const r = evaluateConduct({ samples: [{ t_s: 0, situation: latch }] });
-    expect(r.phases).toContainEqual({ subject: 'own', phase: '13(d)', at_s: 0 });
+    expect(r.phases).toContainEqual({ subject: 'self', phase: '13(d)', at_s: 0 });
   });
 
   it('a latched overtaking vessel is in 13(d) even when the table names her stand-on', () => {
@@ -134,7 +134,7 @@ describe('evaluateConduct', () => {
     // Own is the overtaken vessel (13b-overtaken applies to her) yet phases
     // 16 by 18a2, because the 18a* entries carry no other-latch gate. Wrong,
     // pinned so the expectation moves when the data does.
-    expect(r.phases.filter((p) => p.subject === 'own')).toEqual([{ subject: 'own', phase: '16', at_s: 0 }]);
+    expect(r.phases.filter((p) => p.subject === 'self')).toEqual([{ subject: 'self', phase: '16', at_s: 0 }]);
   });
 
   it('a latched vessel out of sight is not in 13(d): Rule 13 is Section II', () => {
@@ -180,7 +180,7 @@ describe('evaluateConduct', () => {
       { data },
     );
     expect(r.applied).toEqual(['16']);
-    expect(r.verdicts).toEqual([{ id: '16', subject: 'own', verdict: 'pending', attached_at_s: 5 }]);
+    expect(r.verdicts).toEqual([{ id: '16', subject: 'self', verdict: 'pending', attached_at_s: 5 }]);
     expect(r.colregs.source).toBe('caller');
   });
 

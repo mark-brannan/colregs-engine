@@ -119,7 +119,7 @@ export function evaluateEncounter(
 
   const scope: RuleId[] = [];
   const riskBy: RuleId[] = [];
-  const roles: { own: SubjectRole[]; other: SubjectRole[] } = { own: [], other: [] };
+  const roles: { self: SubjectRole[]; other: SubjectRole[] } = { self: [], other: [] };
   let encounter: EncounterEvaluation['encounter'];
 
   for (const e of standing) {
@@ -138,11 +138,8 @@ export function evaluateEncounter(
         }
         break;
       case 'category:precedence':
-        for (const subject of ['own', 'other'] as const) {
-          // colregs' data field is `self`/`other` (ADR 0016); `own` is this
-          // engine's own subject vocabulary.
-          const dataKey = subject === 'own' ? 'self' : 'other';
-          const role = effect?.[dataKey] as SubjectRole['role'] | undefined;
+        for (const subject of ['self', 'other'] as const) {
+          const role = effect?.[subject] as SubjectRole['role'] | undefined;
           if (role !== undefined && role !== 'role:none') roles[subject].push({ role, by: e.id });
         }
         break;

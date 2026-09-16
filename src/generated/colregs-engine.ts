@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.1 data/operations.json
+ * Source: colregs@0.3.2 data/operations.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned data disagree.
  */
@@ -10,7 +10,7 @@ import type {
   ConductEvaluation,
   DisplayEvaluation,
   EncounterEvaluation,
-  EntryId,
+  RuleId,
   FactRecord,
   Rule2DepartureFinding,
   Rule2DepartureModel,
@@ -27,10 +27,10 @@ import type {
  */
 export interface ColregsEngine {
   evaluateDisplay(facts: FactRecord): DisplayEvaluation;
-  appliedDisplayEntries(facts: FactRecord): EntryId[];
+  appliedDisplayEntries(facts: FactRecord): RuleId[];
   evaluateEncounter(situation: Situation): EncounterEvaluation;
-  appliedEncounterEntries(situation: Situation): EntryId[];
+  appliedEncounterEntries(situation: Situation): RuleId[];
   evaluateConduct(trace: Trace): ConductEvaluation;
-  appliedConductEntries(trace: Trace): EntryId[];
+  appliedConductEntries(trace: Trace): RuleId[];
   evaluateRule2Departure(situation: Situation, model: Rule2DepartureModel): Rule2DepartureFinding;
 }

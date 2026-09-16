@@ -1,20 +1,28 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.1 schema/applicability.schema.json
+ * Source: colregs@0.3.2 schema/applicability.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
 
 export type RuleId = string;
 export type RuleCategory =
-  'definition' | 'standard' | 'scope' | 'display' | 'classification' | 'precedence' | 'conduct' | 'care' | 'meta';
+  | 'category:definition'
+  | 'category:standard'
+  | 'category:scope'
+  | 'category:display'
+  | 'category:classification'
+  | 'category:precedence'
+  | 'category:conduct'
+  | 'category:care'
+  | 'category:meta';
 /**
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
  * via the `patternProperty` "^fact:[a-z0-9_]+$".
  *
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
- * via the `patternProperty` "^(own|other):(fact|kin|geo|hist):[a-z0-9_]+$".
+ * via the `patternProperty` "^(self|other):(fact|kin|geo|hist):[a-z0-9_]+$".
  *
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
  * via the `patternProperty` "^pair:(geo|env):[a-z0-9_]+$".
@@ -42,7 +50,13 @@ export type PredicateValue =
       any_of: PredicateValue[];
     };
 export type Modality =
-  'shall' | 'may' | 'shall-if-practicable' | 'conditional' | 'exempt' | 'shall-not' | 'shall-not-impede';
+  | 'modality:shall'
+  | 'modality:may'
+  | 'modality:shall-if-practicable'
+  | 'modality:conditional'
+  | 'modality:exempt'
+  | 'modality:shall-not'
+  | 'modality:shall-not-impede';
 export type Effect =
   | {
       part: string;
@@ -53,16 +67,16 @@ export type Effect =
       applies_rules: string[];
     }
   | {
-      own: EffectRole;
+      self: EffectRole;
       other: EffectRole;
     }
   | {
-      encounter: 'head-on' | 'crossing' | 'overtaking' | 'none';
+      encounter: 'encounter:head-on' | 'encounter:crossing' | 'encounter:overtaking' | 'encounter:none';
     }
   | {
       risk_of_collision: true;
     };
-export type EffectRole = 'give-way' | 'stand-on' | 'shall-not-impede' | 'keep-clear' | 'none';
+export type EffectRole = 'role:give-way' | 'role:stand-on' | 'role:shall-not-impede' | 'role:keep-clear' | 'role:none';
 /**
  * @minItems 1
  */
@@ -89,39 +103,39 @@ export interface ApplicabilityData {
     'rel:overrides': string;
   };
   modalities?: {
-    shall: string;
-    may: string;
-    'shall-if-practicable': string;
-    conditional: string;
-    exempt: string;
-    'shall-not': string;
-    'shall-not-impede': string;
+    'modality:shall': string;
+    'modality:may': string;
+    'modality:shall-if-practicable': string;
+    'modality:conditional': string;
+    'modality:exempt': string;
+    'modality:shall-not': string;
+    'modality:shall-not-impede': string;
   };
   categories?: {
-    definition: string;
-    standard: string;
-    scope: string;
-    display: string;
-    classification: string;
-    precedence: string;
-    conduct: string;
-    care: string;
-    meta: string;
+    'category:definition': string;
+    'category:standard': string;
+    'category:scope': string;
+    'category:display': string;
+    'category:classification': string;
+    'category:precedence': string;
+    'category:conduct': string;
+    'category:care': string;
+    'category:meta': string;
   };
   effects?: {
     note?: string;
     roles: {
-      'give-way': string;
-      'stand-on': string;
-      'shall-not-impede': string;
-      'keep-clear': string;
-      none: string;
+      'role:give-way': string;
+      'role:stand-on': string;
+      'role:shall-not-impede': string;
+      'role:keep-clear': string;
+      'role:none': string;
     };
     encounters?: {
-      'head-on': string;
-      crossing: string;
-      overtaking: string;
-      none: string;
+      'encounter:head-on': string;
+      'encounter:crossing': string;
+      'encounter:overtaking': string;
+      'encounter:none': string;
     };
     classification_shape?: string;
   };
@@ -134,7 +148,7 @@ export interface ApplicabilityData {
     id: RuleId;
     jurisdiction: string;
     cite: string;
-    category: 'care' | 'meta';
+    category: 'category:care' | 'category:meta';
     note: string;
   }[];
   /**

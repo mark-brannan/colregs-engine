@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.1 schema/facts.schema.json
+ * Source: colregs@0.3.2 schema/facts.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
@@ -196,7 +196,7 @@ export interface FactsData {
       form: string;
       doc?: string;
       subjects: {
-        own: string;
+        self: string;
         other: string;
         pair: string;
       };
@@ -233,7 +233,7 @@ export interface FactsData {
     record: {
       note?: string;
       shape: {
-        own: {
+        self: {
           fact?: string;
           kin?: string;
           geo?: string;

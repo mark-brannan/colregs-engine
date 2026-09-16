@@ -198,7 +198,7 @@ export interface DisplayEvaluation {
  * The input a two-subject rule reads (ADR 0011 §3, mirroring colregs' ADR
  * 0005). Nested by subject and class, not flat by predicate namespace, so a
  * fixture's `situation` object is assignable here unedited — the flat
- * `own:fact:activity` form stays internal to the walker.
+ * `self:fact:activity` form stays internal to the walker.
  */
 export interface Subject {
   fact: FactRecord;
@@ -306,7 +306,7 @@ export interface EncounterEvaluation {
   /** Rule 7(a) lets an entry add a ground and never deny one, so the
    * grounds ride with the assertion. */
   risk_of_collision: { asserted: boolean; by: RuleId[] };
-  roles: { own: SubjectRole[]; other: SubjectRole[] };
+  roles: { self: SubjectRole[]; other: SubjectRole[] };
   /** Applied entries displaced by another applied obligation's
    * `rel:overrides`. */
   overridden: { id: RuleId; by: RuleId }[];
@@ -338,7 +338,7 @@ export interface Trace {
  * never attached is absent, not `pending`. */
 export interface ConductVerdict {
   id: RuleId;
-  subject: 'own' | 'other';
+  subject: 'self' | 'other';
   verdict: 'kept' | 'breached' | 'pending';
   /** When the entry attached the role being judged. */
   attached_at_s?: number;
@@ -352,7 +352,7 @@ export interface ConductVerdict {
 /** A transition of the Rule 13(d)/17 protocol state machine. `phase` is a
  * paragraph cite, never an entry id: several phases have no entry. */
 export interface ConductPhaseChange {
-  subject: 'own' | 'other';
+  subject: 'self' | 'other';
   phase: ParagraphCite;
   at_s: number;
 }

@@ -29,7 +29,7 @@ describe('evaluateEncounter', () => {
     const r = evaluateEncounter(fixture('crossing: self power-driven'));
     expect(r.encounter).toBe('encounter:crossing');
     expect(r.scope).toEqual(['rule:4', 'rule:11']);
-    expect(r.roles.own).toEqual([{ role: 'role:give-way', by: 'rule:15a:keep_out_of_the_way' }]);
+    expect(r.roles.self).toEqual([{ role: 'role:give-way', by: 'rule:15a:keep_out_of_the_way' }]);
     expect(r.roles.other).toEqual([{ role: 'role:stand-on', by: 'rule:15a:keep_out_of_the_way' }]);
     expect(r.risk_of_collision).toEqual({ asserted: true, by: ['rule:7d_i'] });
     expect(r.overridden).toEqual([]);
@@ -43,14 +43,14 @@ describe('evaluateEncounter', () => {
     const r = evaluateEncounter(fixture('18(f)(i) overrides 18(a)(iv)'));
     expect(r.applied).toContain('rule:18a_iv');
     expect(r.overridden).toEqual([{ id: 'rule:18a_iv', by: 'rule:18f_i' }]);
-    expect(r.roles.own).toEqual([{ role: 'role:keep-clear', by: 'rule:18f_i' }]);
+    expect(r.roles.self).toEqual([{ role: 'role:keep-clear', by: 'rule:18f_i' }]);
     expect(r.roles.other).toEqual([]);
   });
 
   it('a latched overtaking stays an overtaking', () => {
     const r = evaluateEncounter(fixture('13(a) overrides 18(a)(iv)'));
     expect(r.encounter).toBe('encounter:overtaking');
-    expect(r.roles.own).toEqual([{ role: 'role:give-way', by: 'rule:13a' }]);
+    expect(r.roles.self).toEqual([{ role: 'role:give-way', by: 'rule:13a' }]);
   });
 
   it('a stated risk of collision is asserted even when no entry grounds it', () => {
@@ -62,7 +62,7 @@ describe('evaluateEncounter', () => {
     const r = evaluateEncounter({ self: { fact: { ...power } } });
     expect(r.applied).toEqual(['rule:4']);
     expect(r.encounter).toBeUndefined();
-    expect(r.roles).toEqual({ own: [], other: [] });
+    expect(r.roles).toEqual({ self: [], other: [] });
     expect(r.risk_of_collision).toEqual({ asserted: false, by: [] });
   });
 
@@ -85,7 +85,7 @@ describe('evaluateEncounter', () => {
       pair: { geo: { 'geo:risk_of_collision': true } },
     });
     expect(r.applied).toContain('rule:8f_iii');
-    expect(r.roles).toEqual({ own: [], other: [] });
+    expect(r.roles).toEqual({ self: [], other: [] });
   });
 
   it('stamps caller data as the caller\'s', () => {
