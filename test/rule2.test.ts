@@ -52,7 +52,7 @@ describe('evaluateRule2Departure', () => {
     expect(f.model.assumptions_violated).toEqual([
       expect.stringMatching(/carries no regions/),
     ]);
-    expect(f.rules.applied).toContain('8f3');
+    expect(f.rules.applied).toContain('rule:8f_iii');
   });
 
   it('a matching region gives its status, advisories best margin first', () => {

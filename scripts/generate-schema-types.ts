@@ -29,15 +29,39 @@ const OUT_DIR = 'src/generated';
 const ROOT_NAMES: Record<string, string> = {
   applicability: 'ApplicabilityData',
   'applicability-fixtures': 'ApplicabilityFixtures',
-  'deprecated-identifiers': 'DeprecatedIdentifiers',
+  'conduct-evaluation': 'ConductEvaluationSchema',
+  corpora: 'CorporaData',
+  corpus: 'CorpusData',
+  'display-evaluation': 'DisplayEvaluationSchema',
+  editions: 'EditionsData',
+  'encounter-evaluation': 'EncounterEvaluationSchema',
+  evaluation: 'EvaluationSchema',
   facts: 'FactsData',
   geometry: 'GeometryData',
+  'i18n-catalog': 'I18NCatalogData',
   images: 'ImagesData',
   lights: 'LightsData',
+  operations: 'OperationsManifest',
   rules: 'RulesData',
+  'rule2-departure-finding': 'Rule2DepartureFindingSchema',
+  'rule2-departure-model': 'Rule2DepartureModelSchema',
   'situation-fixtures': 'SituationFixtures',
+  trace: 'TraceSchema',
   version: 'VersionData',
 };
+
+/**
+ * Stems ADR 0014 ships under schema/ but that this generator does not
+ * compile: `generate-fact-record.ts` already derives FactRecord and Situation
+ * (plus Kinematics/History/DirectionalGeometry/PairGeometry/Environment) from
+ * data/facts.json as keyed unions with runtime validation — strictly more
+ * precise than what json-schema-to-typescript would produce from these two
+ * files' loose `patternProperties` mirrors of the same shapes. Compiling them
+ * here would silently overwrite that richer output with a weaker one. The
+ * schema files themselves stay available for Ajv (round-trip conformance
+ * reads them directly from node_modules, not from src/generated).
+ */
+const OWNED_BY_FACT_RECORD_GENERATOR = new Set(['fact-record', 'situation']);
 
 const BANNER = `/**
  * GENERATED FILE — DO NOT EDIT.
@@ -63,7 +87,14 @@ const files = readdirSync(SCHEMA_DIR)
 const currentStems = new Set(
   files.map((f) => basename(f, '.schema.json')),
 );
-const KEEP = new Set(['fact-record.ts', 'situation.ts', 'index.ts']);
+const KEEP = new Set([
+  'fact-record.ts',
+  'situation.ts',
+  'index.ts',
+  // generate-operations-interface.ts's own output (ColregsEngine, from
+  // data/operations.json, not schema/) -- not one of this loop's stems.
+  'colregs-engine.ts',
+]);
 for (const existing of readdirSync(OUT_DIR)) {
   if (!existing.endsWith('.ts') || KEEP.has(existing)) continue;
   if (!currentStems.has(basename(existing, '.ts'))) {
@@ -75,6 +106,7 @@ const modules: { module: string; root: string }[] = [];
 
 for (const file of files) {
   const stem = basename(file, '.schema.json');
+  if (OWNED_BY_FACT_RECORD_GENERATOR.has(stem)) continue;
   const root = ROOT_NAMES[stem];
   if (!root) {
     throw new Error(
@@ -92,6 +124,7 @@ for (const file of files) {
   const body = await compile(schema, root, {
     additionalProperties: false,
     bannerComment: '',
+    cwd: SCHEMA_DIR,
     declareExternallyReferenced: true,
     // Upstream uses minItems as a non-emptiness constraint, not as a tuple
     // arity; without this every `minItems: 1` array becomes a tuple type.

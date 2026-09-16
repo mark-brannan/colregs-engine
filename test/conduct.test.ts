@@ -118,7 +118,7 @@ describe('evaluateConduct', () => {
       pair: { geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300, 'geo:risk_of_collision': true } },
     };
     expect(evaluateEncounter(situation).roles.other).toContainEqual(
-      expect.objectContaining({ role: 'stand-on', by: '18a2' }),
+      expect.objectContaining({ role: 'stand-on', by: 'rule:18a_ii' }),
     );
     const turning = clone(situation);
     turning.other!.kin!['kin:rot_deg_min'] = 5;
