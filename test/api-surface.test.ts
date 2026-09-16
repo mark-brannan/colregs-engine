@@ -45,7 +45,7 @@ describe('data resolution', () => {
 });
 
 describe('data version check (ADR 0009)', () => {
-  it('evaluates when the caller-supplied data.version.json stamp matches (issue #77)', () => {
+  it('evaluates when the caller-supplied data.version.json stamp matches', () => {
     expect(() =>
       evaluateDisplay(sloop12, { data: applicability, dataVersion: versionJson.version }),
     ).not.toThrow();
