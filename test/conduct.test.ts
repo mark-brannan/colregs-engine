@@ -118,7 +118,7 @@ describe('evaluateConduct', () => {
       pair: { geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300, 'geo:risk_of_collision': true } },
     };
     expect(evaluateEncounter(situation).roles.other).toContainEqual(
-      expect.objectContaining({ role: 'stand-on', by: '18a2' }),
+      expect.objectContaining({ role: 'role:stand-on', by: '18a2' }),
     );
     const turning = clone(situation);
     turning.other!.kin!['kin:rot_deg_min'] = 5;
@@ -155,11 +155,11 @@ describe('evaluateConduct', () => {
     // duties. If this fails the data has grown reciprocal entries and "swap
     // the subjects and evaluate again" is once more a candidate reading of
     // the other vessel's phase.
-    const burdened = ['give-way', 'keep-clear', 'shall-not-impede'];
+    const burdened = ['role:give-way', 'role:keep-clear', 'role:shall-not-impede'];
     for (const e of applicability.entries) {
-      const effect = (e as { effect?: { own?: string; other?: string } }).effect;
+      const effect = (e as { effect?: { self?: string; other?: string } }).effect;
       if (!effect) continue;
-      expect(effect.own, `${e.id}: effect.own`).not.toBe('stand-on');
+      expect(effect.self, `${e.id}: effect.self`).not.toBe('role:stand-on');
       expect(burdened, `${e.id}: effect.other`).not.toContain(effect.other);
     }
   });
@@ -169,10 +169,10 @@ describe('evaluateConduct', () => {
       id: '16',
       jurisdiction: 'intl',
       cite: '16',
-      category: 'conduct',
+      category: 'category:conduct',
       when: { 'pair:geo:risk_of_collision': true },
-      modality: 'shall',
-      effect: { own: 'give-way', other: 'none' },
+      modality: 'modality:shall',
+      effect: { self: 'role:give-way', other: 'role:none' },
     } as unknown as Entry;
     const data = { ...applicability, entries: [...applicability.entries, rule16] };
     const r = evaluateConduct(

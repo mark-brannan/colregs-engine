@@ -8,7 +8,7 @@
 // (src/schema.ts). This module re-exports them for internal use and for the
 // tests, which read applicability.json directly.
 
-import type { EffectRole, EntryId, Modality } from './generated/applicability.js';
+import type { Effect, EffectRole, RuleId, Modality } from './generated/applicability.js';
 import type { LightSpec, RepresentedParagraph, RuleCategory } from './schema.js';
 import type { FactRecord } from './generated/fact-record.js';
 import type {
@@ -227,7 +227,7 @@ export interface Situation {
 // written — see each ADR's register for what would settle it.
 // ---------------------------------------------------------------------------
 
-/** A Rules paragraph cite: `'17(c)'`. `EntryId` is the other vocabulary a
+/** A Rules paragraph cite: `'17(c)'`. `RuleId` is the other vocabulary a
  * string field can hold; which one a field means is fixed by its type
  * (ADR 0011 §4), not by the compiler. */
 export type ParagraphCite = string;
@@ -238,7 +238,7 @@ export type ParagraphCite = string;
  * once (colregs Q-36). */
 export interface SubjectRole {
   role: EffectRole;
-  by: EntryId;
+  by: RuleId;
 }
 
 /** The result of `evaluateEncounter`: two vessels at one instant
@@ -246,23 +246,23 @@ export interface SubjectRole {
 export interface EncounterEvaluation {
   colregs: { version: string; source: 'resolved' | 'caller' };
   /** Entries whose predicate matched, in data order. */
-  applied: EntryId[];
+  applied: RuleId[];
   /** Applied `scope` entries — what put the rest in play. */
-  scope: EntryId[];
+  scope: RuleId[];
   /** Absent when no classification entry fired: "cannot say", not "none"
    * (colregs Q-43). */
-  encounter?: 'head-on' | 'crossing' | 'overtaking' | 'none';
+  encounter?: Extract<Effect, { encounter: unknown }>['encounter'];
   /** Rule 7(a) lets an entry add a ground and never deny one, so the
    * grounds ride with the assertion. */
-  risk_of_collision: { asserted: boolean; by: EntryId[] };
+  risk_of_collision: { asserted: boolean; by: RuleId[] };
   roles: { own: SubjectRole[]; other: SubjectRole[] };
   /** Applied entries displaced by another applied obligation's
    * `rel:overrides`. */
-  overridden: { id: EntryId; by: EntryId }[];
-  modalities: Record<EntryId, Modality>;
+  overridden: { id: RuleId; by: RuleId }[];
+  modalities: Record<RuleId, Modality>;
   /** Category per applied entry id, over the same key set as `modalities`:
    * which of the three categories this verb reads each id came from. */
-  categories: Record<EntryId, RuleCategory>;
+  categories: Record<RuleId, RuleCategory>;
   /** What this evaluation read, and what it therefore does not answer. */
   provenance: EvaluationProvenance;
 }
@@ -286,7 +286,7 @@ export interface Trace {
  * means the window ended before the duty could be judged; an entry that
  * never attached is absent, not `pending`. */
 export interface ConductVerdict {
-  id: EntryId;
+  id: RuleId;
   subject: 'own' | 'other';
   verdict: 'kept' | 'breached' | 'pending';
   /** When the entry attached the role being judged. */
@@ -312,7 +312,7 @@ export interface ConductEvaluation {
   colregs: { version: string; source: 'resolved' | 'caller' };
   /** What window this result saw. */
   window: { from_s: number; to_s: number; samples: number };
-  applied: EntryId[];
+  applied: RuleId[];
   verdicts: ConductVerdict[];
   phases: ConductPhaseChange[];
 }

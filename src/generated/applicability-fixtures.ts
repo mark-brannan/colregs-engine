@@ -1,17 +1,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.2.4 schema/applicability-fixtures.schema.json
+ * Source: colregs@0.3.2 schema/applicability-fixtures.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
 
-/**
- * This interface was referenced by `undefined`'s JSON-Schema definition
- * via the `patternProperty` "^fact:[a-z0-9_]+$".
- */
-export type FactValue = string | number | boolean;
-export type EntryId = string;
+export type RuleId = string;
 
 /**
  * The cross-implementation contract: fact record -> expected entry ids. Structure only -- see docs/adr/0006-json-schema-and-identifier-diff.md.
@@ -25,9 +20,17 @@ export interface ApplicabilityFixtures {
   cases: {
     name: string;
     jurisdiction?: string;
-    facts: {
-      [k: string]: FactValue;
-    };
-    expect: EntryId[];
+    facts: FactRecord;
+    expect: RuleId[];
   }[];
+}
+/**
+ * What a consumer asserts about one vessel at one moment: the input evaluateDisplay reads (ADR 0011 §2, ADR 0014). Structure only -- which fact keys exist and which values each takes is data/facts.json's, checked in the tests; see docs/adr/0006-json-schema-and-identifier-diff.md.
+ */
+export interface FactRecord {
+  /**
+   * This interface was referenced by `FactRecord`'s JSON-Schema definition
+   * via the `patternProperty` "^fact:[a-z0-9_]+$".
+   */
+  [k: string]: string | number | boolean;
 }

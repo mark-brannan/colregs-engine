@@ -12,7 +12,7 @@
 // Run: npm run generate
 
 import { readFileSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { compile, type JSONSchema } from 'json-schema-to-typescript';
 
 const SCHEMA_DIR = 'node_modules/colregs/schema';
@@ -29,15 +29,38 @@ const OUT_DIR = 'src/generated';
 const ROOT_NAMES: Record<string, string> = {
   applicability: 'ApplicabilityData',
   'applicability-fixtures': 'ApplicabilityFixtures',
+  'conduct-evaluation': 'ConductEvaluation',
+  corpora: 'CorporaData',
+  corpus: 'CorpusData',
   'deprecated-identifiers': 'DeprecatedIdentifiers',
+  'display-evaluation': 'DisplayEvaluation',
+  editions: 'EditionsData',
+  'encounter-evaluation': 'EncounterEvaluation',
+  evaluation: 'Evaluation',
   facts: 'FactsData',
   geometry: 'GeometryData',
+  // json-schema-to-typescript's own name-casing renders 'I18nCatalog' as
+  // 'I18NCatalog' (it upper-cases a lone letter between digits).
+  'i18n-catalog': 'I18NCatalog',
   images: 'ImagesData',
   lights: 'LightsData',
+  operations: 'OperationsData',
+  'rule2-departure-finding': 'Rule2DepartureFinding',
+  'rule2-departure-model': 'Rule2DepartureModel',
   rules: 'RulesData',
   'situation-fixtures': 'SituationFixtures',
+  trace: 'Trace',
   version: 'VersionData',
 };
+
+// colregs-engine#86 (ADR 0014) owns deciding what these two become: colregs
+// now ships fact-record.schema.json and situation.schema.json, but
+// generate-fact-record.ts already derives src/generated/fact-record.ts and
+// situation.ts from data/facts.json with the keyed unions this engine
+// actually uses. Acknowledge the schema files so this generator doesn't
+// throw on them, without generating a module that either collides with that
+// output or goes unused.
+const DEFERRED_TO_86 = new Set(['fact-record', 'situation']);
 
 const BANNER = `/**
  * GENERATED FILE — DO NOT EDIT.
@@ -75,6 +98,7 @@ const modules: { module: string; root: string }[] = [];
 
 for (const file of files) {
   const stem = basename(file, '.schema.json');
+  if (DEFERRED_TO_86.has(stem)) continue;
   const root = ROOT_NAMES[stem];
   if (!root) {
     throw new Error(
@@ -92,6 +116,9 @@ for (const file of files) {
   const body = await compile(schema, root, {
     additionalProperties: false,
     bannerComment: '',
+    // Cross-schema $refs (e.g. applicability-fixtures -> applicability) are
+    // relative to schema/; without this they resolve against cwd instead.
+    cwd: resolve(SCHEMA_DIR),
     declareExternallyReferenced: true,
     // Upstream uses minItems as a non-emptiness constraint, not as a tuple
     // arity; without this every `minItems: 1` array becomes a tuple type.

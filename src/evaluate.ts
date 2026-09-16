@@ -150,11 +150,11 @@ export function predicateMatches(when: Predicate, facts: FactRecord): boolean {
 }
 
 export function resolveModality(entry: Entry, facts: FactRecord): Modality {
-  if (entry.modality !== 'conditional') return entry.modality;
+  if (entry.modality !== 'modality:conditional') return entry.modality;
   for (const branch of entry.modality_by ?? []) {
     if (predicateMatches(branch.when, facts)) return branch.modality;
   }
-  return 'conditional';
+  return 'modality:conditional';
 }
 
 /**
@@ -225,7 +225,7 @@ function displayLights(node: Node): DisplayLight[] {
 }
 
 // colregs 0.2.0 (REQ-CAT-1) gave every entry a `category`, defaulting to
-// 'display' when absent, and added scope/precedence/etc. entries that read
+// 'category:display' when absent, and added scope/precedence/etc. entries that read
 // a situation rather than a fact record -- Rule 4's `when` is empty because
 // "any condition of visibility" is the absence of a condition, so an
 // unfiltered match would select it for every fact record. colregs' own
@@ -233,21 +233,21 @@ function displayLights(node: Node): DisplayLight[] {
 // mirrors that exactly so `applied` keeps meaning "what does this vessel
 // show", not "every paragraph whose predicate is satisfied".
 function isDisplay(e: Entry): boolean {
-  return entryCategory(e) === 'display';
+  return entryCategory(e) === 'category:display';
 }
 
 /** An entry's category, with colregs' default applied: absent is `display`.
  * The default lives here, not at each reading site, so the envelope's
  * `categories` and the `isDisplay` filter can never disagree about it. */
 export function entryCategory(e: Entry): RuleCategory {
-  return e.category ?? 'display';
+  return e.category ?? 'category:display';
 }
 
 // The categories `evaluateDisplay` matches. A one-element list rather than a
 // bare string because the field it feeds is a list on every verb: ADR 0001's
 // evaluateEncounter reads scope, classification and precedence in one
 // predicate pass.
-const DISPLAY_CATEGORIES: readonly RuleCategory[] = ['display'];
+const DISPLAY_CATEGORIES: readonly RuleCategory[] = ['category:display'];
 
 /** What the evaluation was allowed to match, read off the data it matched
  * against. `jurisdictions` describes what was offered, not a filter that ran:
@@ -284,8 +284,8 @@ export function provenanceOf(
 // jurisdiction parameter exists yet -- open gap, not a decision.
 /** The modalities that let a display entry's rel:overrides fire. */
 const DISPLAY_OBLIGATIONS: ReadonlySet<Modality> = new Set<Modality>([
-  'shall',
-  'shall-if-practicable',
+  'modality:shall',
+  'modality:shall-if-practicable',
 ]);
 
 /**
@@ -402,7 +402,7 @@ export function evaluateDisplay(
   function computeExempted(overriddenIds: ReadonlySet<string>) {
     const exempted: { id: string; by: string }[] = [];
     for (const e of applied) {
-      if (modalities[e.id] !== 'exempt') continue;
+      if (modalities[e.id] !== 'modality:exempt') continue;
       if (overriddenIds.has(e.id)) continue; // a displaced entry's exemptions don't fire
       for (const ref of e['rel:exempts'] ?? []) {
         if (appliedIds.has(ref)) exempted.push({ id: ref, by: e.id });
@@ -430,7 +430,7 @@ export function evaluateDisplay(
   for (const e of applied) {
     if (overriddenIds.has(e.id)) continue; // a displaced entry's excludes don't fire either
     const m = modalities[e.id];
-    if (m !== 'shall' && m !== 'shall-if-practicable') continue;
+    if (m !== 'modality:shall' && m !== 'modality:shall-if-practicable') continue;
     const replacesApplied = (e['rel:in_lieu_of'] ?? []).some((r) =>
       appliedIds.has(r),
     );
@@ -451,7 +451,7 @@ export function evaluateDisplay(
 
   const active = applied.filter(
     (e) =>
-      modalities[e.id] !== 'exempt' &&
+      modalities[e.id] !== 'modality:exempt' &&
       !exemptedIds.has(e.id) &&
       !excludedIds.has(e.id) &&
       !overriddenIds.has(e.id),
@@ -514,7 +514,7 @@ export function evaluateDisplay(
         if (options.length > 0) {
           groups.push({
             carrier: e.id,
-            optional: modalities[e.id] === 'may',
+            optional: modalities[e.id] === 'modality:may',
             options,
           });
         }
@@ -552,7 +552,7 @@ export function evaluateDisplay(
       binaries.push(n);
       continue;
     }
-    if (n.modality === 'may') {
+    if (n.modality === 'modality:may') {
       const relational =
         (n.entry['rel:excludes'] ?? []).some((r) => nodeIds.has(r)) ||
         (n.entry['rel:includes'] ?? []).some((r) => appliedIds.has(r)) ||
@@ -642,7 +642,7 @@ export function evaluateDisplay(
       }
       // 25(c) is "in addition to" 25(a): a chosen may-node whose
       // rel:includes names an applied entry needs that entry present.
-      if (n.modality === 'may' && !n.imported) {
+      if (n.modality === 'modality:may' && !n.imported) {
         for (const r of n.entry['rel:includes'] ?? []) {
           if (appliedIds.has(r) && !members.has(r)) valid = false;
         }

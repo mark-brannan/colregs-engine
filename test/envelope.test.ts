@@ -37,15 +37,15 @@ const trawler30: FactRecord = {
 // compile error here and a change to its `categories` block is the failure
 // below rather than a silent gap.
 const CATEGORIES: RuleCategory[] = [
-  'definition',
-  'standard',
-  'scope',
-  'display',
-  'classification',
-  'precedence',
-  'conduct',
-  'care',
-  'meta',
+  'category:definition',
+  'category:standard',
+  'category:scope',
+  'category:display',
+  'category:classification',
+  'category:precedence',
+  'category:conduct',
+  'category:care',
+  'category:meta',
 ];
 
 const STATUSES: Rule2DepartureStatus[] = [
@@ -76,16 +76,16 @@ describe('the category vocabulary', () => {
     const result = evaluateDisplay(trawler30);
     const byId = new Map(applicability.entries.map((e) => [e.id, e]));
     for (const [id, category] of Object.entries(result.categories)) {
-      expect(category).toBe('display');
+      expect(category).toBe('category:display');
       // The default is the point: these entries carry no `category` at all.
-      expect(byId.get(id)?.category ?? 'display').toBe(category);
+      expect(byId.get(id)?.category ?? 'category:display').toBe(category);
     }
   });
 
   it('never reports an entry the display verb did not evaluate', () => {
     const nonDisplay = new Set(
       applicability.entries
-        .filter((e) => (e.category ?? 'display') !== 'display')
+        .filter((e) => (e.category ?? 'category:display') !== 'category:display')
         .map((e) => e.id),
     );
     expect(nonDisplay.size).toBeGreaterThan(0);
@@ -122,7 +122,7 @@ describe('the status alphabet', () => {
 describe('provenance', () => {
   it('names the categories the verb evaluated', () => {
     expect(evaluateDisplay(sloop12).provenance.evaluated_categories).toEqual([
-      'display',
+      'category:display',
     ]);
   });
 
@@ -130,7 +130,7 @@ describe('provenance', () => {
     const expected = [
       ...new Set(
         applicability.entries
-          .filter((e) => (e.category ?? 'display') === 'display')
+          .filter((e) => (e.category ?? 'category:display') === 'category:display')
           .map((e) => e.jurisdiction),
       ),
     ];
@@ -143,7 +143,7 @@ describe('provenance', () => {
   it('carries the represented paragraphs, identity only, never the prose', () => {
     const { represented } = evaluateDisplay(sloop12).provenance;
     expect(represented.map((p) => p.id)).toEqual(['2a', '2b']);
-    expect(represented.map((p) => p.category)).toEqual(['care', 'meta']);
+    expect(represented.map((p) => p.category)).toEqual(['category:care', 'category:meta']);
     expect(represented.map((p) => p.cite)).toEqual(['2(a)', '2(b)']);
     for (const p of represented) {
       expect(Object.keys(p).sort()).toEqual([
@@ -212,7 +212,7 @@ describe('the fields a consumer already reads', () => {
     expect(result.exempted).toEqual([]);
     expect(result.excluded).toEqual([]);
     expect(result.overridden).toEqual([]);
-    expect(result.modalities['25a']).toBe('shall');
+    expect(result.modalities['25a']).toBe('modality:shall');
     expect(result.colregs.source).toBe('resolved');
   });
 

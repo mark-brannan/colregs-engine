@@ -23,12 +23,12 @@ import type {
   PredicateValue,
   When,
 } from './generated/applicability.js';
+import type { FactRecord as FixtureFactRecord } from './generated/applicability-fixtures.js';
 
 /** Root type of each colregs data and fixture file. */
 export type {
   ApplicabilityData,
   ApplicabilityFixtures,
-  DeprecatedIdentifiers,
   FactsData,
   GeometryData,
   ImagesData,
@@ -44,7 +44,6 @@ export type {
 export type {
   applicability,
   applicabilityFixtures,
-  deprecatedIdentifiers,
   facts,
   geometry,
   images,
@@ -55,14 +54,11 @@ export type {
 
 export type {
   ConditionalInclude,
-  EntryId,
-  EntryIdList,
   Modality,
   ModalityBy,
+  RuleId,
+  RuleIdList,
 } from './generated/applicability.js';
-
-/** A value a fact record may carry. */
-export type { FactValue } from './generated/applicability-fixtures.js';
 
 /** colregs' fact vocabulary, as types. */
 export type {
@@ -70,6 +66,10 @@ export type {
   FactRecord,
   FactValues,
 } from './generated/fact-record.js';
+
+/** A value a fact record may carry — including a derived key outside
+ * `data/facts.json`'s own vocabulary, such as `fact:rule18_class`. */
+export type FactValue = FixtureFactRecord[string];
 
 /** One entry of data/applicability.json: predicate -> lights, with modality. */
 export type Entry = ApplicabilityData['entries'][number];
