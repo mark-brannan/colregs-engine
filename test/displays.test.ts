@@ -363,7 +363,6 @@ describe('rel:overrides', () => {
   it('an obligation overriding two targets displaces both', () => {
     const data = cloneData();
     const e = findEntry(data, 'rule:26c_i');
-    delete e['rel:excludes'];
     e['rel:overrides'] = ['rule:30a', 'rule:30b'];
     const result = evaluateDisplay(anchoredFishing(30), { data });
     expect(result.displays).toHaveLength(1);
@@ -382,7 +381,6 @@ describe('rel:overrides', () => {
   it('a target that is not itself applied is not reported overridden', () => {
     const data = cloneData();
     const e = findEntry(data, 'rule:26c_i');
-    delete e['rel:excludes'];
     e['rel:overrides'] = ['rule:30a', 'rule:30b'];
     // 30(b) requires length < 50 m; at 60 m it never applies, so it can't
     // be displaced.
@@ -394,7 +392,6 @@ describe('rel:overrides', () => {
   it('a may overrider is inert', () => {
     const data = cloneData();
     const e = findEntry(data, 'rule:26c_i');
-    delete e['rel:excludes'];
     e['rel:overrides'] = ['rule:30a', 'rule:30b'];
     e.modality = 'modality:may';
     const result = evaluateDisplay(anchoredFishing(30), { data });
@@ -407,7 +404,6 @@ describe('rel:overrides', () => {
   it('a displaced entry leaves composition and its own overrides do not fire', () => {
     const data = cloneData();
     const e26c = findEntry(data, 'rule:26c_i');
-    delete e26c['rel:excludes'];
     e26c['rel:overrides'] = ['rule:30a'];
     findEntry(data, 'rule:30a')['rel:overrides'] = ['rule:30c'];
     const result = evaluateDisplay(anchoredFishing(30), { data });
@@ -418,7 +414,6 @@ describe('rel:overrides', () => {
   it('an already-exempted target is not double-reported as overridden', () => {
     const data = cloneData();
     const e = findEntry(data, 'rule:26c_i');
-    delete e['rel:excludes'];
     e['rel:overrides'] = ['rule:30a', 'rule:30b'];
     const facts = anchoredFishing(6, { 'fact:near_channel': false });
     const result = evaluateDisplay(facts, { data });
@@ -434,7 +429,6 @@ describe('rel:overrides', () => {
     // exempted-away by a source that never fired.
     const e30e = findEntry(data, 'rule:30e');
     const overrider = findEntry(data, 'rule:26c_i');
-    delete overrider['rel:excludes'];
     overrider['rel:overrides'] = [e30e.id];
     const facts = anchoredFishing(6, { 'fact:near_channel': false });
     const result = evaluateDisplay(facts, { data });
@@ -443,6 +437,69 @@ describe('rel:overrides', () => {
     const allEntries = result.displays.flatMap((d) => d.entries);
     expect(allEntries).toContain('rule:30a');
     expect(allEntries).toContain('rule:30b');
+  });
+});
+
+// colregs ADR 0019: what a relation reaches, and what an import reads.
+// Synthetic tables again, so the two deleted engine paths stay deleted
+// whatever the real data happens to carry.
+describe('relation reach and import reads (colregs ADR 0019)', () => {
+  function cloneData(): ApplicabilityData {
+    return structuredClone(applicability);
+  }
+
+  function findEntry(data: ApplicabilityData, id: string): Entry {
+    const e = data.entries.find((x) => x.id === id);
+    if (!e) throw new Error(`fixture entry ${id} not found`);
+    return e;
+  }
+
+  function mineClearanceUnderway(length_m: number): FactRecord {
+    return {
+      'fact:propulsion': 'propulsion:power',
+      'fact:activity': 'activity:mine',
+      'fact:position': 'position:underway',
+      'fact:length_m': length_m,
+    };
+  }
+
+  // 27(f) rewritten to plainly include 30(b), whose predicate is an axis
+  // (position:anchored) and a scalar gate (length < 50 m). The vessel is
+  // underway: the axis is satisfied by the redirect, the scalar binds.
+  function with27fIncluding30b(): ApplicabilityData {
+    const data = cloneData();
+    const e = findEntry(data, 'rule:27f');
+    delete e['rel:conditional_includes'];
+    e['rel:includes'] = ['rule:30b'];
+    return data;
+  }
+
+  it("an import whose source carries a scalar gate the vessel fails imports nothing", () => {
+    const result = evaluateDisplay(mineClearanceUnderway(60), { data: with27fIncluding30b() });
+    expect(result.applied).toContain('rule:27f');
+    expect(result.modalities).not.toHaveProperty('rule:30b');
+    for (const d of result.displays) expect(d.entries).not.toContain('rule:30b');
+    expect(result.optional_additions.map((a) => a.id)).not.toContain('rule:30b');
+  });
+
+  it("an import never reads its source's axes: the same include imports at 30 m", () => {
+    const result = evaluateDisplay(mineClearanceUnderway(30), { data: with27fIncluding30b() });
+    expect(result.modalities['rule:30b']).toBe('modality:may');
+    expect(result.optional_additions.map((a) => a.id)).toContain('rule:30b');
+  });
+
+  it('a forceful excluder removes nothing: its target stays a lawful alternative', () => {
+    const data = cloneData();
+    // 25(a) is `shall`; under the deleted modality-inferred path its
+    // rel:excludes would have struck 25(b) from the entries in force.
+    findEntry(data, 'rule:25a')['rel:excludes'] = ['rule:25b'];
+    findEntry(data, 'rule:25b')['rel:excludes'] = ['rule:25a'];
+    const result = evaluateDisplay(sloop12, { data });
+    expect(result.excluded).toEqual([]);
+    const sets = result.displays
+      .map((d) => d.entries)
+      .sort((a, b) => a.join().localeCompare(b.join()));
+    expect(sets).toEqual([['rule:25a'], ['rule:25a', 'rule:25c'], ['rule:25b']]);
   });
 });
 

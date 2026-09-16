@@ -157,7 +157,9 @@ export interface DisplayEvaluation {
   applied: string[];
   /** Applied entries relieved by a rel:exempts entry, with the exempting id. */
   exempted: { id: string; by: string }[];
-  /** Applied entries suppressed by a required entry's rel:excludes. */
+  /** Always empty since colregs ADR 0019: `rel:excludes` is a co-occurrence
+   * check between displays and removes nothing. Kept because colregs'
+   * display-evaluation.schema.json still requires the field. */
   excluded: { id: string; by: string }[];
   /** Applied entries displaced by another applied obligation's
    * rel:overrides, with the overriding id — mirrors the same-named field

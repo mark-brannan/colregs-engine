@@ -29,52 +29,19 @@ Each composition decision below is tested in `test/displays.test.ts`.
    is removed from every display and reported as exempted. Exempts
    relieve; they don't forbid.
 
-2. **A superior rule displaces the lights of the rule it overrides, and
-   the displacement is recorded with its source.** `rel:overrides` is
-   directional (X overrides Y, not the reverse) and fires only from an
-   obligation — an applied entry resolving `shall` or
-   `shall-if-practicable`, un-exempted and itself un-overridden; a `may`
-   overrider is inert. It reaches only other applied entries, never a
-   one_of import option or a `rel:includes` import, since neither is
-   applied. The displaced entry leaves composition entirely and is
-   reported in `overridden` with the overriding id; a displaced entry's
-   own `rel:excludes`/`rel:overrides` then don't fire either, so a chain
-   stops at the first displacement. `rel:excludes` between two
-   alternatives (25(b) vs 25(c)) stays a co-occurrence constraint between
-   displays, not a removal.
+Items 2–5 are colregs' readings now, ruled in
+[ADR 0019](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0019-relation-reach-and-import-reads.md);
+each line below names the point that owns it.
 
-3. **Genuine alternatives split into separate displays, one per lawful
-   choice.** An applied entry whose `rel:in_lieu_of` references applied
-   entries is a choice: in a display it replaces its references; out of
-   it, they stand. Two chosen alternatives with overlapping replacement
-   targets are alternatives to each other and never co-occur. This
-   yields exactly the three displays for the 12 m sloop
-   (25(a) | 25(b) | 25(a)+25(c)).
-
-4. **When one rule borrows lights from another, the borrowed lights keep
-   their original strictness, and borrowing skips lights that contradict
-   the vessel's situation.** An import's carrier gates only its own
-   lights: Rule 28's three reds are `may`, but the Rule 23 lights it
-   imports stay `shall` (the data's own note). An import whose source
-   entry names a contradicting `fact:position` is skipped — 27(f)'s
-   include of the Rule 23 running lights reads "as appropriate" in the
-   rule text, and a mine-clearance vessel at anchor shows Rule 30 lights,
-   not mastheads.
-
-5. **A "pick one of these" group yields one display per available
-   option, and the union is returned — never a single, arbitrarily
-   picked option.** `one_of` (30(d): anchor lights per 30(a) *or* 30(b))
-   produces one display per option that is available for this vessel: a
-   vessel aground below 50 m gets one display with 30(a)'s two lights
-   and one with 30(b)'s single light; at 50 m and above only 30(a) is
-   available, so there is exactly one. The group's carrier can also be
-   `may`, adding a "none chosen" display alongside the options'
-   (25(d)(ii): sailing lights, or failing that the carrier's own torch;
-   choosing an option replaces the carrier's own lights). An option that
-   is itself applied satisfies the group by its own dynamics. A
-   non-applied option is available only if its scalar gates (30(b)'s
-   "less than 50 metres") hold for this vessel; its situation axes are
-   deliberately overridden by the carrier's redirect.
+2. **How far a relation reaches** — ADR 0019 point 1: `rel:overrides`
+   fires from an obligation and reaches entries in force; `rel:excludes`
+   fires from nowhere and is a co-occurrence check between displays.
+3. **Alternatives whose `rel:in_lieu_of` targets intersect never share a
+   display** — ADR 0019 point 4.
+4. **What an import reads** — ADR 0019 point 3: lights, their modality and
+   the source's scalar gates; never its axes.
+5. **What a `one_of` yields** — ADR 0019 point 2: one option per display,
+   or none under a `may` carrier; an option already in force discharges it.
 
 6. **Standalone optional lights are toggles, not extra displays.**
    Relation-free `may` entries are optional additions, not display
