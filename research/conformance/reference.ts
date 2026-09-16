@@ -137,7 +137,7 @@ export function referenceWhenMatches(when: Predicate, facts: FactRecord): boolea
 // that, and this independent reading has to as well or every record is a
 // manufactured conformance mismatch rather than a real one.
 function isDisplay(e: Entry): boolean {
-  return (e.category ?? 'display') === 'display';
+  return (e.category ?? 'category:display') === 'category:display';
 }
 
 /** Ids of the entries whose `when` holds for this fact record — the
@@ -152,11 +152,11 @@ export function referenceAppliedEntries(data: ApplicabilityData, facts: FactReco
 /** Resolved modality for one entry: first matching modality_by branch,
  * else the entry's own modality. */
 export function referenceResolveModality(entry: Entry, facts: FactRecord): Modality {
-  if (entry.modality !== 'conditional') return entry.modality;
+  if (entry.modality !== 'modality:conditional') return entry.modality;
   for (const branch of entry.modality_by ?? []) {
     if (referenceWhenMatches(branch.when, facts)) return branch.modality;
   }
-  return 'conditional';
+  return 'modality:conditional';
 }
 
 /** Resolved modality for every applied entry in a record, keyed by id. */

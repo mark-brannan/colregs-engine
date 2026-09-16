@@ -44,8 +44,8 @@ describe('extractAxes: a modifier axis refining a non-enum target', () => {
           {
             id: 'synthetic-racing',
             cite: 'test fixture',
-            category: 'display',
-            modality: 'shall',
+            category: 'category:display',
+            modality: 'modality:shall',
             when: { 'fact:racing': true },
           },
         ],
@@ -69,8 +69,8 @@ describe('buildEncoding: the modifier-refinement Z3 implication assert', () => {
         {
           id: 'synthetic-underway',
           cite: 'test fixture',
-          category: 'display',
-          modality: 'shall',
+          category: 'category:display',
+          modality: 'modality:shall',
           when: {
             'fact:making_way': true,
             'fact:position': 'position:underway',

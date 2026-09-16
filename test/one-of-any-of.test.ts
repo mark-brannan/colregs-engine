@@ -21,7 +21,7 @@ function carrierWithOneOf(): Entry {
     cite: 'test carrier',
     when: {},
     lights: [],
-    modality: 'shall',
+    modality: 'modality:shall',
     'rel:conditional_includes': [{ one_of: ['powerOrSailOpt', 'oarsOpt'] }],
   };
 }
@@ -35,7 +35,7 @@ const powerOrSailOpt: Entry = {
   cite: 'test power-or-sail',
   when: { any_of: [{ 'fact:propulsion': 'propulsion:power' }, { 'fact:propulsion': 'propulsion:sail' }] },
   lights: [{ light: 'test-light-power-or-sail' }],
-  modality: 'shall',
+  modality: 'modality:shall',
 };
 
 const oarsOpt: Entry = {
@@ -44,7 +44,7 @@ const oarsOpt: Entry = {
   cite: 'test oars',
   when: { any_of: [{ 'fact:propulsion': 'propulsion:oars' }] },
   lights: [{ light: 'test-light-oars' }],
-  modality: 'shall',
+  modality: 'modality:shall',
 };
 
 const data: ApplicabilityData = {

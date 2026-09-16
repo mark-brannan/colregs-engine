@@ -7,7 +7,7 @@ import { evaluateRule2Departure } from '../src/index';
 import type { Rule2DepartureModel, Situation } from '../src/index';
 
 const situation: Situation = {
-  own: {
+  self: {
     fact: {
       'fact:propulsion': 'propulsion:power',
       'fact:activity': 'activity:none',

@@ -15,13 +15,13 @@ const baseFacts = {
 
 describe('validateSituation', () => {
   it('accepts a minimal valid situation', () => {
-    const situation: Situation = { own: { fact: { ...baseFacts } } };
+    const situation: Situation = { self: { fact: { ...baseFacts } } };
     expect(() => validateSituation(situation)).not.toThrow();
   });
 
-  it('validates own.fact on the same terms as validateFacts', () => {
+  it('validates self.fact on the same terms as validateFacts', () => {
     const situation = {
-      own: { fact: { propulsion: 'power' } },
+      self: { fact: { propulsion: 'power' } },
     } as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
       /unknown fact key 'propulsion'.*did you mean 'fact:propulsion'/s,
@@ -30,7 +30,7 @@ describe('validateSituation', () => {
 
   it('an un-namespaced kin key throws, naming the key', () => {
     const situation = {
-      own: { fact: { ...baseFacts }, kin: { heading_deg: 90 } },
+      self: { fact: { ...baseFacts }, kin: { heading_deg: 90 } },
     } as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
       /unknown kin key 'heading_deg'; did you mean 'kin:heading_deg'\?/,
@@ -39,7 +39,7 @@ describe('validateSituation', () => {
 
   it('a kin enum value outside its set suggests the namespaced value', () => {
     const situation: Situation = {
-      own: {
+      self: {
         fact: { ...baseFacts },
         kin: { 'kin:dynamics': 'yacht' } as never,
       },
@@ -51,7 +51,7 @@ describe('validateSituation', () => {
 
   it('hist:latched_at_s accepts null', () => {
     const situation: Situation = {
-      own: {
+      self: {
         fact: { ...baseFacts },
         hist: { 'hist:was_overtaking': false, 'hist:latched_at_s': null },
       },
@@ -61,7 +61,7 @@ describe('validateSituation', () => {
 
   it('a non-nullable field rejects null', () => {
     const situation = {
-      own: { fact: { ...baseFacts }, hist: { 'hist:was_overtaking': null } },
+      self: { fact: { ...baseFacts }, hist: { 'hist:was_overtaking': null } },
     } as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
       /hist key 'hist:was_overtaking' does not accept null/,
@@ -70,7 +70,7 @@ describe('validateSituation', () => {
 
   it('validates other and pair, naming the class', () => {
     const situation = {
-      own: { fact: { ...baseFacts } },
+      self: { fact: { ...baseFacts } },
       other: { fact: { ...baseFacts }, geo: { rel_bearing_deg: 10 } },
     } as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
@@ -80,7 +80,7 @@ describe('validateSituation', () => {
 
   it('an unknown pair.env key throws', () => {
     const situation = {
-      own: { fact: { ...baseFacts } },
+      self: { fact: { ...baseFacts } },
       pair: { env: { narrow_channel: true } },
     } as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
@@ -88,23 +88,23 @@ describe('validateSituation', () => {
     );
   });
 
-  it('a missing own throws a named error, not a raw TypeError', () => {
+  it('a missing self throws a named error, not a raw TypeError', () => {
     const situation = {} as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
-      /situation\.own is required and must be an object, got undefined/,
+      /situation\.self is required and must be an object, got undefined/,
     );
   });
 
-  it('a missing own.fact throws a named error, not a raw TypeError', () => {
-    const situation = { own: {} } as unknown as Situation;
+  it('a missing self.fact throws a named error, not a raw TypeError', () => {
+    const situation = { self: {} } as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
-      /situation\.own\.fact is required and must be an object, got undefined/,
+      /situation\.self\.fact is required and must be an object, got undefined/,
     );
   });
 
   it('a missing other.fact throws a named error naming "other"', () => {
     const situation = {
-      own: { fact: { ...baseFacts } },
+      self: { fact: { ...baseFacts } },
       other: {},
     } as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
@@ -114,7 +114,7 @@ describe('validateSituation', () => {
 
   it('a non-object pair is rejected rather than silently skipped', () => {
     const situation = {
-      own: { fact: { ...baseFacts } },
+      self: { fact: { ...baseFacts } },
       pair: 'not an object',
     } as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
@@ -124,7 +124,7 @@ describe('validateSituation', () => {
 
   it('null pair.geo is rejected rather than silently skipped', () => {
     const situation = {
-      own: { fact: { ...baseFacts } },
+      self: { fact: { ...baseFacts } },
       pair: { geo: null },
     } as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
@@ -134,7 +134,7 @@ describe('validateSituation', () => {
 
   it('an array kin container is rejected, not iterated as if it were a record', () => {
     const situation = {
-      own: { fact: { ...baseFacts }, kin: ['kin:heading_deg'] },
+      self: { fact: { ...baseFacts }, kin: ['kin:heading_deg'] },
     } as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
       /Kin record must be an object, got \["kin:heading_deg"\]/,
@@ -143,7 +143,7 @@ describe('validateSituation', () => {
 
   it('kin:position rejects a value missing latitude/longitude', () => {
     const situation = {
-      own: { fact: { ...baseFacts }, kin: { 'kin:position': { lat: 1 } } },
+      self: { fact: { ...baseFacts }, kin: { 'kin:position': { lat: 1 } } },
     } as unknown as Situation;
     expect(() => validateSituation(situation)).toThrow(
       /kin key 'kin:position' expects \{ latitude, longitude \}/,

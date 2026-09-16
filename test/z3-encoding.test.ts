@@ -356,14 +356,19 @@ describe('the encoding against Z3', () => {
       ['rule:30b', { ...base, 'fact:length_m': 20 } as FactRecord], // may
     ];
     const modalities = new Set(cases.map(([id]) => byId.get(id)!.modality));
-    expect([...modalities].sort()).toEqual(['conditional', 'may', 'shall', 'shall-if-practicable']);
+    expect([...modalities].sort()).toEqual([
+      'modality:conditional',
+      'modality:may',
+      'modality:shall',
+      'modality:shall-if-practicable',
+    ]);
 
     await withSolver(async (check) => {
       for (const [id, record] of cases) {
         expect(appliedEntries(data, record), `${id} must apply to its record`).toContain(id);
         const pins = pinRecord(realAxes, record);
         expect(await check([...pins, `(assert ${APPLIES(id)})`])).toBe('sat');
-        const engineSaysShall = resolveModality(byId.get(id) as Entry, record) === 'shall';
+        const engineSaysShall = resolveModality(byId.get(id) as Entry, record) === 'modality:shall';
         expect(
           await check([...pins, `(assert ${SHALL(id)})`]),
           `${id} on ${JSON.stringify(record)}`,
