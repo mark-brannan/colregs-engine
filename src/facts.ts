@@ -138,7 +138,7 @@ export function validateFacts(facts: FactRecord): void {
   checkRecord(facts, SPEC, KEYS, 'fact');
 }
 
-function validateSubject(which: 'own' | 'other', subject: Subject): void {
+function validateSubject(which: 'self' | 'other', subject: Subject): void {
   if (typeof subject !== 'object' || subject === null) {
     throw new Error(
       `situation.${which} is required and must be an object, got ${JSON.stringify(subject)}.`,
@@ -164,12 +164,12 @@ function validateSubject(which: 'own' | 'other', subject: Subject): void {
  * Throws on the same terms as validateFacts(), extended to a situation's
  * `kin`/`geo`/`hist`/`env` classes (ADR 0011 §3): an unknown key or a value
  * outside its accepted set is rejected with a "did you mean" hint, for both
- * subjects and the pair. `own`/`own.fact` are ADR 0011 §3's two required
+ * subjects and the pair. `self`/`self.fact` are ADR 0011 §3's two required
  * fields, so a missing one is named directly rather than surfacing as
  * whatever TypeError reading a property of `undefined` happens to throw.
  */
 export function validateSituation(situation: Situation): void {
-  validateSubject('own', situation.own);
+  validateSubject('self', situation.self);
   if (situation.other !== undefined) validateSubject('other', situation.other);
   if (situation.pair !== undefined) {
     if (typeof situation.pair !== 'object' || situation.pair === null) {

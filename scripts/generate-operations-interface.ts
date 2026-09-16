@@ -42,7 +42,7 @@ const colregsVersion: string = JSON.parse(
  * schema/*.schema.json stem (and, for the companion output, its JSON
  * pointer) -> the TS type this package already exports for that shape.
  * `evaluation.schema.json#/$defs/ruleIds` is every companion's output --
- * colregs' own entry-id list, this package's `EntryId[]`. An operation whose
+ * colregs' own entry-id list, this package's `RuleId[]`. An operation whose
  * input or output names a stem missing here is a hard error: either a new
  * colregs operation this generator has not been taught about, or a genuine
  * drift between the manifest and this package's exports.
@@ -56,7 +56,7 @@ const TYPE_BY_SCHEMA_REF: Record<string, string> = {
   'schema/encounter-evaluation.schema.json': 'EncounterEvaluation',
   'schema/conduct-evaluation.schema.json': 'ConductEvaluation',
   'schema/rule2-departure-finding.schema.json': 'Rule2DepartureFinding',
-  'schema/evaluation.schema.json#/$defs/ruleIds': 'EntryId[]',
+  'schema/evaluation.schema.json#/$defs/ruleIds': 'RuleId[]',
 };
 
 function typeFor(ref: string): string {
@@ -90,7 +90,7 @@ import type {
   ConductEvaluation,
   DisplayEvaluation,
   EncounterEvaluation,
-  EntryId,
+  RuleId,
   FactRecord,
   Rule2DepartureFinding,
   Rule2DepartureModel,

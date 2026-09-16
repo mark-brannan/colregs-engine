@@ -74,8 +74,7 @@ export type {
   TrafficSector,
   TrafficSectorFacts,
 } from './types.js';
-export type { EffectRole } from './generated/applicability.js';
-export type { RuleId as EntryId } from './generated/applicability.js';
+export type { EffectRole, RuleId } from './generated/applicability.js';
 export type { FactRecord } from './generated/fact-record.js';
 export type { Modality } from './generated/applicability.js';
 // colregs' own vocabulary, re-exported here because the envelope's

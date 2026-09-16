@@ -23,6 +23,7 @@ import type {
   PredicateValue,
   When,
 } from './generated/applicability.js';
+import type { FactRecord as FixtureFactRecord } from './generated/applicability-fixtures.js';
 
 /** Root type of each colregs data and fixture file. */
 export type {
@@ -55,17 +56,9 @@ export type {
   ConditionalInclude,
   Modality,
   ModalityBy,
-  RuleId as EntryId,
-  RuleIdList as EntryIdList,
+  RuleId,
+  RuleIdList,
 } from './generated/applicability.js';
-
-/**
- * A value a fact record may carry (`schema/fact-record.schema.json`'s
- * `factValue`). colregs 0.3.1 (ADR 0014) inlines this union at every
- * reference site rather than naming it, so there is no generated type to
- * alias — this mirrors that union by hand.
- */
-export type FactValue = string | number | boolean;
 
 /** colregs' fact vocabulary, as types. */
 export type {
@@ -73,6 +66,10 @@ export type {
   FactRecord,
   FactValues,
 } from './generated/fact-record.js';
+
+/** A value a fact record may carry — including a derived key outside
+ * `data/facts.json`'s own vocabulary, such as `fact:rule18_class`. */
+export type FactValue = FixtureFactRecord[string];
 
 /** One entry of data/applicability.json: predicate -> lights, with modality. */
 export type Entry = ApplicabilityData['entries'][number];

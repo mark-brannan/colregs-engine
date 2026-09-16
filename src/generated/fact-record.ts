@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.1 data/facts.json
+ * Source: colregs@0.3.2 data/facts.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned data disagree.
  */

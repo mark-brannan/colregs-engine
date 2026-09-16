@@ -1,13 +1,13 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.1 schema/conduct-evaluation.schema.json
+ * Source: colregs@0.3.2 schema/conduct-evaluation.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
 
 export type RuleIds = string[];
-export type Subject = 'own' | 'other';
+export type Subject = 'self' | 'other';
 
 /**
  * The result of evaluateConduct: one verdict per applied conduct entry per subject over the window the caller handed over, and the Rule 13(d)/17 phase changes seen (ADR 0012 §3, ADR 0014). Structure only.

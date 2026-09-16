@@ -2,7 +2,7 @@
 // `<subject>:<class>:<key>` predicate namespace colregs' two-subject entries
 // read, with the derived `fact:rule18_class` decoded per subject from
 // facts.json before matching (colregs' `derived` block is the definition).
-// A bare key means `own:`, so every one-subject predicate stays valid.
+// A bare key means `self:`, so every one-subject predicate stays valid.
 
 import factsData from 'colregs/data/facts.json' with { type: 'json' };
 import { predicateMatches } from './evaluate.js';
@@ -65,11 +65,11 @@ function flattenSubject(out: FlatSituation, prefix: string, subject: Subject, ba
   }
 }
 
-/** The flat predicate namespace of `situation`, own's keys also present
+/** The flat predicate namespace of `situation`, self's keys also present
  * bare. Assumes the situation has already passed validateSituation. */
 export function flattenSituation(situation: Situation): FlatSituation {
   const out: FlatSituation = {};
-  flattenSubject(out, 'own', situation.own, true);
+  flattenSubject(out, 'self', situation.self, true);
   if (situation.other) flattenSubject(out, 'other', situation.other, false);
   if (situation.pair) {
     for (const cls of ['geo', 'env'] as const) {

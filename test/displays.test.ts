@@ -56,7 +56,7 @@ describe('lawful display composition', () => {
       'fact:length_m': 49,
     });
     expect(below.optional_additions.map((a) => a.id)).toContain('rule:23a_ii');
-    expect(below.modalities['rule:23a_ii']).toBe('may');
+    expect(below.modalities['rule:23a_ii']).toBe('modality:may');
 
     const above = evaluate(applicability, {
       'fact:propulsion': 'propulsion:power',
@@ -64,7 +64,7 @@ describe('lawful display composition', () => {
       'fact:position': 'position:underway',
       'fact:length_m': 55,
     });
-    expect(above.modalities['rule:23a_ii']).toBe('shall');
+    expect(above.modalities['rule:23a_ii']).toBe('modality:shall');
     for (const d of above.displays) {
       expect(d.entries).toContain('rule:23a_ii');
     }
@@ -167,7 +167,7 @@ describe('lawful display composition', () => {
     expect(e.overridden).toEqual([]);
     for (const d of e.displays) {
       expect(d.entries).toContain('rule:30d_i');
-      expect(d.entries.some((id) => id.startsWith('rule:26'))).toBe(false);
+      expect(d.entries.some((id) => id.startsWith('26'))).toBe(false);
       expect(
         d.entries.includes('rule:30a') !== d.entries.includes('rule:30b'),
       ).toBe(true);
@@ -396,7 +396,7 @@ describe('rel:overrides', () => {
     const e = findEntry(data, 'rule:26c_i');
     delete e['rel:excludes'];
     e['rel:overrides'] = ['rule:30a', 'rule:30b'];
-    e.modality = 'may';
+    e.modality = 'modality:may';
     const result = evaluateDisplay(anchoredFishing(30), { data });
     expect(result.overridden).toEqual([]);
     const allEntries = result.displays.flatMap((d) => d.entries);

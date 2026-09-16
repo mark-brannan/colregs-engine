@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.1 schema/rule2-departure-model.schema.json
+ * Source: colregs@0.3.2 schema/rule2-departure-model.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
@@ -19,7 +19,7 @@ export type Rule2DepartureModelSchema = SolverParameters & {
  * via the `patternProperty` "^fact:[a-z0-9_]+$".
  *
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
- * via the `patternProperty` "^(own|other):(fact|kin|geo|hist):[a-z0-9_]+$".
+ * via the `patternProperty` "^(self|other):(fact|kin|geo|hist):[a-z0-9_]+$".
  *
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
  * via the `patternProperty` "^pair:(geo|env):[a-z0-9_]+$".
@@ -69,7 +69,7 @@ export interface SituationWhen {
    * via the `patternProperty` "^fact:[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
-   * via the `patternProperty` "^(own|other):(fact|kin|geo|hist):[a-z0-9_]+$".
+   * via the `patternProperty` "^(self|other):(fact|kin|geo|hist):[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
    * via the `patternProperty` "^pair:(geo|env):[a-z0-9_]+$".
@@ -78,7 +78,7 @@ export interface SituationWhen {
    * via the `patternProperty` "^fact:[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
-   * via the `patternProperty` "^(own|other):(fact|kin|geo|hist):[a-z0-9_]+$".
+   * via the `patternProperty` "^(self|other):(fact|kin|geo|hist):[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
    * via the `patternProperty` "^pair:(geo|env):[a-z0-9_]+$".
@@ -87,7 +87,7 @@ export interface SituationWhen {
    * via the `patternProperty` "^fact:[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
-   * via the `patternProperty` "^(own|other):(fact|kin|geo|hist):[a-z0-9_]+$".
+   * via the `patternProperty` "^(self|other):(fact|kin|geo|hist):[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
    * via the `patternProperty` "^pair:(geo|env):[a-z0-9_]+$".

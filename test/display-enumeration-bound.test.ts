@@ -28,7 +28,7 @@ function relationalMayPair(i: number): Entry[] {
       cite: `test ${i}a`,
       when: {},
       lights: [],
-      modality: 'may',
+      modality: 'modality:may',
       'rel:excludes': [`peer${i}`],
     },
     {
@@ -37,7 +37,7 @@ function relationalMayPair(i: number): Entry[] {
       cite: `test ${i}b`,
       when: {},
       lights: [],
-      modality: 'may',
+      modality: 'modality:may',
     },
   ];
 }
@@ -50,7 +50,7 @@ function threeOptionGroup(): Entry[] {
       cite: 'test carrier',
       when: {},
       lights: [],
-      modality: 'shall',
+      modality: 'modality:shall',
       'rel:conditional_includes': [{ one_of: ['opt1', 'opt2', 'opt3'] }],
     },
     ...['opt1', 'opt2', 'opt3'].map(
@@ -60,7 +60,7 @@ function threeOptionGroup(): Entry[] {
         cite: `test ${id}`,
         when: {},
         lights: [],
-        modality: 'shall',
+        modality: 'modality:shall',
       }),
     ),
   ];

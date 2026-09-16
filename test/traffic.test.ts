@@ -3,12 +3,12 @@ import { evaluateScene, reduceTraffic } from '../src/index.js';
 import { flattenSituation } from '../src/situation.js';
 import type { Situation } from '../src/types.js';
 
-const own = { fact: {} } as Situation['own'];
+const own = { fact: {} } as Situation['self'];
 
 describe('Situation.traffic', () => {
   it('flattens to traffic:<sector>:<key>', () => {
     const flat = flattenSituation({
-      own,
+      self: own,
       traffic: { ahead: { foreclosed: true }, starboard: { count: 2, nearest_nm: 1.2 } },
     });
     expect(flat['traffic:ahead:foreclosed']).toBe(true);
