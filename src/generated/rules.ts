@@ -1,23 +1,16 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.2.4 schema/rules.schema.json
+ * Source: colregs@0.3.1 schema/rules.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
 
 /**
- * Rule text keyed by paragraph path, verbatim unless withheld under a licence bar. Structure only -- see docs/adr/0006-json-schema-and-identifier-diff.md and docs/adr/0010-text-withheld-jurisdictions.md.
+ * The language-neutral skeleton: paragraph paths, rule numbers, jurisdictions and figures. No text -- the words live in data/text/ corpora (schema/corpus.schema.json); the edition each jurisdiction consolidates is declared in data/editions.json. Structure only -- see docs/adr/0006-json-schema-and-identifier-diff.md, docs/adr/0003-language-as-a-dimension.md and docs/adr/0013-corpus-files-with-editions.md.
  */
-export type RulesData = {
-  source: string;
-  source_url?: string;
-  retrieved?: string;
+export interface RulesData {
   note?: string;
-  gaps?: {
-    path: string;
-    reason: string;
-  }[];
   paragraphs: {
     /**
      * This interface was referenced by `undefined`'s JSON-Schema definition
@@ -26,21 +19,11 @@ export type RulesData = {
     [k: string]: {
       path: string;
       rule: string;
-      rule_title: string;
       jurisdiction: string;
-      text?: string;
-      text_status?: 'verbatim' | 'withheld';
-      withheld_reason?: string;
-      /**
-       * @minItems 1
-       */
-      text_slug?: string[];
-      text_digest?: string;
-      mirrors?: string;
       /**
        * @minItems 1
        */
       images?: string[];
     };
   };
-};
+}
