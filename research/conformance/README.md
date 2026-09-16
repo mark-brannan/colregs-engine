@@ -76,7 +76,9 @@ representatives. That lemma is ladder step 4, proved in
 [`research/rocq/`](../rocq/) (`partition_sound`, generic over any strict
 order; `partition_sound_R` over the reals with `numericRepresentatives`
 transcribed as its scheme, compiled in CI). So for each numeric axis the
-pass is exhaustive over the reals, not only over the partition.
+pass is exhaustive over the reals, not only over the partition, for a
+predicate read as the lemma's `formula` reads it; that `evaluate.ts` reads
+a `when` the same way is step 5, not yet done.
 
 ## The reference evaluator
 

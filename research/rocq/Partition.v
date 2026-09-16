@@ -313,3 +313,6 @@ Example length_m_representatives :
 Proof. unfold Rrepresentatives; simpl; repeat f_equal; lra. Qed.
 
 Print Assumptions partition_sound.
+(* The real instance inherits the standard library's classical reals
+   (sig_forall_dec, functional_extensionality_dep) and nothing else. *)
+Print Assumptions partition_sound_R.
