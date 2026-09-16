@@ -23,6 +23,8 @@ export type { EvaluateOptions } from './evaluate.js';
 export { appliedEncounterEntries, evaluateEncounter } from './encounter.js';
 export { appliedConductEntries, evaluateConduct } from './conduct.js';
 export { evaluateRule2Departure } from './rule2.js';
+export { reduceTraffic } from './traffic.js';
+export { evaluateScene } from './scene.js';
 export { NotImplementedError } from './errors.js';
 export { validateSituation, validateTrace } from './facts.js';
 
@@ -48,6 +50,12 @@ export type {
   Situation,
   Subject,
   Pair,
+  Scene,
+  SceneConflict,
+  SceneEvaluation,
+  TrafficFacts,
+  TrafficSector,
+  TrafficSectorFacts,
 } from './types.js';
 export type { EffectRole, EntryId } from './generated/applicability.js';
 export type { FactRecord } from './generated/fact-record.js';

@@ -217,6 +217,57 @@ export interface Situation {
   own: Subject;
   other?: Subject;
   pair?: Pair;
+  /** Other traffic, reduced to facts about `own`'s options (issue #82,
+   * decisions.md 2026-09-16). Not vessels: `Situation` stays two-vessel,
+   * `evaluateEncounter` reads none of these keys, and `Trace` keeps the same
+   * two vessels throughout. Flattens to `traffic:<sector>:<key>`. Produced
+   * by `reduceTraffic`, or supplied by a caller that has already reduced. */
+  traffic?: TrafficFacts;
+}
+
+/** Sectors around `own`, as the Rules and the grid predicates divide them. */
+export type TrafficSector = 'ahead' | 'starboard' | 'astern' | 'port';
+
+/** One sector's reduced facts. Every field is pencil until `reduceTraffic`
+ * is written; a grid region may predicate on any of them today. */
+export interface TrafficSectorFacts {
+  /** Vessels in the sector, other than `other`. */
+  count?: number;
+  /** Range to the nearest of them, nautical miles. */
+  nearest_nm?: number;
+  /** Whether a helm action into this sector is foreclosed by that traffic —
+   * the NTSB finding on *Fitzgerald*: room to pass ahead of one ship, not
+   * prudent given another. */
+  foreclosed?: boolean;
+}
+
+/** `Situation.traffic`: facts per sector, symmetric with nothing. */
+export type TrafficFacts = Partial<Record<TrafficSector, TrafficSectorFacts>>;
+
+/** The deferred n-vessel input (issue #82 "Deferred"): `own` and every
+ * other vessel. `evaluateScene` evaluates each pair with `evaluateEncounter`
+ * unchanged, reduces the rest to `TrafficFacts`, and reports where pairwise
+ * duties conflict. Pencil throughout. */
+export interface Scene {
+  own: Subject;
+  others: Subject[];
+  pairs?: Pair[];
+}
+
+/** One conflict between duties owed to different vessels: the helm action
+ * one pair asks for is foreclosed by another. */
+export interface SceneConflict {
+  duty: string;
+  /** Index into `Scene.others` of the vessel the duty is owed to. */
+  to: number;
+  /** Indices into `Scene.others` of the vessels foreclosing it. */
+  blocked_by: number[];
+}
+
+export interface SceneEvaluation {
+  pairs: EncounterEvaluation[];
+  traffic: TrafficFacts;
+  conflicts: SceneConflict[];
 }
 
 // ---------------------------------------------------------------------------
