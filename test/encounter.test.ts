@@ -28,29 +28,29 @@ describe('evaluateEncounter', () => {
   it('a crossing: give-way and stand-on, risk grounded in 7(d)(i)', () => {
     const r = evaluateEncounter(fixture('crossing: own power-driven'));
     expect(r.encounter).toBe('crossing');
-    expect(r.scope).toEqual(['4', '11']);
-    expect(r.roles.own).toEqual([{ role: 'give-way', by: '15a-give-way' }]);
-    expect(r.roles.other).toEqual([{ role: 'stand-on', by: '15a-give-way' }]);
-    expect(r.risk_of_collision).toEqual({ asserted: true, by: ['7d1'] });
+    expect(r.scope).toEqual(['rule:4', 'rule:11']);
+    expect(r.roles.own).toEqual([{ role: 'give-way', by: 'rule:15a:keep_out_of_the_way' }]);
+    expect(r.roles.other).toEqual([{ role: 'stand-on', by: 'rule:15a:keep_out_of_the_way' }]);
+    expect(r.risk_of_collision).toEqual({ asserted: true, by: ['rule:7d_i'] });
     expect(r.overridden).toEqual([]);
-    expect(r.applied).toContain('8f3');
-    expect(r.categories['15a-give-way']).toBe('precedence');
-    expect(r.categories['11']).toBe('scope');
+    expect(r.applied).toContain('rule:8f_iii');
+    expect(r.categories['rule:15a:keep_out_of_the_way']).toBe('precedence');
+    expect(r.categories['rule:11']).toBe('scope');
     expect(r.provenance.evaluated_categories).toEqual(['scope', 'classification', 'precedence']);
   });
 
   it('18(f)(i) displaces 18(a)(iv) and takes the sailing vessel\'s stand-on with it', () => {
     const r = evaluateEncounter(fixture('18(f)(i) overrides 18(a)(iv)'));
-    expect(r.applied).toContain('18a4');
-    expect(r.overridden).toEqual([{ id: '18a4', by: '18f1' }]);
-    expect(r.roles.own).toEqual([{ role: 'keep-clear', by: '18f1' }]);
+    expect(r.applied).toContain('rule:18a_iv');
+    expect(r.overridden).toEqual([{ id: 'rule:18a_iv', by: 'rule:18f_i' }]);
+    expect(r.roles.own).toEqual([{ role: 'keep-clear', by: 'rule:18f_i' }]);
     expect(r.roles.other).toEqual([]);
   });
 
   it('a latched overtaking stays an overtaking', () => {
     const r = evaluateEncounter(fixture('13(a) overrides 18(a)(iv)'));
     expect(r.encounter).toBe('overtaking');
-    expect(r.roles.own).toEqual([{ role: 'give-way', by: '13a' }]);
+    expect(r.roles.own).toEqual([{ role: 'give-way', by: 'rule:13a' }]);
   });
 
   it('a stated risk of collision is asserted even when no entry grounds it', () => {
@@ -60,7 +60,7 @@ describe('evaluateEncounter', () => {
 
   it('own alone: Part B Section I applies and nothing else can be said', () => {
     const r = evaluateEncounter({ own: { fact: { ...power } } });
-    expect(r.applied).toEqual(['4']);
+    expect(r.applied).toEqual(['rule:4']);
     expect(r.encounter).toBeUndefined();
     expect(r.roles).toEqual({ own: [], other: [] });
     expect(r.risk_of_collision).toEqual({ asserted: false, by: [] });
@@ -74,8 +74,8 @@ describe('evaluateEncounter', () => {
       },
       pair: { geo: { 'geo:in_sight': true } },
     });
-    expect(r.applied).toContain('18a2');
-    expect(r.modalities['18a2']).toBe('shall');
+    expect(r.applied).toContain('rule:18a_ii');
+    expect(r.modalities['rule:18a_ii']).toBe('shall');
   });
 
   it('a `none` effect confers no role but the entry still applies', () => {
@@ -84,7 +84,7 @@ describe('evaluateEncounter', () => {
       other: { fact: { ...power } },
       pair: { geo: { 'geo:risk_of_collision': true } },
     });
-    expect(r.applied).toContain('8f3');
+    expect(r.applied).toContain('rule:8f_iii');
     expect(r.roles).toEqual({ own: [], other: [] });
   });
 

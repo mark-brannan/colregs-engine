@@ -8,7 +8,7 @@
 // (src/schema.ts). This module re-exports them for internal use and for the
 // tests, which read applicability.json directly.
 
-import type { EffectRole, EntryId, Modality } from './generated/applicability.js';
+import type { EffectRole, Modality, RuleId as EntryId } from './generated/applicability.js';
 import type { LightSpec, RepresentedParagraph, RuleCategory } from './schema.js';
 import type { FactRecord } from './generated/fact-record.js';
 import type {

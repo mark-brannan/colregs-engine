@@ -28,7 +28,6 @@ import type {
 export type {
   ApplicabilityData,
   ApplicabilityFixtures,
-  DeprecatedIdentifiers,
   FactsData,
   GeometryData,
   ImagesData,
@@ -44,7 +43,6 @@ export type {
 export type {
   applicability,
   applicabilityFixtures,
-  deprecatedIdentifiers,
   facts,
   geometry,
   images,
@@ -55,14 +53,19 @@ export type {
 
 export type {
   ConditionalInclude,
-  EntryId,
-  EntryIdList,
   Modality,
   ModalityBy,
+  RuleId as EntryId,
+  RuleIdList as EntryIdList,
 } from './generated/applicability.js';
 
-/** A value a fact record may carry. */
-export type { FactValue } from './generated/applicability-fixtures.js';
+/**
+ * A value a fact record may carry (`schema/fact-record.schema.json`'s
+ * `factValue`). colregs 0.3.1 (ADR 0014) inlines this union at every
+ * reference site rather than naming it, so there is no generated type to
+ * alias — this mirrors that union by hand.
+ */
+export type FactValue = string | number | boolean;
 
 /** colregs' fact vocabulary, as types. */
 export type {
@@ -114,3 +117,7 @@ export type Arc = NonNullable<LightDef['arc']>;
 
 /** One rule paragraph from data/rules.json. */
 export type Paragraph = RulesData['paragraphs'][string];
+
+/** The engine interface colregs owns (ADR 0014, data/operations.json).
+ * `colregs-engine` itself is checked against this in src/index.ts. */
+export type { ColregsEngine } from './generated/colregs-engine.js';

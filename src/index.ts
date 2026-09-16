@@ -10,10 +10,8 @@
 // predicateMatches and resolveModality are not exported: they are predicate
 // internals, not answers, and nothing outside src/evaluate.ts uses them.
 
-export {
-  appliedDisplayEntries,
-  evaluateDisplay,
-} from './evaluate.js';
+import { appliedDisplayEntries, evaluateDisplay } from './evaluate.js';
+export { appliedDisplayEntries, evaluateDisplay };
 export type { EvaluateOptions } from './evaluate.js';
 export { DataVersionMismatchError } from './errors.js';
 
@@ -21,13 +19,31 @@ export { DataVersionMismatchError } from './errors.js';
 // answers an envelope from the data it has, and says in the envelope what it
 // could not decide. NotImplementedError stays exported for consumers that
 // catch it; no verb throws it any more.
-export { appliedEncounterEntries, evaluateEncounter } from './encounter.js';
-export { appliedConductEntries, evaluateConduct } from './conduct.js';
-export { evaluateRule2Departure } from './rule2.js';
+import { appliedEncounterEntries, evaluateEncounter } from './encounter.js';
+export { appliedEncounterEntries, evaluateEncounter };
+import { appliedConductEntries, evaluateConduct } from './conduct.js';
+export { appliedConductEntries, evaluateConduct };
+import { evaluateRule2Departure } from './rule2.js';
+export { evaluateRule2Departure };
 export { reduceTraffic } from './traffic.js';
 export { evaluateScene } from './scene.js';
 export { NotImplementedError } from './errors.js';
 export { validateSituation, validateTrace } from './facts.js';
+
+// The engine interface colregs owns (ADR 0014, data/operations.json):
+// checked here, once, against the exports above, rather than left to a
+// consumer to discover a drift at the call site. `satisfies` verifies
+// structurally and changes no runtime behavior; the object is not exported.
+import type { ColregsEngine } from './generated/colregs-engine.js';
+({
+  evaluateDisplay,
+  appliedDisplayEntries,
+  evaluateEncounter,
+  appliedEncounterEntries,
+  evaluateConduct,
+  appliedConductEntries,
+  evaluateRule2Departure,
+}) satisfies ColregsEngine;
 
 export type {
   ConductEvaluation,
@@ -58,7 +74,8 @@ export type {
   TrafficSector,
   TrafficSectorFacts,
 } from './types.js';
-export type { EffectRole, EntryId } from './generated/applicability.js';
+export type { EffectRole } from './generated/applicability.js';
+export type { RuleId as EntryId } from './generated/applicability.js';
 export type { FactRecord } from './generated/fact-record.js';
 export type { Modality } from './generated/applicability.js';
 // colregs' own vocabulary, re-exported here because the envelope's

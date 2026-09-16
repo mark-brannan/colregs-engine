@@ -1,12 +1,14 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.2.4 schema/applicability.schema.json
+ * Source: colregs@0.3.1 schema/applicability.schema.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
 
-export type EntryId = string;
+export type RuleId = string;
+export type RuleCategory =
+  'definition' | 'standard' | 'scope' | 'display' | 'classification' | 'precedence' | 'conduct' | 'care' | 'meta';
 /**
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
  * via the `patternProperty` "^fact:[a-z0-9_]+$".
@@ -71,7 +73,7 @@ export type ModalityBy = {
 /**
  * @minItems 1
  */
-export type EntryIdList = EntryId[];
+export type RuleIdList = RuleId[];
 
 /**
  * predicate -> lights, per entry, with modality, citation and jurisdiction. Structure only -- see docs/adr/0006-json-schema-and-identifier-diff.md.
@@ -129,27 +131,20 @@ export interface ApplicabilityData {
     why: string;
   }[];
   represented_paragraphs?: {
-    id: EntryId;
+    id: RuleId;
     jurisdiction: string;
     cite: string;
     category: 'care' | 'meta';
     note: string;
   }[];
-  retired_entry_ids?: {
-    note?: string;
-    ids: {
-      [k: string]: string;
-    };
-  };
   /**
    * @minItems 1
    */
   entries: {
-    id: EntryId;
+    id: RuleId;
     jurisdiction: string;
     cite: string;
-    category?:
-      'definition' | 'standard' | 'scope' | 'display' | 'classification' | 'precedence' | 'conduct' | 'care' | 'meta';
+    category?: RuleCategory;
     subjects?: 2;
     when: SituationWhen;
     lights?: LightRef[];
@@ -164,15 +159,15 @@ export interface ApplicabilityData {
     note?: string;
     gap?: string;
     no_gate_note?: string;
-    'rel:includes'?: EntryIdList;
+    'rel:includes'?: RuleIdList;
     /**
      * @minItems 1
      */
     'rel:conditional_includes'?: ConditionalInclude[];
-    'rel:in_lieu_of'?: EntryIdList;
-    'rel:excludes'?: EntryIdList;
-    'rel:exempts'?: EntryIdList;
-    'rel:overrides'?: EntryIdList;
+    'rel:in_lieu_of'?: RuleIdList;
+    'rel:excludes'?: RuleIdList;
+    'rel:exempts'?: RuleIdList;
+    'rel:overrides'?: RuleIdList;
   }[];
 }
 export interface SituationWhen {
@@ -206,10 +201,10 @@ export interface ConditionalInclude {
   /**
    * @minItems 2
    */
-  one_of?: EntryId[];
+  one_of?: RuleId[];
   /**
    * @minItems 1
    */
-  'rel:includes'?: EntryId[];
+  'rel:includes'?: RuleId[];
   cite?: string;
 }

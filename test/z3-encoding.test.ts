@@ -349,11 +349,11 @@ describe('the encoding against Z3', () => {
       'fact:length_m': 6,
     };
     const cases: [string, FactRecord][] = [
-      ['30a', base as FactRecord], // shall
-      ['25d1', { ...base, ...sail } as FactRecord], // shall-if-practicable
-      ['30c', { ...base, 'fact:length_m': 120 } as FactRecord], // conditional, shall branch
-      ['30c', { ...base, 'fact:length_m': 20 } as FactRecord], // conditional, may branch
-      ['30b', { ...base, 'fact:length_m': 20 } as FactRecord], // may
+      ['rule:30a', base as FactRecord], // shall
+      ['rule:25d_i', { ...base, ...sail } as FactRecord], // shall-if-practicable
+      ['rule:30c', { ...base, 'fact:length_m': 120 } as FactRecord], // conditional, shall branch
+      ['rule:30c', { ...base, 'fact:length_m': 20 } as FactRecord], // conditional, may branch
+      ['rule:30b', { ...base, 'fact:length_m': 20 } as FactRecord], // may
     ];
     const modalities = new Set(cases.map(([id]) => byId.get(id)!.modality));
     expect([...modalities].sort()).toEqual(['conditional', 'may', 'shall', 'shall-if-practicable']);
