@@ -91,7 +91,7 @@ export type ModalityBy = {
 export type RuleIdList = RuleId[];
 
 /**
- * predicate -> lights, per entry, with modality, citation and jurisdiction. Structure only -- see docs/adr/0006-json-schema-and-identifier-diff.md.
+ * predicate -> lights and day shapes, per entry, with modality, citation and jurisdiction. Structure only -- see docs/adr/0006-json-schema-and-identifier-diff.md.
  */
 export interface ApplicabilityData {
   conditions?: string;
@@ -169,6 +169,10 @@ export interface ApplicabilityData {
     subjects?: 2;
     when: SituationWhen;
     lights?: LightRef[];
+    /**
+     * @minItems 1
+     */
+    shapes?: ShapeRef[];
     effect?: Effect;
     modality: Modality;
     modality_by?: ModalityBy;
@@ -207,6 +211,14 @@ export interface LightRef {
   intensity?: string;
   arrangement?: 'vertical';
   combined?: boolean;
+  note?: string;
+  modality?: Modality;
+}
+export interface ShapeRef {
+  shape: string;
+  position?: string;
+  count?: number;
+  arrangement?: 'vertical';
   note?: string;
   modality?: Modality;
 }

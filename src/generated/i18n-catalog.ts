@@ -10,7 +10,7 @@
 export type Label = string;
 
 /**
- * Display catalog for one BCP 47 language: UI strings for the closed vocabularies the package emits (lights, modalities, roles, encounters, jurisdictions, closed-list fact values), not legal text -- see docs/adr/0003-language-as-a-dimension.md 'Display catalogs' and REQ-LANG-6.
+ * Display catalog for one BCP 47 language: UI strings for the closed vocabularies the package emits (lights, shapes, modalities, roles, encounters, jurisdictions, closed-list fact values), not legal text -- see docs/adr/0003-language-as-a-dimension.md 'Display catalogs' and REQ-LANG-6.
  */
 export interface I18NCatalogData {
   /**
@@ -37,6 +37,9 @@ export interface I18NCatalogData {
    */
   strings: {
     lights?: {
+      [k: string]: Label;
+    };
+    shapes?: {
       [k: string]: Label;
     };
     modalities?: {

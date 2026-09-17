@@ -45,6 +45,7 @@ const ROOT_NAMES: Record<string, string> = {
   rules: 'RulesData',
   'rule2-departure-finding': 'Rule2DepartureFindingSchema',
   'rule2-departure-model': 'Rule2DepartureModelSchema',
+  shapes: 'ShapesData',
   'situation-fixtures': 'SituationFixtures',
   trace: 'TraceSchema',
   version: 'VersionData',

@@ -18,6 +18,7 @@ export const FACT_SPEC = {
   'fact:position': { kind: 'enum', values: ['position:underway', 'position:anchored', 'position:aground', 'position:moored'] },
   'fact:making_way': { kind: 'boolean', refines: { key: 'fact:position', value: 'position:underway' } },
   'fact:on_mooring_buoy': { kind: 'boolean', refines: { key: 'fact:position', value: 'position:moored' } },
+  'fact:motorsailing': { kind: 'boolean', refines: { key: 'fact:propulsion', value: 'propulsion:power' } },
   'fact:length_m': { kind: 'number' },
   'fact:tow_length_m': { kind: 'number' },
   'fact:max_speed_kn': { kind: 'number' },
@@ -35,6 +36,7 @@ export const FACT_SPEC = {
   'fact:confined_to_channel': { kind: 'boolean' },
   'fact:following_traffic_lane': { kind: 'boolean' },
   'fact:obstruction_side': { kind: 'enum', values: ['obstruction_side:port', 'obstruction_side:starboard'] },
+  'fact:time': { kind: 'enum', values: ['time:day', 'time:night'] },
 } as const;
 
 /** Every fact key colregs defines. */

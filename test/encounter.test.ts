@@ -79,6 +79,9 @@ describe('evaluateEncounter', () => {
       self: { fact: { ...power } },
       other: {
         fact: { ...power, 'fact:activity': 'activity:towing', 'fact:tow_restricts_deviation': true },
+        // Q-58: rule:18a_ii now reads `other:hist:was_overtaking: false`, and an
+        // absent fact fails every constraint, so the history has to be stated.
+        hist: { 'hist:was_overtaking': false },
       },
       pair: { geo: { 'geo:in_sight': true } },
     });

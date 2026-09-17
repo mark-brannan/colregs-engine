@@ -338,6 +338,7 @@ describe('the encoding against Z3', () => {
       'fact:obstruction_exists': false,
       'fact:position': 'position:anchored',
       'fact:propulsion': 'propulsion:power',
+      'fact:time': 'time:night',
       'fact:tow_length_m': 0,
       'fact:wig': false,
       'fact:wig_near_surface': false,
