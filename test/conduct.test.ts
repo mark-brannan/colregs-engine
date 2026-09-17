@@ -91,8 +91,11 @@ describe('evaluateConduct', () => {
 
   it('a latched overtaking vessel is in 13(d) even when the table names her stand-on', () => {
     // A RAM vessel overtaking a 28 m power-driven vessel from dead astern,
-    // holding the 13(d) latch. 18(a)(ii) names her stand-on from own's
-    // frame; Rule 13 applies notwithstanding Rule 18, so her phase is 13(d),
+    // holding the 13(d) latch. 18(a)(ii) fires from own's frame and would
+    // name the RAM vessel stand-on there, but rule:13a fires in the swapped
+    // frame (ADR 0016) and overrides it: the overtaking vessel is give-way,
+    // the overtaken vessel is stand-on. Rule 13 applies notwithstanding Rule
+    // 18, so the overtaking vessel's phase is 13(d) regardless of her role,
     // and altering course inside it is not a 17(a)(ii) transition. Reading
     // the role ahead of the latch dropped the latch for `other`.
     const vessel = (activity: 'activity:none' | 'activity:ram', length: number) => ({
@@ -118,7 +121,7 @@ describe('evaluateConduct', () => {
       pair: { geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300, 'geo:risk_of_collision': true } },
     };
     expect(evaluateEncounter(situation).roles.other).toContainEqual(
-      expect.objectContaining({ role: 'role:stand-on', by: 'rule:18a_ii' }),
+      expect.objectContaining({ role: 'role:give-way', by: 'rule:13a' }),
     );
     const turning = clone(situation);
     turning.other!.kin!['kin:rot_deg_min'] = 5;
@@ -131,10 +134,12 @@ describe('evaluateConduct', () => {
     expect(r.phases.filter((p) => p.subject === 'other')).toEqual([
       { subject: 'other', phase: '13(d)', at_s: 0 },
     ]);
-    // Own is the overtaken vessel (13b-overtaken applies to her) yet phases
-    // 16 by 18a2, because the 18a* entries carry no other-latch gate. Wrong,
-    // pinned so the expectation moves when the data does.
-    expect(r.phases.filter((p) => p.subject === 'self')).toEqual([{ subject: 'self', phase: '16', at_s: 0 }]);
+    // Own is the overtaken vessel: pooled, rule:13a names her stand-on
+    // (ADR 0016), which is 17(a)(i) -- correct, no longer the 18a2 give-way
+    // this case used to pin as a known-wrong answer.
+    expect(r.phases.filter((p) => p.subject === 'self')).toEqual([
+      { subject: 'self', phase: '17(a)(i)', at_s: 0 },
+    ]);
   });
 
   it('a latched vessel out of sight is not in 13(d): Rule 13 is Section II', () => {

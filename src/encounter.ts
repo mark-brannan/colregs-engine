@@ -28,6 +28,15 @@ import type {
   SubjectRole,
 } from './types.js';
 
+/** colregs' entries are written from one seat, so `roles` alone reads a
+ * second, swapped frame (self and other exchanged, `pair`/`traffic`
+ * unchanged) per ADR 0016: an override whose source sits in one vessel's
+ * seat and target in the other's is invisible to a one-seat reader. */
+function swappedSituation(situation: Situation): Situation | undefined {
+  if (!situation.other) return undefined;
+  return { ...situation, self: situation.other, other: situation.self };
+}
+
 /** The categories an encounter reads, in one pass (ADR 0011 §1). */
 export const ENCOUNTER_CATEGORIES: readonly RuleCategory[] = [
   'category:scope',
@@ -70,6 +79,62 @@ function appliedEntries(data: ApplicabilityData, flat: FlatSituation): Entry[] {
   return data.entries.filter(
     (e) => ENCOUNTER_CATEGORIES.includes(entryCategory(e)) && situationMatches(e.when, flat),
   );
+}
+
+function precedenceEntries(data: ApplicabilityData, flat: FlatSituation): Entry[] {
+  return data.entries.filter(
+    (e) => entryCategory(e) === 'category:precedence' && situationMatches(e.when, flat),
+  );
+}
+
+/** ADR 0016: precedence entries pool across the self and swapped frames,
+ * keyed by which actual vessel each fired for; `rel:overrides` resolves over
+ * the pool, and only the survivors' `effect.self`/`effect.other` become
+ * roles. `applied`/`scope`/`encounter`/`modalities`/`categories` stay
+ * self-frame (§4) and are computed elsewhere from `flat` alone. */
+function pooledRoles(
+  data: ApplicabilityData,
+  flat: FlatSituation,
+  situation: Situation,
+): { self: SubjectRole[]; other: SubjectRole[] } {
+  const swapped = swappedSituation(situation);
+  const flatSwap = swapped ? flattenSituation(swapped) : undefined;
+
+  const instances: { entry: Entry; frame: 'self' | 'swap' }[] = [
+    ...precedenceEntries(data, flat).map((entry) => ({ entry, frame: 'self' as const })),
+    ...(flatSwap ? precedenceEntries(data, flatSwap) : []).map((entry) => ({
+      entry,
+      frame: 'swap' as const,
+    })),
+  ];
+
+  const pooledById = new Map<string, Entry>();
+  const pooledModalities: Record<string, Modality> = {};
+  // Swap first, self second, so a rare entry matching both frames at once
+  // (none exist in colregs' own precedence table today) keeps a deterministic,
+  // self-frame-preferred modality rather than depending on array order.
+  for (const inst of instances.filter((i) => i.frame === 'swap')) {
+    pooledById.set(inst.entry.id, inst.entry);
+    pooledModalities[inst.entry.id] = resolveModality(inst.entry, flatSwap as unknown as FactRecord);
+  }
+  for (const inst of instances.filter((i) => i.frame === 'self')) {
+    pooledById.set(inst.entry.id, inst.entry);
+    pooledModalities[inst.entry.id] = resolveModality(inst.entry, flat as unknown as FactRecord);
+  }
+
+  const { overriddenIds } = resolveOverrides([...pooledById.values()], pooledModalities, OBLIGATIONS);
+
+  const roles: { self: SubjectRole[]; other: SubjectRole[] } = { self: [], other: [] };
+  for (const { entry, frame } of instances) {
+    if (overriddenIds.has(entry.id)) continue;
+    const effect = entry.effect as Record<string, unknown> | undefined;
+    const selfEffect = effect?.self as SubjectRole['role'] | undefined;
+    const otherEffect = effect?.other as SubjectRole['role'] | undefined;
+    const [toSelf, toOther] = frame === 'self' ? [selfEffect, otherEffect] : [otherEffect, selfEffect];
+    if (toSelf !== undefined && toSelf !== 'role:none') roles.self.push({ role: toSelf, by: entry.id });
+    if (toOther !== undefined && toOther !== 'role:none') roles.other.push({ role: toOther, by: entry.id });
+  }
+  return roles;
 }
 
 /**
@@ -119,7 +184,6 @@ export function evaluateEncounter(
 
   const scope: RuleId[] = [];
   const riskBy: RuleId[] = [];
-  const roles: { self: SubjectRole[]; other: SubjectRole[] } = { self: [], other: [] };
   let encounter: EncounterEvaluation['encounter'];
 
   for (const e of standing) {
@@ -137,16 +201,12 @@ export function evaluateEncounter(
           }
         }
         break;
-      case 'category:precedence':
-        for (const subject of ['self', 'other'] as const) {
-          const role = effect?.[subject] as SubjectRole['role'] | undefined;
-          if (role !== undefined && role !== 'role:none') roles[subject].push({ role, by: e.id });
-        }
-        break;
       default:
         break;
     }
   }
+
+  const roles = pooledRoles(data, flat, situation);
 
   // Rule 7(a) makes risk a judgement on all available means; a caller who
   // states it has made that judgement, and 7(d)(i) can only add a ground.
