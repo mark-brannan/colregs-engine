@@ -1,7 +1,8 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.2 data/facts.json (situation)
+ * Source: colregs data/facts.json (situation)
+ * Version: declared in package.json, resolved in package-lock.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned data disagree.
  */
