@@ -38,9 +38,15 @@ jobs:
   # rewrite; data findings are printed, not failed. Separate from `test`
   # because it is minutes rather than a second, and a red conformance job
   # should be legible without reading a test log.
+  #
+  # The ceiling is headroom, not a target: the space is 11,860,992 records
+  # since colregs' `fact:time`/`fact:motorsailing` (2.67x the previous
+  # 4,447,872), which took the run from ~7 min to ~20 and straight through a
+  # 20-minute ceiling. Raise it when the space grows again; making the
+  # harness itself faster is #127.
   conformance:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
