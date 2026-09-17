@@ -280,10 +280,35 @@ function shiftInForce(shift: ModalityShift, jurisdiction: string): boolean {
   return shift.jurisdiction === 'intl' || shift.jurisdiction === jurisdiction;
 }
 
-/** `resolveModality`, then every reaching, in-force, `when`-satisfied shift
- * in data order. A modality not among a shift's `map` keys is left alone
+/** Every reaching, in-force, `when`-satisfied shift in data order, applied
+ * to `modality`. A modality not among a shift's `map` keys is left alone
  * (keeps `modality:may`/`modality:exempt` out of it, per colregs-engine#125
- * step 1). */
+ * step 1). `entryId` is the entry the reach test runs against — the same
+ * entry whether `modality` is that entry's own resolved value or one of its
+ * `LightRef`s' per-light override (colregs-engine#125 step 3: "the per-light
+ * modality already exists in the display envelope ... both carry the
+ * shifted value"; claude-review, PR #128). */
+function applyShifts(
+  modality: Modality,
+  entryId: string,
+  facts: FactRecord,
+  jurisdiction: string,
+  shifts: readonly ModalityShift[],
+  byId: ReadonlyMap<string, Entry>,
+): Modality {
+  let m = modality;
+  for (const shift of shifts) {
+    if (!shiftInForce(shift, jurisdiction)) continue;
+    if (!predicateMatches(shift.when, facts)) continue;
+    const mapped = shift.map[m];
+    if (mapped === undefined) continue;
+    if (!shiftReaches(entryId, shift, facts, byId)) continue;
+    m = mapped;
+  }
+  return m;
+}
+
+/** `resolveModality`, then {@link applyShifts}. */
 export function resolveModalityWithShifts(
   entry: Entry,
   entryId: string,
@@ -292,16 +317,7 @@ export function resolveModalityWithShifts(
   shifts: readonly ModalityShift[],
   byId: ReadonlyMap<string, Entry>,
 ): Modality {
-  let modality = resolveModality(entry, facts);
-  for (const shift of shifts) {
-    if (!shiftInForce(shift, jurisdiction)) continue;
-    if (!predicateMatches(shift.when, facts)) continue;
-    const mapped = shift.map[modality];
-    if (mapped === undefined) continue;
-    if (!shiftReaches(entryId, shift, facts, byId)) continue;
-    modality = mapped;
-  }
-  return modality;
+  return applyShifts(resolveModality(entry, facts), entryId, facts, jurisdiction, shifts, byId);
 }
 
 /**
@@ -351,17 +367,34 @@ interface OneOfGroup {
   options: string[]; // node ids
 }
 
-function displayLights(node: Node): DisplayLight[] {
+function displayLights(
+  node: Node,
+  facts: FactRecord,
+  jurisdiction: string,
+  shifts: readonly ModalityShift[],
+  byId: ReadonlyMap<string, Entry>,
+): DisplayLight[] {
   // colregs 0.2.0 made `lights` optional on an entry (conduct-only entries
   // such as precedence/scope carry none); absent is equivalent to the
   // empty array this always effectively was for such entries.
-  return (node.entry.lights ?? []).map((spec) => ({
-    spec,
-    source_entry: node.id,
-    sourceEntry: node.id,
-    via: node.via,
-    modality: (spec.modality as Modality) ?? node.modality,
-  }));
+  return (node.entry.lights ?? []).map((spec) => {
+    // A light's own modality override bypasses node.modality (already
+    // shifted) entirely, so it needs the same shifts applied to it
+    // directly -- otherwise a shift silently misses any entry whose lights
+    // carry a per-light override (claude-review, PR #128).
+    const own = spec.modality as Modality | undefined;
+    const modality =
+      own !== undefined
+        ? applyShifts(own, node.id, facts, jurisdiction, shifts, byId)
+        : node.modality;
+    return {
+      spec,
+      source_entry: node.id,
+      sourceEntry: node.id,
+      via: node.via,
+      modality,
+    };
+  });
 }
 
 // colregs 0.2.0 (REQ-CAT-1) gave every entry a `category`, defaulting to
@@ -796,7 +829,7 @@ export function evaluateDisplay(
     const lights: DisplayLight[] = [];
     for (const n of members.values()) {
       if (carrierLightsDropped.has(n.id)) continue;
-      lights.push(...displayLights(n));
+      lights.push(...displayLights(n, facts, jurisdiction, shifts, byId));
     }
 
     const entryIds = [...members.keys()].sort();
@@ -822,7 +855,7 @@ export function evaluateDisplay(
   const optionalAdditions = additions.map((n) => ({
     id: n.id,
     via: n.via,
-    lights: displayLights(n),
+    lights: displayLights(n, facts, jurisdiction, shifts, byId),
     cite: n.entry.cite,
   }));
 

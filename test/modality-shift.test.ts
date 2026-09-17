@@ -16,9 +16,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   entrySignalKinds,
+  evaluateDisplay,
   resolveModalityWithShifts,
 } from '../src/evaluate';
-import type { Entry, FactRecord, ModalityShift } from '../src/types';
+import type { ApplicabilityData, Entry, FactRecord, ModalityShift } from '../src/types';
 
 // The exact shift:20c record from colregs ADR 0021 / issue #125.
 const shift20c: ModalityShift = {
@@ -205,5 +206,53 @@ describe('resolveModalityWithShifts: the three colregs-engine#125 fixtures', () 
         byId,
       ),
     ).toBe('modality:may');
+  });
+});
+
+describe('a light\'s own modality override', () => {
+  // claude-review, PR #128: displayLights builds a light's displayed
+  // modality as `spec.modality ?? node.modality` -- a LightRef that carries
+  // its own `modality` bypasses the (already-shifted) node.modality
+  // entirely and, unfixed, never saw a shift. Issue #125 step 3 says both
+  // the per-entry and per-light modality "carry the shifted value", so this
+  // goes through evaluateDisplay()'s public API end-to-end (a shift with an
+  // always-true `when`, so it needs no unreleased fact vocabulary).
+  const alwaysShiftsLights: ModalityShift = {
+    id: 'shift:test',
+    jurisdiction: 'intl',
+    cite: 'test',
+    applies_to: 'lights',
+    when: {},
+    map: { 'modality:shall': 'modality:may' },
+  };
+
+  it('shifts too, not just the entry-level default', () => {
+    const data: ApplicabilityData = {
+      entries: [
+        {
+          id: 'rule:per_light',
+          jurisdiction: 'intl',
+          cite: 'test per-light override',
+          when: {},
+          lights: [
+            { light: 'light:masthead' },
+            { light: 'light:sternlight', modality: 'modality:shall' },
+          ],
+          modality: 'modality:shall',
+        },
+      ],
+      modality_shifts: [alwaysShiftsLights],
+    };
+    const result = evaluateDisplay({}, { data });
+    // The shift turns the entry's own modality shall -> may too, so it
+    // lands among optional_additions (unconditional, unlike displays,
+    // which enumerate the may/shall alternatives) -- same place any other
+    // 'may' entry with no alternative relations lands (see displays.test.ts
+    // "second masthead is an optional addition").
+    const lights = result.optional_additions[0].lights;
+    expect(lights.find((l) => l.spec.light === 'light:masthead')?.modality).toBe('modality:may');
+    expect(lights.find((l) => l.spec.light === 'light:sternlight')?.modality).toBe(
+      'modality:may',
+    );
   });
 });
