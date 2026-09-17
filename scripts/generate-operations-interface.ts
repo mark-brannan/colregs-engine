@@ -81,7 +81,7 @@ for (const [verb, op] of Object.entries(operations)) {
 const out = `/**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@${colregsVersion} data/operations.json
+ * Source: colregs data/operations.json (version pinned in package.json)
  * Regenerate with \`npm run generate\`; \`npm run generate:check\` fails the
  * build if this file and the pinned data disagree.
  */

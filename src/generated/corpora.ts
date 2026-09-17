@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@0.3.2 schema/corpora.schema.json
+ * Source: colregs schema/corpora.schema.json (version pinned in package.json)
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
  */
