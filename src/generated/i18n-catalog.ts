@@ -10,7 +10,7 @@
 export type Label = string;
 
 /**
- * Display catalog for one BCP 47 language: UI strings for identifier vocabularies (light names, fact-axis labels, modality labels, image captions), not legal text -- see docs/adr/0003-language-as-a-dimension.md 'Display catalogs'.
+ * Display catalog for one BCP 47 language: UI strings for the closed vocabularies the package emits (lights, modalities, roles, encounters, jurisdictions, closed-list fact values), not legal text -- see docs/adr/0003-language-as-a-dimension.md 'Display catalogs' and REQ-LANG-6.
  */
 export interface I18NCatalogData {
   /**
@@ -33,13 +33,28 @@ export interface I18NCatalogData {
     licence?: string;
   };
   /**
-   * One section per vocabulary. Every section is keyed by the identifier itself, as documented in docs/identifiers.md -- light identifiers (light:) and closed-vocabulary identifiers (modality:, and any of role:/encounter:/category: that gain a catalog section) alike, as stored in data/applicability.json. Values are static strings: no interpolation, no plurals -- the consumer's i18n system owns composition.
+   * One section per vocabulary (REQ-LANG-6, REQ-LANG-9's ruling docs/adr/0017). Every section is keyed by the identifier itself, as documented in docs/identifiers.md -- light, modality, role and encounter identifiers carry a type prefix; jurisdiction and closed-list fact values are keyed by their own bare or fact-prefixed form. Values are static strings: no interpolation, no plurals -- the consumer's i18n system owns composition.
    */
   strings: {
-    light?: {
+    lights?: {
       [k: string]: Label;
     };
-    modality?: {
+    modalities?: {
+      [k: string]: Label;
+    };
+    roles?: {
+      [k: string]: Label;
+    };
+    encounters?: {
+      [k: string]: Label;
+    };
+    jurisdictions?: {
+      [k: string]: Label;
+    };
+    /**
+     * Closed-list fact-value labels only (Tier A): propulsion, activity, position, rule18_class, dynamics, obstruction_side, wind_side. Field names (fact:length_m, geo:tcpa_s, ...) have no closed list behind them and are never catalogued here -- form-label text and unit/number formatting are the consumer's.
+     */
+    facts?: {
       [k: string]: Label;
     };
   };

@@ -17,7 +17,6 @@ export interface DisplayEvaluationSchema {
   colregs: Colregs;
   applied: RuleIds;
   exempted: ByEntryList;
-  excluded: ByEntryList;
   overridden: ByEntryList;
   displays: Display[];
   optional_additions: Items[];

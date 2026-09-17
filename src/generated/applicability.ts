@@ -140,6 +140,12 @@ export interface ApplicabilityData {
     };
     classification_shape?: string;
   };
+  suppressions?: {
+    jurisdiction: string;
+    suppresses: RuleId;
+    cite: string;
+    why: string;
+  }[];
   known_omissions?: {
     cite: string;
     what: string;
