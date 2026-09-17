@@ -2,7 +2,7 @@
 // register — the fixture files carry both the raw facts and this prose so
 // a human triaging a finding doesn't have to decode axis keys.
 
-import type { FactKey, FactRecord } from '../../src/types.js';
+import type { FactKey, FactRecord, Situation } from '../../src/types.js';
 
 function strip(prefixedValue: unknown): string {
   const s = String(prefixedValue);
@@ -66,4 +66,43 @@ export function describeVessel(facts: FactRecord): string {
   let sentence = parts.join(', ');
   if (extras.length > 0) sentence += ` (${extras.join(', ')})`;
   return sentence + '.';
+}
+
+/** Renders a situation as a two-vessel sentence, the Part B counterpart of
+ * describeVessel: what each vessel is, where the other bears, and the pair
+ * facts that decide which entries read the encounter at all. */
+export function describeEncounter(situation: Situation): string {
+  const geo = situation.pair?.geo;
+  const env = situation.pair?.env;
+  const clauses: string[] = [`self is ${describeVessel(situation.self.fact).replace(/\.$/, '')}`];
+  if (situation.other) {
+    clauses.push(`the other is ${describeVessel(situation.other.fact).replace(/\.$/, '')}`);
+  }
+
+  const bearings: string[] = [];
+  for (const [seat, subject] of [
+    ['self', situation.self],
+    ['other', situation.other],
+  ] as const) {
+    const b = subject?.geo?.['geo:rel_bearing_deg'];
+    if (typeof b === 'number') bearings.push(`${b}° on ${seat}'s bow`);
+    if (subject?.geo?.['geo:windward'] === true) bearings.push(`${seat} to windward`);
+    const wind = subject?.kin?.['kin:wind_side'];
+    if (wind) bearings.push(`${seat} with the wind ${strip(wind)}`);
+    if (subject?.hist?.['hist:was_overtaking'] === true) bearings.push(`${seat} was overtaking`);
+  }
+  if (bearings.length > 0) clauses.push(bearings.join(', '));
+
+  const pair: string[] = [];
+  pair.push(geo?.['geo:in_sight'] === true ? 'in sight of one another' : 'not in sight');
+  if (geo?.['geo:risk_of_collision'] === true) pair.push('risk of collision stated');
+  if (typeof geo?.['geo:tcpa_s'] === 'number') pair.push(`tcpa ${geo['geo:tcpa_s']} s`);
+  if (typeof geo?.['geo:bearing_change_deg_min'] === 'number') {
+    pair.push(`bearing changing ${geo['geo:bearing_change_deg_min']}°/min`);
+  }
+  if (env?.['env:narrow_channel'] === true) pair.push('in a narrow channel');
+  if (env?.['env:traffic_lane'] === true) pair.push('in a traffic lane');
+  clauses.push(pair.join(', '));
+
+  return clauses.join('; ') + '.';
 }

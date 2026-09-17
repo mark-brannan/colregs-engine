@@ -4,7 +4,9 @@
 //
 // `npm run conformance` (full run) or `npm run conformance -- --sample=N`
 // (first N records only, for fast PR feedback; the register is not
-// rewritten and staleness is not checked in sample mode).
+// rewritten and staleness is not checked in sample mode). Two phases: the
+// one-subject display space, then the two-subject situation space
+// (part-b.ts). `--part-b` runs only the second.
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -16,12 +18,13 @@ import rulesJson from 'colregs/data/rules.json' with { type: 'json' };
 import triageJson from './findings/triage.json' with { type: 'json' };
 
 import { evaluateDisplay, predicateMatches } from '../../src/evaluate.js';
-import type { ApplicabilityData, Entry, FactRecord, RulesData } from '../../src/types.js';
+import type { ApplicabilityData, Entry, FactRecord, RulesData, Situation } from '../../src/types.js';
 
 import { extractAxes, enumerateRecords, totalRecords, formatAxisTable } from './enumerate.js';
 import { referenceAppliedEntries, referenceResolveModality } from './reference.js';
 import { unresolvedCite } from './traceability.js';
-import { describeVessel } from './prose.js';
+import { describeVessel, describeEncounter } from './prose.js';
+import { runPartB } from './part-b.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FINDINGS_DIR = join(HERE, 'findings');
@@ -49,9 +52,10 @@ function triageFor(f: Pick<Finding, 'check' | 'groupKey'>): { status: TriageStat
   return { status: entry?.status ?? 'candidate', note: entry?.note ?? '' };
 }
 
-// Every entry in the pinned colregs (0.1.2) is a single-subject lights
-// entry; the two-subject Part B steering entries arrive in a later release,
-// and filtering them belongs with the pin move, in the engine and here alike.
+// The pinned colregs carries both halves of the table: single-subject
+// lights entries, read by the display phase below, and the two-subject
+// Part B steering entries, read by part-b.ts. Traceability and the
+// excluding-pairs scan span both.
 const entries: Entry[] = data.entries;
 const byId = new Map<string, Entry>(entries.map((e) => [e.id, e]));
 
@@ -90,10 +94,18 @@ const sampleArg = args.find((a) => a.startsWith('--sample'));
 const sampleSize = sampleArg
   ? Number(sampleArg.includes('=') ? sampleArg.split('=')[1] : args[args.indexOf(sampleArg) + 1])
   : undefined;
+const partBOnly = args.includes('--part-b');
+// Both flags make the pass partial, so neither may own the checked-in
+// register: a partial pass would delete every finding it did not reach.
+const diagnostic = sampleSize !== undefined || partBOnly;
 
 // ---------------------------------------------------------------------
 // Findings
 // ---------------------------------------------------------------------
+/** A finding's representative case: a fact record from the display phase, a
+ * situation from the Part B phase. The register renders whichever it holds. */
+type FindingSample = { facts: FactRecord } | { situation: Situation };
+
 interface Finding {
   id: string;
   check: string;
@@ -101,12 +113,18 @@ interface Finding {
   count: number;
   description: string;
   cites: string[];
-  sampleFacts: FactRecord;
+  sample: FindingSample;
 }
 
 const findingGroups = new Map<string, Finding>();
 
-function record(check: string, groupKey: string, description: string, cites: string[], facts: FactRecord) {
+function recordSample(
+  check: string,
+  groupKey: string,
+  description: string,
+  cites: string[],
+  sample: FindingSample,
+) {
   const key = `${check}::${groupKey}`;
   const existing = findingGroups.get(key);
   if (existing) {
@@ -120,8 +138,12 @@ function record(check: string, groupKey: string, description: string, cites: str
     count: 1,
     description,
     cites,
-    sampleFacts: facts,
+    sample,
   });
+}
+
+function record(check: string, groupKey: string, description: string, cites: string[], facts: FactRecord) {
+  recordSample(check, groupKey, description, cites, { facts });
 }
 
 // ---------------------------------------------------------------------
@@ -198,6 +220,7 @@ const t0 = Date.now();
 let n = 0;
 
 for (const facts of enumerateRecords(axes)) {
+  if (partBOnly) break;
   if (sampleSize && n >= sampleSize) break;
   n++;
 
@@ -346,12 +369,12 @@ console.log(`unresolved-conditional records: ${unresolvedConditionalCount}`);
 // ---------------------------------------------------------------------
 // Coverage: never-fired entries, dead modality_by branches, dead one_of options
 // ---------------------------------------------------------------------
-const neverFired = displayEntries.filter((e) => !everApplied.has(e.id));
+const neverFired = partBOnly ? [] : displayEntries.filter((e) => !everApplied.has(e.id));
 for (const e of neverFired) {
   record('coverage-entry-never-fires', e.id, `entry ${e.id} never applies across the enumerated fact space`, [e.cite], {});
 }
 
-for (const [id, taken] of modalityByBranchTaken) {
+for (const [id, taken] of partBOnly ? [] : modalityByBranchTaken) {
   const e = byId.get(id)!;
   for (let i = 0; i < (e.modality_by?.length ?? 0); i++) {
     if (!taken.has(i)) {
@@ -372,7 +395,7 @@ for (const e of entries) {
     for (const ref of ci.one_of ?? []) allOneOfOptions.add(ref);
   }
 }
-for (const ref of allOneOfOptions) {
+for (const ref of partBOnly ? [] : allOneOfOptions) {
   if (!oneOfEverChosen.has(ref) && !everApplied.has(ref)) {
     record(
       'coverage-one-of-option-dead',
@@ -426,6 +449,32 @@ for (const c of fixtures.cases) {
 console.log(`fixture replay through reference.ts: ${fixtures.cases.length - fixtureFailures}/${fixtures.cases.length} pass`);
 
 // ---------------------------------------------------------------------
+// Part B: the two-subject situation space
+// ---------------------------------------------------------------------
+const partB = runPartB(
+  data,
+  (check, groupKey, description, cites, situation) =>
+    recordSample(check, groupKey, description, cites, { situation }),
+  sampleSize,
+);
+
+console.log(`\n${partB.axisTable}`);
+console.log(`situation records: ${partB.records} (product bound ${partB.bound})`);
+console.log(
+  `processed ${partB.records} situations in ${(partB.wallMs / 1000).toFixed(1)}s (${(partB.records / (partB.wallMs / 1000)).toFixed(0)} rec/s)`,
+);
+console.log(`applied-set mismatches (engine vs pooled reference): ${partB.appliedMismatches}`);
+console.log(`modality mismatches: ${partB.modalityMismatches}`);
+console.log(`classification mismatches: ${partB.classificationMismatches}`);
+console.log(`risk-of-collision mismatches: ${partB.riskMismatches}`);
+console.log(`role mismatches: ${partB.roleMismatches}`);
+console.log(`both-give-way records: ${partB.bothGiveWay}`);
+console.log(`both-stand-on records: ${partB.bothStandOn}`);
+console.log(`classified-but-unresolved records: ${partB.unresolved}`);
+console.log(`never-fired encounter entries: ${partB.neverFired.join(', ') || '(none)'}`);
+console.log(`harness errors: ${partB.harnessErrors}`);
+
+// ---------------------------------------------------------------------
 // Findings register
 // ---------------------------------------------------------------------
 const sortedFindings = [...findingGroups.values()].sort((a, b) => {
@@ -444,7 +493,7 @@ sortedFindings.forEach((f, i) => {
 // reproduce most findings (FIND-01/02/03 each need 114,048 of the full
 // 5.9M records), so every sampled run would spuriously warn on every
 // existing ruling.
-if (!sampleArg) {
+if (!diagnostic) {
   const liveFindingKeys = new Set(sortedFindings.map((f) => `${f.check}::${f.groupKey}`));
   for (const key of Object.keys(TRIAGE)) {
     if (!liveFindingKeys.has(key)) {
@@ -498,7 +547,7 @@ overwrites.
 
 const newRegister = buildRegister(sortedFindings);
 
-if (!sampleSize) {
+if (!diagnostic) {
   mkdirSync(FINDINGS_DIR, { recursive: true });
   let stale = false;
   if (existsSync(REGISTER_PATH)) {
@@ -512,6 +561,8 @@ if (!sampleSize) {
   for (const f of sortedFindings) {
     const fixturePath = join(FINDINGS_DIR, `${f.id}.json`);
     const t = triageFor(f);
+    const held = 'facts' in f.sample ? f.sample.facts : undefined;
+    const situation = 'situation' in f.sample ? f.sample.situation : undefined;
     const fixtureContent = JSON.stringify(
       {
         id: f.id,
@@ -521,8 +572,9 @@ if (!sampleSize) {
         records: f.count,
         status: t.status,
         note: t.note || undefined,
-        facts: f.sampleFacts,
-        prose: describeVessel(f.sampleFacts),
+        facts: held,
+        situation,
+        prose: held ? describeVessel(held) : describeEncounter(situation as Situation),
       },
       null,
       2,
@@ -557,13 +609,26 @@ if (!sampleSize) {
     console.error(`\nCONFORMANCE FAILED: ${conformanceFailures} records where engine != reference.`);
     process.exit(1);
   }
+  if (partB.harnessErrors > 0) {
+    console.error(`\nHARNESS FAILED: ${partB.harnessErrors} situations the engine would not accept.`);
+    process.exit(1);
+  }
   if (stale) {
     process.exit(1);
   }
 } else {
-  console.log(`\n${sortedFindings.length} distinct findings in this sample run (register not written in --sample mode)`);
+  console.log(
+    `\n${sortedFindings.length} distinct findings in this partial run (the register is only written by a full pass)`,
+  );
+  for (const f of sortedFindings) {
+    console.log(`  ${f.id}  [${f.check}]  n=${f.count}  ${f.description}`);
+  }
   if (conformanceFailures > 0) {
     console.error(`\nCONFORMANCE FAILED: ${conformanceFailures} records where engine != reference.`);
+    process.exit(1);
+  }
+  if (partB.harnessErrors > 0) {
+    console.error(`\nHARNESS FAILED: ${partB.harnessErrors} situations the engine would not accept.`);
     process.exit(1);
   }
 }

@@ -1,0 +1,53 @@
+{
+  "id": "FIND-17",
+  "check": "conformance-encounter-roles",
+  "description": "the engine reads one frame and never sees [\"rule:18b_i\"] fire for the other vessel, so pooling both adds the roles those entries lay and displaces what they override",
+  "cites": [
+    "18(b)(i)"
+  ],
+  "records": 2511,
+  "status": "candidate",
+  "situation": {
+    "self": {
+      "fact": {
+        "fact:activity": "activity:nuc",
+        "fact:wig": false,
+        "fact:wig_near_surface": false,
+        "fact:tow_restricts_deviation": false,
+        "fact:position": "position:underway",
+        "fact:propulsion": "propulsion:power",
+        "fact:length_m": 19
+      },
+      "geo": {
+        "geo:rel_bearing_deg": -1
+      },
+      "hist": {
+        "hist:was_overtaking": false
+      }
+    },
+    "other": {
+      "fact": {
+        "fact:position": "position:underway",
+        "fact:propulsion": "propulsion:sail",
+        "fact:confined_to_channel": true
+      },
+      "geo": {
+        "geo:rel_bearing_deg": 10.25
+      },
+      "hist": {
+        "hist:was_overtaking": false
+      }
+    },
+    "pair": {
+      "geo": {
+        "geo:in_sight": true,
+        "geo:risk_of_collision": true,
+        "geo:tcpa_s": -1
+      },
+      "env": {
+        "env:narrow_channel": true
+      }
+    }
+  },
+  "prose": "self is a 19 m vessel, underway, engaged in nuc; the other is a sailing vessel, underway; -1° on self's bow, 10.25° on other's bow; in sight of one another, risk of collision stated, tcpa -1 s, in a narrow channel."
+}

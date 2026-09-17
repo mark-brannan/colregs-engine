@@ -1,0 +1,57 @@
+{
+  "id": "FIND-15",
+  "check": "conformance-encounter-roles",
+  "description": "the engine reads one frame and never sees [\"rule:18a_iii\"] fire for the other vessel, so pooling both adds the roles those entries lay and displaces what they override",
+  "cites": [
+    "18(a)(iii)"
+  ],
+  "records": 372,
+  "status": "candidate",
+  "situation": {
+    "self": {
+      "fact": {
+        "fact:activity": "activity:fishing",
+        "fact:wig": false,
+        "fact:wig_near_surface": false,
+        "fact:tow_restricts_deviation": false,
+        "fact:position": "position:underway",
+        "fact:propulsion": "propulsion:power"
+      },
+      "geo": {
+        "geo:rel_bearing_deg": -1
+      },
+      "hist": {
+        "hist:was_overtaking": false
+      }
+    },
+    "other": {
+      "fact": {
+        "fact:activity": "activity:cbd",
+        "fact:wig": false,
+        "fact:wig_near_surface": false,
+        "fact:tow_restricts_deviation": false,
+        "fact:position": "position:underway",
+        "fact:propulsion": "propulsion:power",
+        "fact:following_traffic_lane": true
+      },
+      "geo": {
+        "geo:rel_bearing_deg": 10.25
+      },
+      "hist": {
+        "hist:was_overtaking": false
+      }
+    },
+    "pair": {
+      "geo": {
+        "geo:in_sight": true,
+        "geo:risk_of_collision": true,
+        "geo:tcpa_s": -1
+      },
+      "env": {
+        "env:narrow_channel": false,
+        "env:traffic_lane": false
+      }
+    }
+  },
+  "prose": "self is a power-driven vessel, underway, engaged in fishing; the other is a power-driven vessel, underway, engaged in cbd; -1° on self's bow, 10.25° on other's bow; in sight of one another, risk of collision stated, tcpa -1 s."
+}

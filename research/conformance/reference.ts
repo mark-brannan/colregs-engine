@@ -86,8 +86,9 @@ function factValue(facts: FactRecord, key: string): FactValue | undefined {
 }
 
 /** Does the fact value at `key` satisfy one constraint (any shape)? An
- * absent fact never satisfies anything, `not` included. */
-function factSatisfies(facts: FactRecord, key: string, constraint: unknown): boolean {
+ * absent fact never satisfies anything, `not` included. Exported for the
+ * situation enumerator, which asks it about one key at a time. */
+export function factSatisfies(facts: FactRecord, key: string, constraint: unknown): boolean {
   const value = factValue(facts, key);
   if (value === undefined) return false;
 

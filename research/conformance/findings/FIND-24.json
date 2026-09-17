@@ -1,0 +1,60 @@
+{
+  "id": "FIND-24",
+  "check": "consistency-both-give-way",
+  "description": "both vessels are give-way at once: self by rule:15a:keep_out_of_the_way, the other by rule:15a:keep_out_of_the_way, neither overridden",
+  "cites": [
+    "15(a)",
+    "15(a)"
+  ],
+  "records": 414,
+  "status": "candidate",
+  "situation": {
+    "self": {
+      "fact": {
+        "fact:activity": "activity:fishing",
+        "fact:wig": false,
+        "fact:wig_near_surface": false,
+        "fact:tow_restricts_deviation": false,
+        "fact:position": "position:underway",
+        "fact:propulsion": "propulsion:power",
+        "fact:length_m": 19
+      },
+      "geo": {
+        "geo:rel_bearing_deg": 61.875
+      },
+      "hist": {
+        "hist:was_overtaking": false
+      }
+    },
+    "other": {
+      "fact": {
+        "fact:activity": "activity:fishing",
+        "fact:wig": false,
+        "fact:wig_near_surface": false,
+        "fact:tow_restricts_deviation": false,
+        "fact:position": "position:underway",
+        "fact:propulsion": "propulsion:power",
+        "fact:following_traffic_lane": true,
+        "fact:confined_to_channel": true
+      },
+      "geo": {
+        "geo:rel_bearing_deg": 10.25
+      },
+      "hist": {
+        "hist:was_overtaking": false
+      }
+    },
+    "pair": {
+      "geo": {
+        "geo:in_sight": true,
+        "geo:risk_of_collision": true,
+        "geo:tcpa_s": -1
+      },
+      "env": {
+        "env:narrow_channel": true,
+        "env:traffic_lane": true
+      }
+    }
+  },
+  "prose": "self is a 19 m vessel, underway, engaged in fishing; the other is a power-driven vessel, underway, engaged in fishing; 61.875° on self's bow, 10.25° on other's bow; in sight of one another, risk of collision stated, tcpa -1 s, in a narrow channel, in a traffic lane."
+}

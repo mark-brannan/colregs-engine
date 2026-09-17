@@ -1,0 +1,65 @@
+{
+  "id": "FIND-03",
+  "check": "conformance-encounter-roles",
+  "description": "the engine reads one frame and never sees [\"rule:12a_i\",\"rule:18d_i\",\"rule:9c\"] fire for the other vessel, so pooling both adds the roles those entries lay and displaces what they override",
+  "cites": [
+    "12(a)(i)",
+    "18(d)(i)",
+    "9(c)"
+  ],
+  "records": 124,
+  "status": "candidate",
+  "situation": {
+    "self": {
+      "fact": {
+        "fact:activity": "activity:cbd",
+        "fact:wig": false,
+        "fact:wig_near_surface": false,
+        "fact:tow_restricts_deviation": false,
+        "fact:position": "position:underway",
+        "fact:propulsion": "propulsion:sail",
+        "fact:length_m": 19
+      },
+      "kin": {
+        "kin:wind_side": "wind_side:starboard"
+      },
+      "geo": {
+        "geo:rel_bearing_deg": -1
+      },
+      "hist": {
+        "hist:was_overtaking": false
+      }
+    },
+    "other": {
+      "fact": {
+        "fact:activity": "activity:fishing",
+        "fact:wig": false,
+        "fact:wig_near_surface": false,
+        "fact:tow_restricts_deviation": false,
+        "fact:position": "position:underway",
+        "fact:propulsion": "propulsion:sail",
+        "fact:confined_to_channel": true
+      },
+      "kin": {
+        "kin:wind_side": "wind_side:port"
+      },
+      "geo": {
+        "geo:rel_bearing_deg": 10.25
+      },
+      "hist": {
+        "hist:was_overtaking": false
+      }
+    },
+    "pair": {
+      "geo": {
+        "geo:in_sight": true,
+        "geo:risk_of_collision": true,
+        "geo:tcpa_s": -1
+      },
+      "env": {
+        "env:narrow_channel": true
+      }
+    }
+  },
+  "prose": "self is a 19 m vessel, underway, engaged in cbd; the other is a sailing vessel, underway, engaged in fishing; -1° on self's bow, self with the wind starboard, 10.25° on other's bow, other with the wind port; in sight of one another, risk of collision stated, tcpa -1 s, in a narrow channel."
+}

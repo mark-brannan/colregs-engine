@@ -108,7 +108,10 @@ function walkWhen(when: Predicate, visit: (key: string, constraint: unknown) => 
   }
 }
 
-function numericRepresentatives(constants: number[]): number[] {
+/** 2k+1 representatives for k constants: each constant, one point in each
+ * open interval, and one outside each end. The situation enumerator reads
+ * the same rule. */
+export function numericRepresentatives(constants: number[]): number[] {
   const sorted = [...new Set(constants)].sort((a, b) => a - b);
   const reps: number[] = [];
   // below the first constant
