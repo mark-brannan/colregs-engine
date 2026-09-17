@@ -142,9 +142,14 @@ describe('provenance', () => {
 
   it('carries the represented paragraphs, identity only, never the prose', () => {
     const { represented } = evaluateDisplay(sloop12).provenance;
-    expect(represented.map((p) => p.id)).toEqual(['rule:2a', 'rule:2b']);
-    expect(represented.map((p) => p.category)).toEqual(['category:care', 'category:meta']);
-    expect(represented.map((p) => p.cite)).toEqual(['2(a)', '2(b)']);
+    expect(represented.map((p) => p.id)).toEqual(['rule:2a', 'rule:2b', 'rule:20b', 'rule:20c']);
+    expect(represented.map((p) => p.category)).toEqual([
+      'category:care',
+      'category:meta',
+      'category:scope',
+      'category:scope',
+    ]);
+    expect(represented.map((p) => p.cite)).toEqual(['2(a)', '2(b)', '20(b)', '20(c)']);
     for (const p of represented) {
       expect(Object.keys(p).sort()).toEqual([
         'category',
