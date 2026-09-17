@@ -1,12 +1,26 @@
 // Conformance / consistency / coverage / traceability harness (issue #6
 // ladder step 1-3, issue #1 Phase 0). One streaming pass over the
-// partitioned fact space — see enumerate.ts for how it's built.
+// partitioned fact space -- see enumerate.ts for how it's built, walk.ts
+// for the per-record checks -- split across processes, then reduced.
 //
-// `npm run conformance` (full run) or `npm run conformance -- --sample=N`
-// (first N records only, for fast PR feedback; the register is not
-// rewritten and staleness is not checked in sample mode).
+//   npm run conformance                       whole space, one process per core
+//   npm run conformance -- --jobs=4           whole space, four processes
+//   npm run conformance -- --sample=N         first N records per jurisdiction,
+//                                             in-process; register untouched
+//   npm run conformance -- --shard=i/N --out=f.json
+//                                             walk shard i of N (across --jobs
+//                                             child processes) and write the
+//                                             tally to f; no register
+//   npm run conformance -- --merge a.json b.json ...
+//                                             reduce shard tallies: coverage,
+//                                             traceability, fixtures, register
+//
+// CI runs the last two: a matrix of --shard jobs, then one --merge. The
+// default local run is the same pipeline in one command.
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync, mkdtempSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { availableParallelism, tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -15,15 +29,27 @@ import fixturesJson from 'colregs/fixtures/applicability-fixtures.json' with { t
 import rulesJson from 'colregs/data/rules.json' with { type: 'json' };
 import triageJson from './findings/triage.json' with { type: 'json' };
 
-import { evaluateDisplay, predicateMatches } from '../../src/evaluate.js';
-import type { ApplicabilityData, Entry, FactRecord, RulesData } from '../../src/types.js';
+import type { ApplicabilityData, FactRecord, RulesData } from '../../src/types.js';
 
-import { extractAxes, enumerateRecords, totalRecords, formatAxisTable } from './enumerate.js';
-import { referenceAppliedEntries, referenceResolveModality } from './reference.js';
+import { extractAxes, totalRecords, formatAxisTable, type Shard } from './enumerate.js';
+import { referenceAppliedEntries } from './reference.js';
 import { unresolvedCite } from './traceability.js';
 import { describeVessel } from './prose.js';
+import {
+  byId,
+  displayEntries,
+  entries,
+  findingKey,
+  jurisdictions,
+  mergeTallies,
+  recordFinding,
+  walkShard,
+  type FindingGroup,
+  type Tally,
+} from './walk.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+const SELF = fileURLToPath(import.meta.url);
 const FINDINGS_DIR = join(HERE, 'findings');
 const REGISTER_PATH = join(FINDINGS_DIR, 'README.md');
 
@@ -44,85 +70,40 @@ interface TriageEntry {
 }
 const TRIAGE = triageJson as unknown as Record<string, TriageEntry>;
 
-function triageFor(f: Pick<Finding, 'check' | 'groupKey'>): { status: TriageStatus; note: string } {
-  const entry = TRIAGE[`${f.check}::${f.groupKey}`];
+function triageFor(f: Pick<FindingGroup, 'check' | 'groupKey'>): { status: TriageStatus; note: string } {
+  const entry = TRIAGE[findingKey(f)];
   return { status: entry?.status ?? 'candidate', note: entry?.note ?? '' };
-}
-
-// Every entry in the pinned colregs (0.1.2) is a single-subject lights
-// entry; the two-subject Part B steering entries arrive in a later release,
-// and filtering them belongs with the pin move, in the engine and here alike.
-const entries: Entry[] = data.entries;
-const byId = new Map<string, Entry>(entries.map((e) => [e.id, e]));
-
-// colregs 0.2.0 (REQ-CAT-1) added two-subject scope/precedence/etc. entries
-// that read a situation, not a fact record -- src/evaluate.ts's `applied`
-// never contains them (isDisplay filter there and in reference.ts), so any
-// coverage bookkeeping keyed off "was this ever in an applied set" has to
-// look at the same subset here, or every one of them reports as
-// never-fired by construction rather than by any real gap in the fact
-// space.
-function isDisplay(e: Entry): boolean {
-  return (e.category ?? 'category:display') === 'category:display';
-}
-const displayEntries = entries.filter(isDisplay);
-
-/** Ordered pairs of entries where one `rel:excludes` the other. The
- * consistency (i) check only has to look at these, not at every pair of
- * applied `shall` entries — 5.9M records times a quadratic scan is the
- * difference between a three-minute run and an hour-long one. */
-const excludingPairs: [string, string][] = [];
-for (let i = 0; i < entries.length; i++) {
-  for (let j = i + 1; j < entries.length; j++) {
-    const a = entries[i];
-    const b = entries[j];
-    if ((a['rel:excludes'] ?? []).includes(b.id) || (b['rel:excludes'] ?? []).includes(a.id)) {
-      excludingPairs.push([a.id, b.id]);
-    }
-  }
 }
 
 // ---------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------
 const args = process.argv.slice(2);
-const sampleArg = args.find((a) => a.startsWith('--sample'));
-const sampleSize = sampleArg
-  ? Number(sampleArg.includes('=') ? sampleArg.split('=')[1] : args[args.indexOf(sampleArg) + 1])
-  : undefined;
 
-// ---------------------------------------------------------------------
-// Findings
-// ---------------------------------------------------------------------
-interface Finding {
-  id: string;
-  check: string;
-  groupKey: string;
-  count: number;
-  description: string;
-  cites: string[];
-  sampleFacts: FactRecord;
+function flag(name: string): string | undefined {
+  const i = args.findIndex((a) => a === `--${name}` || a.startsWith(`--${name}=`));
+  if (i < 0) return undefined;
+  return args[i].includes('=') ? args[i].split('=').slice(1).join('=') : args[i + 1];
 }
 
-const findingGroups = new Map<string, Finding>();
+const sampleArg = flag('sample');
+const sampleSize = sampleArg === undefined ? undefined : Number(sampleArg);
+const shardArg = flag('shard');
+const outArg = flag('out');
+const jobsArg = flag('jobs');
+const mergeIdx = args.indexOf('--merge');
+const mergeFiles = mergeIdx >= 0 ? args.slice(mergeIdx + 1).filter((a) => !a.startsWith('--')) : undefined;
 
-function record(check: string, groupKey: string, description: string, cites: string[], facts: FactRecord) {
-  const key = `${check}::${groupKey}`;
-  const existing = findingGroups.get(key);
-  if (existing) {
-    existing.count++;
-    return;
-  }
-  findingGroups.set(key, {
-    id: '', // assigned after sort, once collection is done
-    check,
-    groupKey,
-    count: 1,
-    description,
-    cites,
-    sampleFacts: facts,
-  });
+function parseShard(s: string | undefined): Shard {
+  if (s === undefined) return { index: 0, of: 1 };
+  const m = /^(\d+)\/(\d+)$/.exec(s);
+  if (!m) throw new Error(`--shard wants i/N, got '${s}'`);
+  return { index: Number(m[1]), of: Number(m[2]) };
 }
+const shard = parseShard(shardArg);
+const jobs = jobsArg !== undefined ? Number(jobsArg) : sampleSize !== undefined ? 1 : availableParallelism();
+if (!Number.isInteger(jobs) || jobs < 1) throw new Error(`--jobs wants a positive integer, got '${jobsArg}'`);
+if (shardArg !== undefined && outArg === undefined) throw new Error('--shard needs --out=<tally.json>');
 
 // ---------------------------------------------------------------------
 // Axis table / enumeration
@@ -133,334 +114,173 @@ if (undeclaredEnumValues.length > 0) {
   process.exitCode = 1;
 }
 
-console.log(formatAxisTable(axes));
-const fullTotal = totalRecords(axes);
-const total = sampleSize ? Math.min(sampleSize, fullTotal) : fullTotal;
-console.log(`total records: ${fullTotal}${sampleSize ? ` (sampling first ${total})` : ''}`);
+if (mergeFiles === undefined) {
+  console.log(formatAxisTable(axes));
+  const fullTotal = totalRecords(axes);
+  console.log(
+    `total records: ${fullTotal} per jurisdiction (${jurisdictions.length} jurisdictions)` +
+      (sampleSize !== undefined ? ` (sampling first ${Math.min(sampleSize, fullTotal)})` : '') +
+      (shardArg !== undefined ? ` (shard ${shard.index}/${shard.of})` : '') +
+      (jobs > 1 ? ` across ${jobs} processes` : ''),
+  );
+}
+
+/** Sub-shard `k` of `jobs` within `shard`: index i+N*k of N*J. Composes,
+ * so a CI shard split over its cores is still a slice of the one space. */
+function subShard(k: number): Shard {
+  return { index: shard.index + shard.of * k, of: shard.of * jobs };
+}
+
+/** Runs this script again as a child for one sub-shard, returning its tally. */
+function walkInChild(sub: Shard, out: string): Promise<Tally> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(
+      process.execPath,
+      [...process.execArgv, SELF, `--shard=${sub.index}/${sub.of}`, `--out=${out}`, '--jobs=1'],
+      { stdio: ['ignore', 'ignore', 'inherit'] },
+    );
+    child.on('error', reject);
+    child.on('exit', (code) => {
+      // A shard exits 1 on a conformance mismatch but still writes its
+      // tally; the reduce below re-raises. Anything else is a crash.
+      if (code !== 0 && code !== 1) return reject(new Error(`shard ${sub.index}/${sub.of} exited ${code}`));
+      if (!existsSync(out)) return reject(new Error(`shard ${sub.index}/${sub.of} wrote no tally`));
+      resolve(JSON.parse(readFileSync(out, 'utf8')) as Tally);
+    });
+  });
+}
+
+async function walk(): Promise<Tally> {
+  if (jobs === 1) return walkShard(axes, { shard, sample: sampleSize });
+  const dir = mkdtempSync(join(tmpdir(), 'conformance-'));
+  const tallies = await Promise.all(
+    Array.from({ length: jobs }, (_, k) => walkInChild(subShard(k), join(dir, `shard-${k}.json`))),
+  );
+  rmSync(dir, { recursive: true, force: true });
+  return mergeTallies(tallies);
+}
+
+function printSummary(t: Tally) {
+  const recordsPerSec = t.n / (t.wallMs / 1000);
+  console.log(`\nprocessed ${t.n} records in ${(t.wallMs / 1000).toFixed(1)}s wall (${recordsPerSec.toFixed(0)} rec/s)`);
+  console.log(`conformance failures (applied-set mismatch): ${t.conformanceFailures}`);
+  console.log(`modality mismatches (same applied set, different modality): ${t.modalityMismatches}`);
+  console.log(`no-obligation records: ${t.noObligationCount}`);
+  console.log(`  by fact:position: ${JSON.stringify(Object.entries(t.noObligationPositions))}`);
+  console.log(`conflicting-shall records: ${t.conflictingObligationCount}`);
+  console.log(`orphan-shall records: ${t.orphanShallCount}`);
+  console.log(`unresolved-conditional records: ${t.unresolvedConditionalCount}`);
+}
 
 // ---------------------------------------------------------------------
-// Coverage bookkeeping
+// After the walk: coverage, traceability, fixture replay, the register.
+// Only sound over the whole space -- a shard or a sample can't say an
+// entry never fires -- so a --shard run stops before this.
 // ---------------------------------------------------------------------
-const everApplied = new Set<string>();
-// entryId -> branchIndex -> taken?
-const modalityByBranchTaken = new Map<string, Set<number>>();
-// carrier entry id -> ref id -> ever chosen
-const oneOfEverChosen = new Set<string>();
-
-for (const e of displayEntries) {
-  if (e.modality === 'modality:conditional' && e.modality_by) {
-    modalityByBranchTaken.set(e.id, new Set());
+function coverageFindings(t: Tally) {
+  const everApplied = new Set(t.everApplied);
+  const neverFired = displayEntries.filter((e) => !everApplied.has(e.id));
+  for (const e of neverFired) {
+    recordFinding(t, 'coverage-entry-never-fires', e.id, `entry ${e.id} never applies across the enumerated fact space`, [e.cite], {}, -1);
   }
-}
-
-function trackModalityByBranch(e: Entry, facts: FactRecord) {
-  if (e.modality !== 'modality:conditional' || !e.modality_by) return;
-  const taken = modalityByBranchTaken.get(e.id)!;
-  if (taken.size === e.modality_by.length) return; // already saturated
-  for (let i = 0; i < e.modality_by.length; i++) {
-    // Reuses the engine's own predicate matcher for coverage bookkeeping
-    // only (not for the conformance verdict itself, which compares
-    // against reference.ts).
-    if (evaluatePredicateForCoverage(e.modality_by[i].when, facts)) {
-      taken.add(i);
-      return;
-    }
-  }
-}
-
-function evaluatePredicateForCoverage(when: Entry['when'], facts: FactRecord): boolean {
-  return predicateMatches(when, facts);
-}
-
-// Positions where zero applied entries is the ruled-correct answer, not a
-// data gap, so consistency-no-obligation stays quiet for them: Rule 3(i)'s
-// made-fast-to-the-shore case ("moored") is prescribed no lights at all.
-// Still tallied in noObligationCount / noObligationPositions below, so the
-// summary line reports them; only the finding is skipped.
-const EXPECTED_EMPTY_POSITIONS = new Set<string>(['position:moored']);
-
-// ---------------------------------------------------------------------
-// Consistency bookkeeping
-// ---------------------------------------------------------------------
-let noObligationCount = 0;
-const noObligationPositions = new Map<string, number>();
-let conflictingObligationCount = 0;
-let orphanShallCount = 0;
-let unresolvedConditionalCount = 0;
-
-let conformanceFailures = 0;
-let modalityMismatches = 0;
-
-// ---------------------------------------------------------------------
-// Main pass
-// ---------------------------------------------------------------------
-// Every jurisdiction the data offers (colregs ADR 0018): each is its own
-// merge patch over `intl`, so an entry's applicability set differs by
-// jurisdiction on the same fact record. Coverage, consistency and the
-// engine/reference conformance check all run once per jurisdiction, or a
-// jurisdiction's own entries (rule:23d, rule:24c:towing_lights, the
-// mooring-buoy pair) would never be exercised at all.
-const jurisdictions = [...new Set(displayEntries.map((e) => e.jurisdiction))];
-
-const t0 = Date.now();
-let n = 0;
-
-for (const jurisdiction of jurisdictions) {
-  let jn = 0;
-  for (const facts of enumerateRecords(axes)) {
-    if (sampleSize && jn >= sampleSize) break;
-    jn++;
-    n++;
-
-    const evalResult = evaluateDisplay(facts, { data, jurisdiction });
-    const engineApplied = evalResult.applied;
-    const refApplied = referenceAppliedEntries(data, facts, jurisdiction);
-
-    const engineSet = new Set(engineApplied);
-    const refSet = new Set(refApplied);
-    const sameSet =
-      engineSet.size === refSet.size && [...engineSet].every((id) => refSet.has(id));
-
-    if (!sameSet) {
-      conformanceFailures++;
-      const missing = refApplied.filter((id) => !engineSet.has(id));
-      const extra = engineApplied.filter((id) => !refSet.has(id));
-      const key = `missing:${missing.sort().join(',')}|extra:${extra.sort().join(',')}`;
-      record(
-        'conformance-applied',
-        key,
-        `engine and reference disagree on applied entries: engine is missing ${JSON.stringify(missing)}, has extra ${JSON.stringify(extra)}`,
-        [...missing, ...extra].map((id) => byId.get(id)?.cite ?? id),
-        facts,
-      );
-    }
-    // Order mismatches are structurally unreachable: both engineApplied and
-    // refApplied are built by filtering data.entries in the same fixed order,
-    // so whenever their sets match, their orders match too. Left uncounted —
-    // see the review thread on PR #14 for the reasoning.
-
-    if (sameSet) {
-      for (const id of engineApplied) {
-        const engineM = evalResult.modalities[id];
-        const refM = referenceResolveModality(byId.get(id)!, facts);
-        if (engineM !== refM) {
-          modalityMismatches++;
-          record(
-            'conformance-modality',
-            `${id}:${engineM}!=${refM}`,
-            `entry ${id} resolves to modality '${engineM}' in the engine but '${refM}' in the reference`,
-            [byId.get(id)?.cite ?? id],
-            facts,
-          );
-        }
-      }
-    }
-
-    // Coverage
-    for (const id of engineApplied) {
-      everApplied.add(id);
-      trackModalityByBranch(byId.get(id)!, facts);
-    }
-    for (const d of evalResult.displays) {
-      for (const id of d.chosen) oneOfEverChosen.add(id);
-    }
-
-    // Consistency
-    if (engineApplied.length === 0) {
-      noObligationCount++;
-      const pos = String(facts['fact:position'] ?? '(absent)');
-      noObligationPositions.set(pos, (noObligationPositions.get(pos) ?? 0) + 1);
-      if (!EXPECTED_EMPTY_POSITIONS.has(pos)) {
-        record(
-          'consistency-no-obligation',
-          pos,
-          `record has zero applied lights entries and so no lawful display, for a vessel with fact:position = ${pos}`,
-          [],
-          facts,
-        );
-      }
-    }
-
-    for (const [aId, bId] of excludingPairs) {
-      if (evalResult.modalities[aId] !== 'modality:shall' || evalResult.modalities[bId] !== 'modality:shall') continue;
-      if (!engineApplied.includes(aId) || !engineApplied.includes(bId)) continue;
-      conflictingObligationCount++;
-      record(
-        'consistency-conflicting-shall',
-        `${aId},${bId}`,
-        `entries ${aId} and ${bId} are both resolved 'shall' and rel:excludes the other: a conflicting obligation`,
-        [byId.get(aId)!.cite, byId.get(bId)!.cite],
-        facts,
-      );
-    }
-
-    const contributingIds = new Set<string>();
-    for (const d of evalResult.displays) {
-      for (const id of d.entries) contributingIds.add(id);
-    }
-    // rel:overrides and rel:exempts already give an applied `shall` entry a
-    // named, relation-based reason for contributing nothing (reported in
-    // `overridden` / `exempted` respectively) -- that is correctly-modeled
-    // displacement, not the orphan shape this check exists to catch. Skipping
-    // them means the FIND-01/02 fix (26(a) moving from rel:excludes to
-    // rel:overrides) won't re-trip this check on the same entry under a new
-    // name, and the 30(e) clear-of-channel exemption (30a/30b exempted, not
-    // overridden) doesn't false-positive here either (review thread on
-    // colregs-engine#41).
-    const displacedIds = new Set<string>([
-      ...evalResult.overridden.map((x) => x.id),
-      ...evalResult.exempted.map((x) => x.id),
-    ]);
-    for (const id of engineApplied) {
-      const m = evalResult.modalities[id];
-      if (m !== 'modality:shall' && m !== 'modality:shall-if-practicable') continue;
-      if (contributingIds.has(id)) continue;
-      if (displacedIds.has(id)) continue;
-      orphanShallCount++;
-      record(
-        'consistency-orphan-shall',
-        id,
-        `entry ${id} is applied and resolved '${m}' but contributes to no display: no own lights, no surviving import, no one_of group it belongs to`,
-        [byId.get(id)?.cite ?? id],
-        facts,
-      );
-    }
-
-    for (const id of engineApplied) {
-      if (evalResult.modalities[id] === 'modality:conditional') {
-        unresolvedConditionalCount++;
-        record(
-          'consistency-unresolved-conditional',
-          id,
-          `entry ${id} is applied and modality: conditional, but no modality_by branch matched this fact record`,
-          [byId.get(id)?.cite ?? id],
-          facts,
+  for (const e of displayEntries) {
+    if (e.modality !== 'modality:conditional' || !e.modality_by) continue;
+    const taken = new Set(t.modalityByBranchTaken[e.id] ?? []);
+    for (let i = 0; i < e.modality_by.length; i++) {
+      if (!taken.has(i)) {
+        recordFinding(
+          t,
+          'coverage-modality-branch-dead',
+          `${e.id}:${i}`,
+          `entry ${e.id}'s modality_by[${i}] (-> ${e.modality_by[i].modality}) is never the first matching branch`,
+          [e.cite],
+          {},
+          -1,
         );
       }
     }
   }
+  const chosen = new Set(t.oneOfEverChosen);
+  const allOneOfOptions = new Set<string>();
+  for (const e of entries) {
+    for (const ci of e['rel:conditional_includes'] ?? []) {
+      for (const ref of ci.one_of ?? []) allOneOfOptions.add(ref);
+    }
+  }
+  for (const ref of allOneOfOptions) {
+    if (!chosen.has(ref) && !everApplied.has(ref)) {
+      recordFinding(
+        t,
+        'coverage-one-of-option-dead',
+        ref,
+        `one_of option ${ref} is never chosen (neither self-applied nor selected via a one_of group) across the enumerated fact space`,
+        [byId.get(ref)?.cite ?? ref],
+        {},
+        -1,
+      );
+    }
+  }
+  console.log(`never-fired entries: ${neverFired.map((e) => e.id).join(', ') || '(none)'}`);
 }
 
-const t1 = Date.now();
-const wallMs = t1 - t0;
-const recordsPerSec = n / (wallMs / 1000);
-
-console.log(`\nprocessed ${n} records in ${(wallMs / 1000).toFixed(1)}s (${recordsPerSec.toFixed(0)} rec/s)`);
-console.log(`conformance failures (applied-set mismatch): ${conformanceFailures}`);
-console.log(`modality mismatches (same applied set, different modality): ${modalityMismatches}`);
-console.log(`no-obligation records: ${noObligationCount}`);
-console.log(`  by fact:position: ${JSON.stringify([...noObligationPositions.entries()])}`);
-console.log(`conflicting-shall records: ${conflictingObligationCount}`);
-console.log(`orphan-shall records: ${orphanShallCount}`);
-console.log(`unresolved-conditional records: ${unresolvedConditionalCount}`);
-
-// ---------------------------------------------------------------------
-// Coverage: never-fired entries, dead modality_by branches, dead one_of options
-// ---------------------------------------------------------------------
-const neverFired = displayEntries.filter((e) => !everApplied.has(e.id));
-for (const e of neverFired) {
-  record('coverage-entry-never-fires', e.id, `entry ${e.id} never applies across the enumerated fact space`, [e.cite], {});
-}
-
-for (const [id, taken] of modalityByBranchTaken) {
-  const e = byId.get(id)!;
-  for (let i = 0; i < (e.modality_by?.length ?? 0); i++) {
-    if (!taken.has(i)) {
-      record(
-        'coverage-modality-branch-dead',
-        `${id}:${i}`,
-        `entry ${id}'s modality_by[${i}] (-> ${e.modality_by![i].modality}) is never the first matching branch`,
+function traceabilityFindings(t: Tally) {
+  const unresolvedCites: { id: string; cite: string; missing: string[] }[] = [];
+  for (const e of entries) {
+    const missing = unresolvedCite(e.cite, rules, e.jurisdiction);
+    if (missing.length > 0) {
+      unresolvedCites.push({ id: e.id, cite: e.cite, missing });
+      recordFinding(
+        t,
+        'traceability-unresolved-cite',
+        e.id,
+        `entry ${e.id}'s cite '${e.cite}' does not resolve to a paragraph in colregs data/rules.json (missing: ${missing.join(', ')})`,
         [e.cite],
         {},
+        -1,
       );
     }
   }
+  console.log(`unresolved cites: ${unresolvedCites.length === 0 ? '(none)' : JSON.stringify(unresolvedCites)}`);
 }
 
-const allOneOfOptions = new Set<string>();
-for (const e of entries) {
-  for (const ci of e['rel:conditional_includes'] ?? []) {
-    for (const ref of ci.one_of ?? []) allOneOfOptions.add(ref);
-  }
-}
-for (const ref of allOneOfOptions) {
-  if (!oneOfEverChosen.has(ref) && !everApplied.has(ref)) {
-    record(
-      'coverage-one-of-option-dead',
-      ref,
-      `one_of option ${ref} is never chosen (neither self-applied nor selected via a one_of group) across the enumerated fact space`,
-      [byId.get(ref)?.cite ?? ref],
-      {},
-    );
-  }
-}
-
-console.log(`never-fired entries: ${neverFired.map((e) => e.id).join(', ') || '(none)'}`);
-
-// ---------------------------------------------------------------------
-// Traceability
-// ---------------------------------------------------------------------
-const unresolvedCites: { id: string; cite: string; missing: string[] }[] = [];
-for (const e of entries) {
-  const missing = unresolvedCite(e.cite, rules, e.jurisdiction);
-  if (missing.length > 0) {
-    unresolvedCites.push({ id: e.id, cite: e.cite, missing });
-    record(
-      'traceability-unresolved-cite',
-      e.id,
-      `entry ${e.id}'s cite '${e.cite}' does not resolve to a paragraph in colregs data/rules.json (missing: ${missing.join(', ')})`,
-      [e.cite],
-      {},
-    );
-  }
-}
-console.log(`unresolved cites: ${unresolvedCites.length === 0 ? '(none)' : JSON.stringify(unresolvedCites)}`);
-
-// ---------------------------------------------------------------------
-// Fixture replay through the reference evaluator
-// ---------------------------------------------------------------------
 interface FixtureCase {
   name: string;
   facts: FactRecord;
   expect: string[];
   jurisdiction?: string;
 }
-const fixtures = fixturesJson as unknown as { jurisdiction: string; cases: FixtureCase[] };
-let fixtureFailures = 0;
-for (const c of fixtures.cases) {
-  const jurisdiction = c.jurisdiction ?? fixtures.jurisdiction;
-  const got = referenceAppliedEntries(data, c.facts, jurisdiction).slice().sort();
-  const want = [...c.expect].sort();
-  if (got.join(',') !== want.join(',')) {
-    fixtureFailures++;
-    console.error(`reference evaluator fixture mismatch: ${c.name}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
+function replayFixtures() {
+  const fixtures = fixturesJson as unknown as { jurisdiction: string; cases: FixtureCase[] };
+  let fixtureFailures = 0;
+  for (const c of fixtures.cases) {
+    const jurisdiction = c.jurisdiction ?? fixtures.jurisdiction;
+    const got = referenceAppliedEntries(data, c.facts, jurisdiction).slice().sort();
+    const want = [...c.expect].sort();
+    if (got.join(',') !== want.join(',')) {
+      fixtureFailures++;
+      console.error(`reference evaluator fixture mismatch: ${c.name}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
+    }
   }
+  console.log(`fixture replay through reference.ts: ${fixtures.cases.length - fixtureFailures}/${fixtures.cases.length} pass`);
 }
-console.log(`fixture replay through reference.ts: ${fixtures.cases.length - fixtureFailures}/${fixtures.cases.length} pass`);
 
-// ---------------------------------------------------------------------
-// Findings register
-// ---------------------------------------------------------------------
-const sortedFindings = [...findingGroups.values()].sort((a, b) => {
-  if (a.check !== b.check) return a.check.localeCompare(b.check);
-  return a.groupKey.localeCompare(b.groupKey);
-});
-sortedFindings.forEach((f, i) => {
-  f.id = `FIND-${String(i + 1).padStart(2, '0')}`;
-});
+type Finding = FindingGroup & { id: string };
+
+function sortAndNumber(t: Tally): Finding[] {
+  const sorted = Object.values(t.findings)
+    .sort((a, b) => (a.check !== b.check ? a.check.localeCompare(b.check) : a.groupKey.localeCompare(b.groupKey)))
+    .map((f, i) => ({ ...f, id: `FIND-${String(i + 1).padStart(2, '0')}` }));
+  return sorted;
+}
 
 // A ruling in triage.json for a (check, groupKey) that no longer matches any
 // finding this run produced means the finding was fixed, renamed, or the
 // harness stopped grouping it that way -- not that the ruling should be
 // silently dropped. Flag it so a human decides whether to retire or move it.
-// Skipped in --sample mode: a partial pass over the fact space won't
-// reproduce most findings (FIND-01/02/03 each need 114,048 of the full
-// 5.9M records), so every sampled run would spuriously warn on every
-// existing ruling.
-if (!sampleArg) {
-  const liveFindingKeys = new Set(sortedFindings.map((f) => `${f.check}::${f.groupKey}`));
+function warnStaleTriage(findings: Finding[]) {
+  const live = new Set(findings.map(findingKey));
   for (const key of Object.keys(TRIAGE)) {
-    if (!liveFindingKeys.has(key)) {
+    if (!live.has(key)) {
       console.error(
         `findings/triage.json has a ruling for '${key}' but no current finding matches it -- confirm whether it landed and retire the entry, or the check/groupKey changed and it needs re-keying.`,
       );
@@ -509,76 +329,97 @@ overwrites.
   return header + rows + '\n';
 }
 
-const newRegister = buildRegister(sortedFindings);
-
-if (!sampleSize) {
+/** Writes the register and fixtures; true if anything on disk changed. */
+function writeRegister(findings: Finding[]): boolean {
   mkdirSync(FINDINGS_DIR, { recursive: true });
   let stale = false;
-  if (existsSync(REGISTER_PATH)) {
-    const current = readFileSync(REGISTER_PATH, 'utf8');
-    if (current !== newRegister) stale = true;
-  } else {
-    stale = true;
-  }
-
+  const newRegister = buildRegister(findings);
+  if (!existsSync(REGISTER_PATH) || readFileSync(REGISTER_PATH, 'utf8') !== newRegister) stale = true;
   writeFileSync(REGISTER_PATH, newRegister);
-  for (const f of sortedFindings) {
+  for (const f of findings) {
     const fixturePath = join(FINDINGS_DIR, `${f.id}.json`);
     const t = triageFor(f);
-    const fixtureContent = JSON.stringify(
-      {
-        id: f.id,
-        check: f.check,
-        description: f.description,
-        cites: f.cites,
-        records: f.count,
-        status: t.status,
-        note: t.note || undefined,
-        facts: f.sampleFacts,
-        prose: describeVessel(f.sampleFacts),
-      },
-      null,
-      2,
-    ) + '\n';
-    if (!existsSync(fixturePath) || readFileSync(fixturePath, 'utf8') !== fixtureContent) {
-      stale = true;
-    }
+    const fixtureContent =
+      JSON.stringify(
+        {
+          id: f.id,
+          check: f.check,
+          description: f.description,
+          cites: f.cites,
+          records: f.count,
+          status: t.status,
+          note: t.note || undefined,
+          facts: f.sampleFacts,
+          prose: describeVessel(f.sampleFacts),
+        },
+        null,
+        2,
+      ) + '\n';
+    if (!existsSync(fixturePath) || readFileSync(fixturePath, 'utf8') !== fixtureContent) stale = true;
     writeFileSync(fixturePath, fixtureContent);
   }
-
   // A finding that has gone away leaves its fixture behind; remove it, and
   // treat that as staleness too.
-  const wanted = new Set(sortedFindings.map((f) => `${f.id}.json`));
+  const wanted = new Set(findings.map((f) => `${f.id}.json`));
   for (const name of readdirSync(FINDINGS_DIR)) {
     if (!/^FIND-\d+\.json$/.test(name) || wanted.has(name)) continue;
     rmSync(join(FINDINGS_DIR, name));
     stale = true;
   }
+  return stale;
+}
 
+function failOnMismatch(t: Tally) {
+  if (t.conformanceFailures > 0) {
+    console.error(`\nCONFORMANCE FAILED: ${t.conformanceFailures} records where engine != reference.`);
+    process.exit(1);
+  }
+}
+
+/** The whole-space epilogue: everything after the walk. */
+function reduce(t: Tally) {
+  printSummary(t);
+  coverageFindings(t);
+  traceabilityFindings(t);
+  replayFixtures();
+  const findings = sortAndNumber(t);
+  warnStaleTriage(findings);
+  const stale = writeRegister(findings);
   if (stale) {
     console.error(
       '\nfindings register was stale relative to this run: run `npm run conformance` and commit research/conformance/findings/.',
     );
   }
-
-  console.log(`\n${sortedFindings.length} distinct findings written to research/conformance/findings/`);
-  for (const f of sortedFindings) {
-    console.log(`  ${f.id}  [${f.check}]  n=${f.count}  ${f.description}`);
-  }
-
-  if (conformanceFailures > 0) {
-    console.error(`\nCONFORMANCE FAILED: ${conformanceFailures} records where engine != reference.`);
-    process.exit(1);
-  }
-  if (stale) {
-    process.exit(1);
-  }
-} else {
-  console.log(`\n${sortedFindings.length} distinct findings in this sample run (register not written in --sample mode)`);
-  if (conformanceFailures > 0) {
-    console.error(`\nCONFORMANCE FAILED: ${conformanceFailures} records where engine != reference.`);
-    process.exit(1);
-  }
+  console.log(`\n${findings.length} distinct findings written to research/conformance/findings/`);
+  for (const f of findings) console.log(`  ${f.id}  [${f.check}]  n=${f.count}  ${f.description}`);
+  failOnMismatch(t);
+  if (stale) process.exit(1);
+  console.log('\nconformance run complete.');
 }
 
-console.log('\nconformance run complete.');
+// ---------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------
+if (mergeFiles !== undefined) {
+  if (mergeFiles.length === 0) throw new Error('--merge wants one or more tally files');
+  const tallies = mergeFiles.map((f) => JSON.parse(readFileSync(f, 'utf8')) as Tally);
+  console.log(`merging ${tallies.length} shard tallies`);
+  reduce(mergeTallies(tallies));
+} else if (shardArg !== undefined) {
+  const t = await walk();
+  writeFileSync(outArg!, JSON.stringify(t));
+  if (jobs > 1 || shard.of === 1) printSummary(t);
+  failOnMismatch(t);
+} else if (sampleSize !== undefined) {
+  const t = await walk();
+  printSummary(t);
+  coverageFindings(t);
+  traceabilityFindings(t);
+  replayFixtures();
+  const findings = sortAndNumber(t);
+  console.log(`\n${findings.length} distinct findings in this sample run (register not written in --sample mode)`);
+  failOnMismatch(t);
+  console.log('\nconformance run complete.');
+} else {
+  reduce(await walk());
+}
