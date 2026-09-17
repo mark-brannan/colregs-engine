@@ -227,26 +227,36 @@ function signalKindOf(ref: { light: string }): string {
 }
 
 /** Every signal kind an entry carries: its own `lights`, plus everything it
- * structurally pulls in — `rel:includes` unconditionally,
- * `rel:conditional_includes` only through a branch whose `when` currently
- * holds against `facts` (an inactive branch's imports don't count — the fix
- * CodeRabbit asked for on #184's own `test/data.test.mjs` thread).
- * Cycle-guarded; colregs' own CI keeps `rel:includes` acyclic (REQ-CAT-3),
- * so `visiting` never actually re-enters in real data. */
+ * structurally pulls in — `rel:includes`, `rel:conditional_includes` only
+ * through a branch whose `when` currently holds against `facts` (an inactive
+ * branch's imports don't count — the fix CodeRabbit asked for on #184's own
+ * `test/data.test.mjs` thread), and only a reference `importAvailable` under
+ * `facts`, matching the filter the display-building path itself applies
+ * before importing a ref (CodeRabbit, PR #128). A ref missing from `byId`
+ * throws, the same as `importRef`'s and the `one_of` loop's own unknown-ref
+ * checks elsewhere in this module — silently dropping it here would let a
+ * dangling ref's absent signal kind pass an entry as "pure" that isn't
+ * (claude-review, PR #128). Cycle-guarded; colregs' own CI keeps
+ * `rel:includes` acyclic (REQ-CAT-3), so `visiting` never actually re-enters
+ * in real data. */
 export function entrySignalKinds(
   id: string,
   facts: FactRecord,
   byId: ReadonlyMap<string, Entry>,
   visiting: Set<string> = new Set(),
+  via: string = id,
 ): Set<string> {
   if (visiting.has(id)) return new Set();
   visiting.add(id);
   const entry = byId.get(id);
-  if (!entry) return new Set();
+  if (!entry) throw new Error(`unknown entry ref ${id} via ${via}`);
   const kinds = new Set<string>();
   for (const ref of entry.lights ?? []) kinds.add(signalKindOf(ref));
   const pull = (refId: string) => {
-    for (const k of entrySignalKinds(refId, facts, byId, visiting)) kinds.add(k);
+    const ref = byId.get(refId);
+    if (!ref) throw new Error(`unknown entry ref ${refId} via ${id}`);
+    if (!importAvailable(ref, facts)) return;
+    for (const k of entrySignalKinds(refId, facts, byId, visiting, id)) kinds.add(k);
   };
   for (const refId of entry['rel:includes'] ?? []) pull(refId);
   for (const ci of entry['rel:conditional_includes'] ?? []) {
@@ -257,17 +267,17 @@ export function entrySignalKinds(
   return kinds;
 }
 
-/** Whether `shift` reaches `entryId`: it carries at least one signal, and
+/** Whether `shift` reaches entry `id`: it carries at least one signal, and
  * every signal it carries (own + structurally imported, per
  * `entrySignalKinds`) is of `shift.applies_to`'s kind — a mixed entry (a day
  * shape alongside a light) never qualifies. */
 function shiftReaches(
-  entryId: string,
+  id: string,
   shift: ModalityShift,
   facts: FactRecord,
   byId: ReadonlyMap<string, Entry>,
 ): boolean {
-  const kinds = entrySignalKinds(entryId, facts, byId);
+  const kinds = entrySignalKinds(id, facts, byId);
   return kinds.size > 0 && [...kinds].every((k) => k === shift.applies_to);
 }
 
@@ -283,14 +293,17 @@ function shiftInForce(shift: ModalityShift, jurisdiction: string): boolean {
 /** Every reaching, in-force, `when`-satisfied shift in data order, applied
  * to `modality`. A modality not among a shift's `map` keys is left alone
  * (keeps `modality:may`/`modality:exempt` out of it, per colregs-engine#125
- * step 1). `entryId` is the entry the reach test runs against — the same
- * entry whether `modality` is that entry's own resolved value or one of its
+ * step 1). `entry` is the entry the reach test runs against — the same
+ * entry whether `modality` is its own resolved value or one of its
  * `LightRef`s' per-light override (colregs-engine#125 step 3: "the per-light
  * modality already exists in the display envelope ... both carry the
- * shifted value"; claude-review, PR #128). */
+ * shifted value"; claude-review, PR #128). Takes `entry` rather than an id —
+ * every caller already has the whole entry to hand, and `Entry.id` is
+ * required, so a separate id parameter could only ever drift out of sync
+ * with it (claude-review, PR #128). */
 function applyShifts(
   modality: Modality,
-  entryId: string,
+  entry: Entry,
   facts: FactRecord,
   jurisdiction: string,
   shifts: readonly ModalityShift[],
@@ -302,7 +315,7 @@ function applyShifts(
     if (!predicateMatches(shift.when, facts)) continue;
     const mapped = shift.map[m];
     if (mapped === undefined) continue;
-    if (!shiftReaches(entryId, shift, facts, byId)) continue;
+    if (!shiftReaches(entry.id, shift, facts, byId)) continue;
     m = mapped;
   }
   return m;
@@ -311,13 +324,12 @@ function applyShifts(
 /** `resolveModality`, then {@link applyShifts}. */
 export function resolveModalityWithShifts(
   entry: Entry,
-  entryId: string,
   facts: FactRecord,
   jurisdiction: string,
   shifts: readonly ModalityShift[],
   byId: ReadonlyMap<string, Entry>,
 ): Modality {
-  return applyShifts(resolveModality(entry, facts), entryId, facts, jurisdiction, shifts, byId);
+  return applyShifts(resolveModality(entry, facts), entry, facts, jurisdiction, shifts, byId);
 }
 
 /**
@@ -385,7 +397,7 @@ function displayLights(
     const own = spec.modality as Modality | undefined;
     const modality =
       own !== undefined
-        ? applyShifts(own, node.id, facts, jurisdiction, shifts, byId)
+        ? applyShifts(own, node.entry, facts, jurisdiction, shifts, byId)
         : node.modality;
     return {
       spec,
@@ -586,7 +598,7 @@ export function evaluateDisplay(
 
   const modalities: Record<string, Modality> = {};
   for (const e of applied) {
-    modalities[e.id] = resolveModalityWithShifts(e, e.id, facts, jurisdiction, shifts, byId);
+    modalities[e.id] = resolveModalityWithShifts(e, facts, jurisdiction, shifts, byId);
   }
 
   // rel:exempts and rel:overrides interact: an exempt entry that is itself
@@ -644,7 +656,7 @@ export function evaluateDisplay(
     const ref = byId.get(refId);
     if (!ref) throw new Error(`unknown entry ref ${refId} via ${via}`);
     if (!importAvailable(ref, facts)) return;
-    const m = resolveModalityWithShifts(ref, refId, facts, jurisdiction, shifts, byId);
+    const m = resolveModalityWithShifts(ref, facts, jurisdiction, shifts, byId);
     modalities[refId] = m;
     nodes.set(refId, { id: refId, entry: ref, via, modality: m, imported: true });
   };
@@ -663,7 +675,7 @@ export function evaluateDisplay(
           const ref = byId.get(refId);
           if (!ref) throw new Error(`unknown one_of ref ${refId} via ${e.id}`);
           if (!importAvailable(ref, facts)) continue;
-          const m = resolveModalityWithShifts(ref, refId, facts, jurisdiction, shifts, byId);
+          const m = resolveModalityWithShifts(ref, facts, jurisdiction, shifts, byId);
           const gid = refId;
           modalities[gid] = m;
           if (!nodes.has(gid)) {

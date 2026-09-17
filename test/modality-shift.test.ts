@@ -115,6 +115,32 @@ describe('entrySignalKinds', () => {
       new Set(['lights', 'shapes']),
     );
   });
+
+  it('throws on a dangling rel:includes ref, matching importRef elsewhere', () => {
+    const byId = byIdOf(carrierWithImportedLights()); // imports 'rule:lights_entry', absent here
+    expect(() => entrySignalKinds('rule:carrier', dayGoodVis, byId)).toThrow(
+      /unknown entry ref rule:lights_entry via rule:carrier/,
+    );
+  });
+
+  it('skips an unavailable rel:includes ref instead of counting its signal kind', () => {
+    // The imported entry's own `when` gates on a plain (non-axis) fact this
+    // case's facts don't satisfy, so it's never actually available
+    // (importAvailable) -- its shape kind must not count toward the
+    // carrier's reach, matching the filter evaluateDisplay's own
+    // import-resolution loop applies. fact:length_m isn't one of
+    // facts.json's axes/modifiers (AXIS_FACTS), so whenAvailable doesn't
+    // wave it through the way it would an axis fact.
+    const gated: Entry = {
+      ...shapesOnlyEntry(),
+      id: 'rule:gated_shape',
+      when: { 'fact:length_m': { gte: 50 } },
+    };
+    const carrier: Entry = { ...carrierWithImportedLights(), 'rel:includes': ['rule:gated_shape'] };
+    const byId = byIdOf(carrier, gated);
+    const facts = { ...dayGoodVis, 'fact:length_m': 12 } as FactRecord;
+    expect(entrySignalKinds('rule:carrier', facts, byId)).toEqual(new Set());
+  });
 });
 
 describe('resolveModalityWithShifts: the three colregs-engine#125 fixtures', () => {
@@ -123,7 +149,6 @@ describe('resolveModalityWithShifts: the three colregs-engine#125 fixtures', () 
     expect(
       resolveModalityWithShifts(
         lightsOnlyEntry(),
-        'rule:lights_entry',
         dayRestrictedVis,
         'intl',
         [shift20c],
@@ -133,7 +158,6 @@ describe('resolveModalityWithShifts: the three colregs-engine#125 fixtures', () 
     expect(
       resolveModalityWithShifts(
         shapesOnlyEntry(),
-        'rule:shapes_entry',
         dayRestrictedVis,
         'intl',
         [shift20c],
@@ -147,7 +171,6 @@ describe('resolveModalityWithShifts: the three colregs-engine#125 fixtures', () 
     expect(
       resolveModalityWithShifts(
         lightsOnlyEntry(),
-        'rule:lights_entry',
         dayGoodVis,
         'intl',
         [shift20c],
@@ -157,7 +180,6 @@ describe('resolveModalityWithShifts: the three colregs-engine#125 fixtures', () 
     expect(
       resolveModalityWithShifts(
         shapesOnlyEntry(),
-        'rule:shapes_entry',
         dayGoodVis,
         'intl',
         [shift20c],
@@ -171,7 +193,6 @@ describe('resolveModalityWithShifts: the three colregs-engine#125 fixtures', () 
     expect(
       resolveModalityWithShifts(
         lightsOnlyEntry(),
-        'rule:lights_entry',
         goodVisNoTime,
         'intl',
         [shift20c],
@@ -185,7 +206,6 @@ describe('resolveModalityWithShifts: the three colregs-engine#125 fixtures', () 
     expect(
       resolveModalityWithShifts(
         mixedLightsAndShapeEntry(),
-        'rule:mixed_entry',
         dayGoodVis,
         'intl',
         [shift20c],
@@ -199,7 +219,6 @@ describe('resolveModalityWithShifts: the three colregs-engine#125 fixtures', () 
     expect(
       resolveModalityWithShifts(
         carrierWithImportedLights(),
-        'rule:carrier',
         dayGoodVis,
         'intl',
         [shift20c],
