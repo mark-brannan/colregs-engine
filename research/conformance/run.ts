@@ -287,17 +287,16 @@ for (const facts of enumerateRecords(axes)) {
   for (const d of evalResult.displays) {
     for (const id of d.entries) contributingIds.add(id);
   }
-  // rel:excludes, rel:overrides and rel:exempts already give an applied
-  // `shall` entry a named, relation-based reason for contributing nothing
-  // (reported in `excluded` / `overridden` / `exempted` respectively) --
-  // that is correctly-modeled displacement, not the orphan shape this check
-  // exists to catch. Skipping them means the FIND-01/02 fix (26(a) moving
-  // from rel:excludes to rel:overrides) won't re-trip this check on the
-  // same entry under a new name, and the 30(e) clear-of-channel exemption
-  // (30a/30b exempted, not excluded or overridden) doesn't false-positive
-  // here either (review thread on colregs-engine#41).
+  // rel:overrides and rel:exempts already give an applied `shall` entry a
+  // named, relation-based reason for contributing nothing (reported in
+  // `overridden` / `exempted` respectively) -- that is correctly-modeled
+  // displacement, not the orphan shape this check exists to catch. Skipping
+  // them means the FIND-01/02 fix (26(a) moving from rel:excludes to
+  // rel:overrides) won't re-trip this check on the same entry under a new
+  // name, and the 30(e) clear-of-channel exemption (30a/30b exempted, not
+  // overridden) doesn't false-positive here either (review thread on
+  // colregs-engine#41).
   const displacedIds = new Set<string>([
-    ...evalResult.excluded.map((x) => x.id),
     ...evalResult.overridden.map((x) => x.id),
     ...evalResult.exempted.map((x) => x.id),
   ]);

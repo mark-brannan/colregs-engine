@@ -185,7 +185,7 @@ describe('provenance', () => {
 });
 
 describe('the fields a consumer already reads', () => {
-  // searoom renders applied/displays/exempted/excluded/modalities; colregs-mcp
+  // searoom renders applied/displays/exempted/modalities; colregs-mcp
   // serialises the whole envelope. The additions are additive: nothing here
   // is renamed, re-typed or reordered.
   it('are all still present, and the additions are the only new keys', () => {
@@ -195,7 +195,6 @@ describe('the fields a consumer already reads', () => {
       'categories',
       'colregs',
       'displays',
-      'excluded',
       'exempted',
       'modalities',
       'optionalAdditions',
@@ -210,7 +209,6 @@ describe('the fields a consumer already reads', () => {
     expect(result.applied).toEqual(['rule:25a', 'rule:25b', 'rule:25c']);
     expect(result.displays.length).toBe(3);
     expect(result.exempted).toEqual([]);
-    expect(result.excluded).toEqual([]);
     expect(result.overridden).toEqual([]);
     expect(result.modalities['rule:25a']).toBe('modality:shall');
     expect(result.colregs.source).toBe('resolved');
