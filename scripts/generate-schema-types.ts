@@ -66,7 +66,8 @@ const OWNED_BY_FACT_RECORD_GENERATOR = new Set(['fact-record', 'situation']);
 const BANNER = `/**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs schema/%FILE% (version pinned in package.json)
+ * Source: colregs schema/%FILE%
+ * Version: declared in package.json, resolved in package-lock.json
  * Regenerate with \`npm run generate\`; \`npm run generate:check\` fails the
  * build if this file and the pinned schema disagree.
  */`;
