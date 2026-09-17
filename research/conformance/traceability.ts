@@ -25,12 +25,15 @@ export function expandCite(cite: string): string[] {
 }
 
 /** Paragraph paths a jurisdiction's resolved skeleton spells (ADR 0020): the
- * `intl` base plus, for a non-`intl` jurisdiction, its own delta paths --
- * the union is enough to check a cite resolves, since a suppressed path is
- * never what an entry in force under that jurisdiction cites. */
+ * `intl` base, minus any path the jurisdiction's own delta suppresses, plus
+ * the delta's own paragraph paths. */
 function resolvedPaths(rules: RulesData, jurisdiction: string): Set<string> {
+  const delta = rules.deltas?.[jurisdiction];
   const paths = new Set(Object.keys(rules.paragraphs));
-  for (const path of Object.keys(rules.deltas?.[jurisdiction]?.paragraphs ?? {})) {
+  for (const suppression of delta?.suppressions ?? []) {
+    paths.delete(suppression.path);
+  }
+  for (const path of Object.keys(delta?.paragraphs ?? {})) {
     paths.add(path);
   }
   return paths;
