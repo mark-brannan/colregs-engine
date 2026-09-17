@@ -286,19 +286,44 @@ function* expandModifiers(
   }
 }
 
+/** One slice of the walk: base indices congruent to `index` modulo `of`.
+ * `{ index: 0, of: 1 }` is the whole space. Slicing by residue keeps every
+ * shard the same size to within one record and puts every expansion of a
+ * base record in the same shard. */
+export interface Shard {
+  index: number;
+  of: number;
+}
+
+export const WHOLE_SPACE: Shard = { index: 0, of: 1 };
+
+export interface IndexedRecord {
+  facts: FactRecord;
+  /** Position of this record in the unsharded stream: base index times
+   * the widest modifier expansion, plus the expansion's own position. Two
+   * shards never share one, and a lower ordinal is always earlier in the
+   * whole-space walk -- what lets a merge of shard tallies pick the same
+   * witness record a single pass would have. */
+  ordinal: number;
+}
+
 /**
- * Streams one FactRecord per point in the cartesian product of the base
- * axes, in mixed-radix order, each expanded over the modifier axes it
- * refines (see `expandModifiers`). Facts for axes not in the list, and a
- * modifier fact wherever its refinement doesn't hold, are simply absent —
- * never `false`. O(1) memory beyond the current record and one stack frame
- * per modifier axis.
+ * Streams one record per point in the cartesian product of the base axes,
+ * in mixed-radix order, each expanded over the modifier axes it refines
+ * (see `expandModifiers`), restricted to one `shard`. Facts for axes not
+ * in the list, and a modifier fact wherever its refinement doesn't hold,
+ * are simply absent -- never `false`. O(1) memory beyond the current
+ * record and one stack frame per modifier axis.
  */
-export function* enumerateRecords(axes: Axis[]): Generator<FactRecord> {
+export function* enumerateIndexed(axes: Axis[], shard: Shard = WHOLE_SPACE): Generator<IndexedRecord> {
+  if (!Number.isInteger(shard.of) || shard.of < 1 || !Number.isInteger(shard.index) || shard.index < 0 || shard.index >= shard.of) {
+    throw new Error(`shard index must satisfy 0 <= index < of; got ${shard.index}/${shard.of}`);
+  }
   const { baseAxes, modifierAxes } = splitAxes(axes);
   const sizes = baseAxes.map((a) => a.values.length);
   const total = sizes.reduce((acc, s) => acc * s, 1);
-  for (let idx = 0; idx < total; idx++) {
+  const stride = 2 ** modifierAxes.length;
+  for (let idx = shard.index; idx < total; idx += shard.of) {
     let rem = idx;
     // Built homogeneously, then narrowed. FactRecord is a mapped type whose
     // value type depends on the key, so a key chosen at runtime can't index
@@ -311,8 +336,17 @@ export function* enumerateRecords(axes: Axis[]): Generator<FactRecord> {
       rem = Math.floor(rem / size);
       base[baseAxes[i].key] = baseAxes[i].values[digit] as FactValue;
     }
-    yield* expandModifiers(base, modifierAxes, 0);
+    let k = 0;
+    for (const facts of expandModifiers(base, modifierAxes, 0)) {
+      yield { facts, ordinal: idx * stride + k };
+      k++;
+    }
   }
+}
+
+/** `enumerateIndexed` without the ordinals. */
+export function* enumerateRecords(axes: Axis[], shard: Shard = WHOLE_SPACE): Generator<FactRecord> {
+  for (const { facts } of enumerateIndexed(axes, shard)) yield facts;
 }
 
 export function formatAxisTable(axes: Axis[]): string {

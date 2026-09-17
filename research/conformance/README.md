@@ -1,16 +1,15 @@
 # Exhaustive conformance harness
 
 ```
-npm run conformance              # the whole fact space, ~3.5 min
-npm run conformance -- --sample=200000   # the first N records, seconds
+npm run conformance                      # the whole fact space, one process per core
+npm run conformance -- --sample=200000   # the first N records per jurisdiction, seconds
 ```
 
-Step 1 of the [verification ladder](https://github.com/mark-brannan/colregs-engine/issues/6),
-Phase 0 of [the programme](https://github.com/mark-brannan/colregs-engine/issues/1).
+Step 1 of the [verification ladder](https://github.com/mark-brannan/colregs-engine/issues/6), Phase 0 of [the programme](https://github.com/mark-brannan/colregs-engine/issues/1).
 
 The engine is a pure function over a finite fact record, so "does the engine
 agree with the data?" is a question you can answer by checking every case
-rather than by sampling. This is that check.
+rather than by sampling — this is that check.
 
 ## The fact space
 
@@ -71,7 +70,13 @@ the actual count to 11,860,992; the bound above is what `totalRecords()`
 reports, and the run's own "processed N records" line is the true count.
 
 Enumeration is a mixed-radix walk over the axis list, so a record is
-addressable by its index and the pass holds one record at a time.
+addressable by its index and the pass holds one record at a time. That index
+is the shard key: `--shard=i/N --out=t.json` walks base records congruent to
+`i` mod `N` into a JSON tally; `--merge *.json` reduces tallies and does what
+only the whole space justifies — coverage, the register. CI runs a shard
+matrix then one merge; the local default spawns one shard per core. Shards
+compose (`--shard=1/4 --jobs=4` is 1, 5, 9, 13 of 16), and each finding keeps
+its witness's ordinal, so the merged register equals a single pass, byte for byte.
 
 Partitioning at the thresholds is what makes this a proof rather than a
 large test, and it rests on the partition lemma: a predicate comparing a
@@ -94,20 +99,11 @@ rule that an absent fact never satisfies anything (`not` included), the
 `activity:ram_underwater` ⊇ `activity:ram` refinement, and `modality_by`
 first-match-wins.
 
-Two implementations that agree are worth more than one implementation that
-passes its own tests. Where they disagree, the harness fails rather than
-picking a winner.
-
-`not` and both `any_of` forms, and the two-subject Part B steering entries,
-arrived in colregs 0.2.0 (closing #9/#13). `src/evaluate.ts` implements
-`not`/`any_of`, and this harness's independent reading (`reference.ts`) does
-too, so both sides of every comparison here exercise them for real. The
-Part B steering entries (category `precedence`/`scope`/etc., not `display`)
-are read for a two-vessel situation this single-vessel fact-space harness
-doesn't enumerate; both the engine and this harness's reference filter them
-out of the lights evaluation (REQ-CAT-1's `category` default), so they never
-appear in an applied set and are excluded from coverage's never-fired
-reporting too.
+Two implementations that agree are worth more than one that passes its own
+tests; where they disagree, the harness fails rather than picking a winner.
+The two-subject Part B steering entries (category `precedence`/`scope`,
+not `display`) read a two-vessel situation this single-vessel harness
+doesn't enumerate; both filter them out (REQ-CAT-1's `category` default).
 
 ## The checks
 
@@ -193,7 +189,8 @@ partial pass over the fact space won't reproduce most findings.
 
 - `enumerate.ts` — threshold extractor and partitioned enumerator.
 - `reference.ts` — the independent predicate evaluator.
-- `run.ts` — the streaming pass, the checks, and the register writer.
+- `walk.ts` — the per-record checks over one shard, and the tally merge.
+- `run.ts` — the CLI, the shard processes, and the register writer.
 - `traceability.ts` — cite resolution against `rules.json`.
 - `prose.ts` — renders a fact record as a vessel description.
 - `findings/` — the generated register, plus the hand-maintained

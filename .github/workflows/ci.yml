@@ -33,29 +33,54 @@ jobs:
 
   # The exhaustive conformance harness (research/conformance/): every record
   # in the partitioned fact space, engine against an independent reference
-  # reading of the predicate semantics. It exits non-zero only on a
-  # conformance mismatch or on a findings register that this run would
-  # rewrite; data findings are printed, not failed. Separate from `test`
-  # because it is minutes rather than a second, and a red conformance job
-  # should be legible without reading a test log.
-  #
-  # The ceiling is headroom, not a target: the space is 11,860,992 records
-  # since colregs' `fact:time`/`fact:motorsailing` (2.67x the previous
-  # 4,447,872), which took the run from ~7 min to ~20 and straight through a
-  # 20-minute ceiling. Raise it when the space grows again; making the
-  # harness itself faster is #127.
+  # reading of the predicate semantics. Runtime is linear in the record
+  # count and the count is a product over fact axes, so one job outgrows any
+  # timeout the moment colregs adds an axis. Each matrix leg walks one
+  # residue class of the space (`--shard=i/N`, split again over the runner's
+  # cores) and uploads a tally; `conformance-register` below reduces them.
+  # Adding legs to the matrix is the whole knob: `strategy.job-total` is N.
+  # A leg exits non-zero only on a conformance mismatch in its slice; data
+  # findings are printed, not failed.
   conformance:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: npm ci
-      - run: npm run conformance
-      # A run that rewrote the register has already failed above; this
-      # catches anything else the harness touched in the worktree.
+      - run: npm run conformance -- --shard=${{ matrix.shard }}/${{ strategy.job-total }} --out=tally-${{ matrix.shard }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: conformance-tally-${{ matrix.shard }}
+          path: tally-${{ matrix.shard }}.json
+          retention-days: 1
+
+  # Merges the shard tallies: coverage, traceability, fixture replay and the
+  # findings register are only sound over the whole space, so they live
+  # here and not in a leg. Fails on a register this run would rewrite;
+  # the diff step catches anything else the harness touched.
+  conformance-register:
+    needs: conformance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: conformance-tally-*
+          path: tallies
+          merge-multiple: true
+      - run: npm run conformance -- --merge tallies/*.json
       - run: git diff --exit-code -- research/conformance/findings
 
   # Ladder step 4 (research/rocq/): the partition-soundness lemma the
@@ -93,7 +118,7 @@ jobs:
   # evaluate when a dependency failed or was skipped, so it reports an explicit
   # pass or fail of its own rather than inheriting the skip.
   ci-gate:
-    needs: [test, conformance, partition-proof, prose-budget, nonempty]
+    needs: [test, conformance, conformance-register, partition-proof, prose-budget, nonempty]
     if: always()
     # It reads nothing and writes nothing; the results go in as an input.
     permissions: {}

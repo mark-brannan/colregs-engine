@@ -22,6 +22,7 @@ import type {
   FactRecord,
   FactValue,
   Modality,
+  ModalityShift,
   NotConstraint,
   NumericConstraint,
   Predicate,
@@ -200,6 +201,137 @@ export function resolveModality(entry: Entry, facts: FactRecord): Modality {
   return 'modality:conditional';
 }
 
+// --- Rule 20(c) modality shifts (colregs ADR 0021, colregs-engine#125) ---
+// Applied right after an entry's own modality resolves (resolveModality):
+// a shift maps a resolved modality to another when its jurisdiction is in
+// force, its `when` holds against the fact record, and it *reaches* the
+// entry. `mark-brannan/colregs#184` is what actually ships
+// `modality_shifts` and the `fact:time`/`fact:visibility` a shift's `when`
+// reads; until it releases and the pin bumps (issue #125 step 5), neither
+// exists in this package's own resolved data or vocabulary, so every
+// function below is inert on real data — exercised only by its own unit
+// tests, against synthetic `opts.data`.
+
+/** A LightRef's signal kind, read off its `light` id's namespace prefix —
+ * the same convention every other colregs vocabulary uses (`modality:`,
+ * `category:`, `rel:`...). `light:*` is `'lights'`; colregs-engine#125's
+ * fixtures name `'shapes'` (cones) as the other kind a display entry can
+ * carry, so `shape:*` is assumed to name it the same way once day shapes
+ * ship in a released `lights.json` — unverified against colregs' actual
+ * data, since no resolved release carries a shape-kind light ref yet. */
+function signalKindOf(ref: { light: string }): string {
+  const prefix = ref.light.slice(0, ref.light.indexOf(':'));
+  if (prefix === 'light') return 'lights';
+  if (prefix === 'shape') return 'shapes';
+  return `${prefix}s`;
+}
+
+/** Every signal kind an entry carries: its own `lights`, plus everything it
+ * structurally pulls in — `rel:includes`, `rel:conditional_includes` only
+ * through a branch whose `when` currently holds against `facts` (an inactive
+ * branch's imports don't count — the fix CodeRabbit asked for on #184's own
+ * `test/data.test.mjs` thread), and only a reference `importAvailable` under
+ * `facts`, matching the filter the display-building path itself applies
+ * before importing a ref (CodeRabbit, PR #128). A ref missing from `byId`
+ * throws, the same as `importRef`'s and the `one_of` loop's own unknown-ref
+ * checks elsewhere in this module — silently dropping it here would let a
+ * dangling ref's absent signal kind pass an entry as "pure" that isn't
+ * (claude-review, PR #128). Cycle-guarded; colregs' own CI keeps
+ * `rel:includes` acyclic (REQ-CAT-3), so `visiting` never actually re-enters
+ * in real data. */
+export function entrySignalKinds(
+  id: string,
+  facts: FactRecord,
+  byId: ReadonlyMap<string, Entry>,
+  visiting: Set<string> = new Set(),
+  via: string = id,
+): Set<string> {
+  if (visiting.has(id)) return new Set();
+  visiting.add(id);
+  const entry = byId.get(id);
+  if (!entry) throw new Error(`unknown entry ref ${id} via ${via}`);
+  const kinds = new Set<string>();
+  for (const ref of entry.lights ?? []) kinds.add(signalKindOf(ref));
+  const pull = (refId: string) => {
+    const ref = byId.get(refId);
+    if (!ref) throw new Error(`unknown entry ref ${refId} via ${id}`);
+    if (!importAvailable(ref, facts)) return;
+    for (const k of entrySignalKinds(refId, facts, byId, visiting, id)) kinds.add(k);
+  };
+  for (const refId of entry['rel:includes'] ?? []) pull(refId);
+  for (const ci of entry['rel:conditional_includes'] ?? []) {
+    if (ci.when && !predicateMatches(ci.when, facts)) continue;
+    for (const refId of ci['rel:includes'] ?? []) pull(refId);
+    for (const refId of ci.one_of ?? []) pull(refId);
+  }
+  return kinds;
+}
+
+/** Whether `shift` reaches entry `id`: it carries at least one signal, and
+ * every signal it carries (own + structurally imported, per
+ * `entrySignalKinds`) is of `shift.applies_to`'s kind — a mixed entry (a day
+ * shape alongside a light) never qualifies. */
+function shiftReaches(
+  id: string,
+  shift: ModalityShift,
+  facts: FactRecord,
+  byId: ReadonlyMap<string, Entry>,
+): boolean {
+  const kinds = entrySignalKinds(id, facts, byId);
+  return kinds.size > 0 && [...kinds].every((k) => k === shift.applies_to);
+}
+
+/** A shift's jurisdiction, resolved the same way an entry's is (ADR 0018):
+ * `intl` is always in force, a named jurisdiction only for itself. Whether a
+ * jurisdiction can suppress a shift the way `suppressions` tombstones an
+ * entry is unspecified — #184 carries one `intl` shift, nothing to test
+ * that against yet. */
+function shiftInForce(shift: ModalityShift, jurisdiction: string): boolean {
+  return shift.jurisdiction === 'intl' || shift.jurisdiction === jurisdiction;
+}
+
+/** Every reaching, in-force, `when`-satisfied shift in data order, applied
+ * to `modality`. A modality not among a shift's `map` keys is left alone
+ * (keeps `modality:may`/`modality:exempt` out of it, per colregs-engine#125
+ * step 1). `entry` is the entry the reach test runs against — the same
+ * entry whether `modality` is its own resolved value or one of its
+ * `LightRef`s' per-light override (colregs-engine#125 step 3: "the per-light
+ * modality already exists in the display envelope ... both carry the
+ * shifted value"; claude-review, PR #128). Takes `entry` rather than an id —
+ * every caller already has the whole entry to hand, and `Entry.id` is
+ * required, so a separate id parameter could only ever drift out of sync
+ * with it (claude-review, PR #128). */
+function applyShifts(
+  modality: Modality,
+  entry: Entry,
+  facts: FactRecord,
+  jurisdiction: string,
+  shifts: readonly ModalityShift[],
+  byId: ReadonlyMap<string, Entry>,
+): Modality {
+  let m = modality;
+  for (const shift of shifts) {
+    if (!shiftInForce(shift, jurisdiction)) continue;
+    if (!predicateMatches(shift.when, facts)) continue;
+    const mapped = shift.map[m];
+    if (mapped === undefined) continue;
+    if (!shiftReaches(entry.id, shift, facts, byId)) continue;
+    m = mapped;
+  }
+  return m;
+}
+
+/** `resolveModality`, then {@link applyShifts}. */
+export function resolveModalityWithShifts(
+  entry: Entry,
+  facts: FactRecord,
+  jurisdiction: string,
+  shifts: readonly ModalityShift[],
+  byId: ReadonlyMap<string, Entry>,
+): Modality {
+  return applyShifts(resolveModality(entry, facts), entry, facts, jurisdiction, shifts, byId);
+}
+
 /**
  * Availability of an imported entry — a `rel:includes`, the `rel:includes`
  * of a `rel:conditional_includes` branch, or a `one_of` option (colregs
@@ -247,17 +379,34 @@ interface OneOfGroup {
   options: string[]; // node ids
 }
 
-function displayLights(node: Node): DisplayLight[] {
+function displayLights(
+  node: Node,
+  facts: FactRecord,
+  jurisdiction: string,
+  shifts: readonly ModalityShift[],
+  byId: ReadonlyMap<string, Entry>,
+): DisplayLight[] {
   // colregs 0.2.0 made `lights` optional on an entry (conduct-only entries
   // such as precedence/scope carry none); absent is equivalent to the
   // empty array this always effectively was for such entries.
-  return (node.entry.lights ?? []).map((spec) => ({
-    spec,
-    source_entry: node.id,
-    sourceEntry: node.id,
-    via: node.via,
-    modality: (spec.modality as Modality) ?? node.modality,
-  }));
+  return (node.entry.lights ?? []).map((spec) => {
+    // A light's own modality override bypasses node.modality (already
+    // shifted) entirely, so it needs the same shifts applied to it
+    // directly -- otherwise a shift silently misses any entry whose lights
+    // carry a per-light override (claude-review, PR #128).
+    const own = spec.modality as Modality | undefined;
+    const modality =
+      own !== undefined
+        ? applyShifts(own, node.entry, facts, jurisdiction, shifts, byId)
+        : node.modality;
+    return {
+      spec,
+      source_entry: node.id,
+      sourceEntry: node.id,
+      via: node.via,
+      modality,
+    };
+  });
 }
 
 // colregs 0.2.0 (REQ-CAT-1) gave every entry a `category`, defaulting to
@@ -445,9 +594,12 @@ export function evaluateDisplay(
   const byId = new Map(jurisdictionEntries(data, jurisdiction).map((e) => [e.id, e]));
   const applied = appliedEntryList(data, facts, jurisdiction);
   const appliedIds = new Set(applied.map((e) => e.id));
+  const shifts = data.modality_shifts ?? [];
 
   const modalities: Record<string, Modality> = {};
-  for (const e of applied) modalities[e.id] = resolveModality(e, facts);
+  for (const e of applied) {
+    modalities[e.id] = resolveModalityWithShifts(e, facts, jurisdiction, shifts, byId);
+  }
 
   // rel:exempts and rel:overrides interact: an exempt entry that is itself
   // displaced by an override must not exempt its own targets (CodeRabbit,
@@ -504,7 +656,7 @@ export function evaluateDisplay(
     const ref = byId.get(refId);
     if (!ref) throw new Error(`unknown entry ref ${refId} via ${via}`);
     if (!importAvailable(ref, facts)) return;
-    const m = resolveModality(ref, facts);
+    const m = resolveModalityWithShifts(ref, facts, jurisdiction, shifts, byId);
     modalities[refId] = m;
     nodes.set(refId, { id: refId, entry: ref, via, modality: m, imported: true });
   };
@@ -523,7 +675,7 @@ export function evaluateDisplay(
           const ref = byId.get(refId);
           if (!ref) throw new Error(`unknown one_of ref ${refId} via ${e.id}`);
           if (!importAvailable(ref, facts)) continue;
-          const m = resolveModality(ref, facts);
+          const m = resolveModalityWithShifts(ref, facts, jurisdiction, shifts, byId);
           const gid = refId;
           modalities[gid] = m;
           if (!nodes.has(gid)) {
@@ -689,7 +841,7 @@ export function evaluateDisplay(
     const lights: DisplayLight[] = [];
     for (const n of members.values()) {
       if (carrierLightsDropped.has(n.id)) continue;
-      lights.push(...displayLights(n));
+      lights.push(...displayLights(n, facts, jurisdiction, shifts, byId));
     }
 
     const entryIds = [...members.keys()].sort();
@@ -715,7 +867,7 @@ export function evaluateDisplay(
   const optionalAdditions = additions.map((n) => ({
     id: n.id,
     via: n.via,
-    lights: displayLights(n),
+    lights: displayLights(n, facts, jurisdiction, shifts, byId),
     cite: n.entry.cite,
   }));
 
