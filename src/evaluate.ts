@@ -64,7 +64,18 @@ export interface EvaluateOptions {
    * option existed.
    */
   dataVersion?: string;
+  /**
+   * The jurisdiction to resolve entries for (colregs ADR 0018): `intl`
+   * unless stated. Entries are the RFC 7396 merge patch of the named
+   * jurisdiction's own entries over `intl` — an inherited entry the
+   * jurisdiction's `suppressions` tombstone drops out, and a jurisdiction's
+   * own entries are added, id by id. `intl` needs no patch: it is the base.
+   */
+  jurisdiction?: string;
 }
+
+/** The jurisdiction resolved when a caller names none. */
+export const DEFAULT_JURISDICTION = 'intl';
 
 /**
  * Guards every entry point that reads `opts.data`: when the caller also
@@ -296,17 +307,6 @@ export function provenanceOf(
   };
 }
 
-// NOTE (colregs@0.2.2, ADR 0008): every entry now also carries a required
-// `jurisdiction` field (`intl` throughout, `us/inland` for the new
-// mooring-buoy delta, 30a-buoy/30b-buoy). This package has no jurisdiction
-// parameter or filter of any kind yet -- adding one is real API-design work
-// (an ADR, like ADR 0011's own scoping), not something to freelance under a
-// dependency bump -- and research/conformance/reference.ts, the ground
-// truth this engine is diffed against, doesn't filter by it either. So
-// `jurisdiction` is deliberately left unread here for now: a caller whose
-// facts happen to match 30a-buoy/30b-buoy's predicate gets those lights
-// regardless of jurisdiction, same as before this field existed. No
-// jurisdiction parameter exists yet -- open gap, not a decision.
 /** The modalities that let a display entry's rel:overrides fire. */
 const DISPLAY_OBLIGATIONS: ReadonlySet<Modality> = new Set<Modality>([
   'modality:shall',
@@ -369,11 +369,37 @@ export function resolveOverrides(
   return { overridden, overriddenIds: new Set(overridden.map((x) => x.id)) };
 }
 
+/** Entries in force under `jurisdiction` (colregs ADR 0018): every `intl`
+ * entry not named by one of the jurisdiction's own `suppressions`, plus the
+ * jurisdiction's own entries. `intl` itself needs no suppression lookup —
+ * it is the base the patch applies over, never patched itself. */
+function jurisdictionEntries(data: ApplicabilityData, jurisdiction: string): Entry[] {
+  if (jurisdiction === 'intl') {
+    return data.entries.filter((e) => e.jurisdiction === 'intl');
+  }
+  const suppressed = new Set(
+    (data.suppressions ?? [])
+      .filter((s) => s.jurisdiction === jurisdiction)
+      .map((s) => s.suppresses),
+  );
+  return data.entries.filter(
+    (e) =>
+      (e.jurisdiction === 'intl' && !suppressed.has(e.id)) ||
+      e.jurisdiction === jurisdiction,
+  );
+}
+
 /** The predicate layer alone: entries whose `when` matches, without the
  * relation/display composition that follows. Factored out of `evaluate` so
  * a caller can inspect just this layer's result. */
-function appliedEntryList(data: ApplicabilityData, facts: FactRecord): Entry[] {
-  return data.entries.filter((e) => isDisplay(e) && predicateMatches(e.when, facts));
+function appliedEntryList(
+  data: ApplicabilityData,
+  facts: FactRecord,
+  jurisdiction: string,
+): Entry[] {
+  return jurisdictionEntries(data, jurisdiction).filter(
+    (e) => isDisplay(e) && predicateMatches(e.when, facts),
+  );
 }
 
 /** Ids of the entries whose predicate matches `facts` — the same set
@@ -385,7 +411,11 @@ export function appliedDisplayEntries(
 ): string[] {
   checkDataVersion(opts);
   validateFacts(facts);
-  return appliedEntryList(opts.data ?? RESOLVED_DATA, facts).map((e) => e.id);
+  return appliedEntryList(
+    opts.data ?? RESOLVED_DATA,
+    facts,
+    opts.jurisdiction ?? DEFAULT_JURISDICTION,
+  ).map((e) => e.id);
 }
 
 /**
@@ -411,8 +441,9 @@ export function evaluateDisplay(
   const source: 'resolved' | 'caller' = opts.data ? 'caller' : 'resolved';
   validateFacts(facts);
 
-  const byId = new Map(data.entries.map((e) => [e.id, e]));
-  const applied = appliedEntryList(data, facts);
+  const jurisdiction = opts.jurisdiction ?? DEFAULT_JURISDICTION;
+  const byId = new Map(jurisdictionEntries(data, jurisdiction).map((e) => [e.id, e]));
+  const applied = appliedEntryList(data, facts, jurisdiction);
   const appliedIds = new Set(applied.map((e) => e.id));
 
   const modalities: Record<string, Modality> = {};
@@ -446,13 +477,6 @@ export function evaluateDisplay(
     preliminaryOverridden.overriddenIds,
   );
   const { overridden, overriddenIds } = computeOverridden(exemptedIds);
-
-  // `rel:excludes` fires from nowhere (colregs ADR 0019 point 1): it is a
-  // co-occurrence check between the members of one display, applied in the
-  // enumeration's validate step below, and removes nothing from the entries
-  // in force. Nothing fills this list any more; it is emitted because
-  // colregs' display-evaluation.schema.json still requires the field.
-  const excluded: { id: string; by: string }[] = [];
 
   // Build the component node set: applied entries, minus exempted and
   // displaced, plus imported components.
@@ -708,7 +732,6 @@ export function evaluateDisplay(
     colregs: { version: COLREGS_VERSION, source },
     applied: applied.map((e) => e.id),
     exempted,
-    excluded,
     overridden,
     displays,
     optional_additions: optionalAdditions,

@@ -98,11 +98,10 @@ export interface EvaluationProvenance {
    */
   evaluated_categories: RuleCategory[];
   /**
-   * Jurisdictions of the entries that were eligible to match, in data order.
-   * The engine has no jurisdiction parameter: every jurisdiction present in
-   * the data was eligible, and a caller who needs one must narrow
-   * `opts.data` itself. Descriptive of what was offered — never a claim that
-   * a filter ran.
+   * Jurisdictions of the entries in `data`, in data order — every
+   * jurisdiction the data offers, not only the one `opts.jurisdiction`
+   * resolved against (colregs ADR 0018). Descriptive of what was offered —
+   * never a claim that a filter ran.
    */
   jurisdictions: string[];
   /**
@@ -157,10 +156,6 @@ export interface DisplayEvaluation {
   applied: string[];
   /** Applied entries relieved by a rel:exempts entry, with the exempting id. */
   exempted: { id: string; by: string }[];
-  /** Always empty since colregs ADR 0019: `rel:excludes` is a co-occurrence
-   * check between displays and removes nothing. Kept because colregs'
-   * display-evaluation.schema.json still requires the field. */
-  excluded: { id: string; by: string }[];
   /** Applied entries displaced by another applied obligation's
    * rel:overrides, with the overriding id — mirrors the same-named field
    * ADR 0011 §4 defines on `EncounterEvaluation`. */

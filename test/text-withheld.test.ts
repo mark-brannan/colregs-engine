@@ -97,8 +97,7 @@ interface FixtureCase {
 
 const fixtures = fixturesJson as unknown as { jurisdiction: string; cases: FixtureCase[] };
 
-// Same skip as fixtures.test.ts: an unsupported jurisdiction path.
-const displayCases = fixtures.cases.filter((c) => !('fact:on_mooring_buoy' in c.facts));
+const displayCases = fixtures.cases;
 
 interface SituationFixtureCase {
   name: string;
@@ -143,7 +142,8 @@ describe('ADR 0010 (engine half): nothing in colregs-engine reads rule text', ()
     try {
       const { evaluateDisplay } = await import('../src/evaluate');
       for (const c of displayCases) {
-        const result = evaluateDisplay(c.facts, { data: applicability });
+        const jurisdiction = c.jurisdiction ?? fixtures.jurisdiction;
+        const result = evaluateDisplay(c.facts, { data: applicability, jurisdiction });
         expect([...result.applied].sort()).toEqual([...c.expect].sort());
       }
     } finally {

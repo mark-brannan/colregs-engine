@@ -184,8 +184,7 @@ describe('lawful display composition', () => {
     // colregs@0.2.2: 26c-id now carries rel:overrides (not rel:excludes)
     // against 30a/30b -- both obligations, so the referencing norm's
     // obligation displaces the referenced one rather than the two
-    // conflicting. That's `overridden`, not `excluded`.
-    expect(e.excluded).toEqual([]);
+    // conflicting. That's `overridden`.
     expect(e.overridden.map((x) => x.id).sort()).toEqual(['rule:30a', 'rule:30b']);
     for (const d of e.displays) {
       expect(d.entries).not.toContain('rule:30a');
@@ -371,7 +370,6 @@ describe('rel:overrides', () => {
       { id: 'rule:30a', by: 'rule:26c_i' },
       { id: 'rule:30b', by: 'rule:26c_i' },
     ]);
-    expect(result.excluded).toEqual([]);
     for (const d of result.displays) {
       expect(d.entries).not.toContain('rule:30a');
       expect(d.entries).not.toContain('rule:30b');
@@ -495,7 +493,6 @@ describe('relation reach and import reads (colregs ADR 0019)', () => {
     findEntry(data, 'rule:25a')['rel:excludes'] = ['rule:25b'];
     findEntry(data, 'rule:25b')['rel:excludes'] = ['rule:25a'];
     const result = evaluateDisplay(sloop12, { data });
-    expect(result.excluded).toEqual([]);
     const sets = result.displays
       .map((d) => d.entries)
       .sort((a, b) => a.join().localeCompare(b.join()));
