@@ -1,1 +1,6 @@
-claude-review: share the per-spec modality resolution between displayLights and displayShapes (specModality)
+Revision history for #132:
+
+rev 2 (content) 2026-09-17 20:24 UTC — claude-review: share the per-spec modality resolution between displayLights and displayShapes (specModality)
+rev 1 (initial) 2026-09-17 20:24 UTC
+
+<!-- mergify-revision-data: {"schema_version":1,"pull_number":132,"entries":[{"number":1,"change_type":"initial","old_sha":null,"new_sha":"bde5228125f51c00faf175fb2a75d12bb3742151","timestamp_iso":"2026-09-17T20:24:24Z","reason":"","replay_sha":null,"compare_url":null},{"number":2,"change_type":"content","old_sha":"bde5228125f51c00faf175fb2a75d12bb3742151","new_sha":"6413ca97e0c39746e5c919f0f9c0036cc4a6a5e6","timestamp_iso":"2026-09-17T20:24:24Z","reason":"claude-review: share the per-spec modality resolution between displayLights and displayShapes (specModality)","replay_sha":null,"compare_url":"https://github.com/mark-brannan/colregs-engine/compare/bde5228125f51c00faf175fb2a75d12bb3742151...6413ca97e0c39746e5c919f0f9c0036cc4a6a5e6"}]} -->
