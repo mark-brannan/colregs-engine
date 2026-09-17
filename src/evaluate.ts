@@ -5,7 +5,8 @@
 // fixture suite replays fixtures/applicability-fixtures.json verbatim.
 //
 // Where the data leaves composition semantics to the consumer, the choices
-// made here are documented in docs/engine-notes.md and tested in
+// made here are documented in docs/engine-notes.md (items 2-5 point at
+// colregs ADR 0019, which owns them) and tested in
 // displays.test.ts. The engine never selects a display: every lawful
 // alternative is returned (REQ-MODEL-8 / REQ-CONS-3).
 
@@ -88,8 +89,9 @@ export function checkDataVersion(opts: EvaluateOptions): void {
 // fact:position today); every key under `modifiers` is a boolean that
 // refines one of those axes (fact:making_way refines
 // fact:position=position:underway) and is treated the same way by
-// oneOfAvailable below — both are the situation a `one_of` alternative's own
-// axes get to override, unlike a scalar or a plain (non-axis) boolean.
+// importAvailable below — both are the situation the carrier's redirect
+// has already placed the vessel in (ADR 0019 point 3), unlike a scalar or
+// a plain (non-axis) boolean, which binds.
 // Deriving this from facts.json at import time means a new axis or modifier
 // colregs adds is picked up automatically instead of needing a matching
 // hand-edit here.
@@ -188,12 +190,14 @@ export function resolveModality(entry: Entry, facts: FactRecord): Modality {
 }
 
 /**
- * Availability of a referenced-but-not-applied entry inside a one_of
- * alternative set: the carrier redirects the vessel to the referenced
- * lights (30(d): "the lights prescribed in paragraph (a) or (b)"), so the
- * referenced entry's situation axes are deliberately overridden — but its
- * scalar gates (30(b)'s "less than 50 meters") still describe this vessel
- * and are honored.
+ * Availability of an imported entry — a `rel:includes`, the `rel:includes`
+ * of a `rel:conditional_includes` branch, or a `one_of` option (colregs
+ * ADR 0019 point 3). The carrier's redirect has already placed the vessel
+ * in the referenced entry's situation (30(d): "the lights prescribed in
+ * paragraph (a) or (b)"), so keys declared under facts.json's `axes` and
+ * `modifiers` are satisfied by the redirect; every other key is a fact the
+ * redirect does not alter, and the referenced entry's constraint on it
+ * binds (30(b)'s "less than 50 metres" binds a vessel aground).
  */
 function whenAvailable(when: Predicate, facts: FactRecord): boolean {
   return Object.entries(when).every(([key, constraint]) => {
@@ -209,21 +213,12 @@ function whenAvailable(when: Predicate, facts: FactRecord): boolean {
   });
 }
 
-function oneOfAvailable(ref: Entry, facts: FactRecord): boolean {
+/** The one availability test for every import (ADR 0019 point 3): a
+ * carrier that needs a gate its source does not carry writes it on its own
+ * branch `when`, as 27(f) and 29(a) do; nothing is inferred from a source's
+ * axes in either direction. */
+function importAvailable(ref: Entry, facts: FactRecord): boolean {
   return whenAvailable(ref.when, facts);
-}
-
-/**
- * rel:includes imports lights only, never the predicate — but an import
- * whose source names a contradicting fact:position is skipped: 27(f)'s
- * include of the Rule 23 running lights reads "as appropriate", and a
- * mine-clearance vessel at anchor shows Rule 30 lights, not mastheads.
- */
-function includeApplies(ref: Entry, facts: FactRecord): boolean {
-  const pos = ref.when['fact:position'] as Constraint | undefined;
-  if (pos === undefined) return true;
-  if (facts['fact:position'] === undefined) return true;
-  return valueMatches(facts['fact:position'], pos);
 }
 
 interface Node {
@@ -452,32 +447,15 @@ export function evaluateDisplay(
   );
   const { overridden, overriddenIds } = computeOverridden(exemptedIds);
 
-  // A required (non-alternative) entry's rel:excludes suppresses the
-  // referenced applied entries outright: 26(a) "shall exhibit only the
-  // lights prescribed in this Rule" removes the Rule 30 anchor lights.
+  // `rel:excludes` fires from nowhere (colregs ADR 0019 point 1): it is a
+  // co-occurrence check between the members of one display, applied in the
+  // enumeration's validate step below, and removes nothing from the entries
+  // in force. Nothing fills this list any more; it is emitted because
+  // colregs' display-evaluation.schema.json still requires the field.
   const excluded: { id: string; by: string }[] = [];
-  // ids a required (non-alternative) entry excludes — these are barred
-  // both as applied entries and as one_of import options.
-  const requiredExcludes = new Map<string, string>();
-  for (const e of applied) {
-    if (overriddenIds.has(e.id)) continue; // a displaced entry's excludes don't fire either
-    const m = modalities[e.id];
-    if (m !== 'modality:shall' && m !== 'modality:shall-if-practicable') continue;
-    const replacesApplied = (e['rel:in_lieu_of'] ?? []).some((r) =>
-      appliedIds.has(r),
-    );
-    if (replacesApplied) continue;
-    for (const ref of e['rel:excludes'] ?? []) {
-      requiredExcludes.set(ref, e.id);
-      if (appliedIds.has(ref) && !exemptedIds.has(ref)) {
-        excluded.push({ id: ref, by: e.id });
-      }
-    }
-  }
-  const excludedIds = new Set(excluded.map((x) => x.id));
 
   // Build the component node set: applied entries, minus exempted and
-  // suppressed, plus imported components.
+  // displaced, plus imported components.
   const nodes = new Map<string, Node>();
   const groups: OneOfGroup[] = [];
 
@@ -485,7 +463,6 @@ export function evaluateDisplay(
     (e) =>
       modalities[e.id] !== 'modality:exempt' &&
       !exemptedIds.has(e.id) &&
-      !excludedIds.has(e.id) &&
       !overriddenIds.has(e.id),
   );
 
@@ -502,7 +479,7 @@ export function evaluateDisplay(
     if (nodes.has(refId)) return;
     const ref = byId.get(refId);
     if (!ref) throw new Error(`unknown entry ref ${refId} via ${via}`);
-    if (!includeApplies(ref, facts)) return;
+    if (!importAvailable(ref, facts)) return;
     const m = resolveModality(ref, facts);
     modalities[refId] = m;
     nodes.set(refId, { id: refId, entry: ref, via, modality: m, imported: true });
@@ -521,14 +498,7 @@ export function evaluateDisplay(
         for (const refId of ci.one_of) {
           const ref = byId.get(refId);
           if (!ref) throw new Error(`unknown one_of ref ${refId} via ${e.id}`);
-          if (!oneOfAvailable(ref, facts)) continue;
-          const excludedBy = requiredExcludes.get(refId);
-          if (excludedBy !== undefined) {
-            if (!excluded.some((x) => x.id === refId)) {
-              excluded.push({ id: refId, by: excludedBy });
-            }
-            continue;
-          }
+          if (!importAvailable(ref, facts)) continue;
           const m = resolveModality(ref, facts);
           const gid = refId;
           modalities[gid] = m;

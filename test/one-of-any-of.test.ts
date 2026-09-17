@@ -1,4 +1,4 @@
-// claude-code-review on #13: oneOfAvailable() routed every `ref.when` key,
+// claude-code-review on #13: importAvailable() routed every `ref.when` key,
 // `any_of` included, through valueMatches(facts['any_of'], ...) -- which
 // always reads undefined and fails, so a one_of option gated by a
 // predicate-level `any_of` was silently always unavailable, the same
@@ -52,7 +52,7 @@ const data: ApplicabilityData = {
   entries: [carrierWithOneOf(), powerOrSailOpt, oarsOpt],
 };
 
-describe("oneOfAvailable: `any_of` inside a one_of option's `when`", () => {
+describe("importAvailable: `any_of` inside a one_of option's `when`", () => {
   it('the power-or-sail option is available on the first any_of disjunct', () => {
     const entryIds = evaluate(data, { 'fact:propulsion': 'propulsion:power' }).displays.flatMap(
       (d) => d.entries,
