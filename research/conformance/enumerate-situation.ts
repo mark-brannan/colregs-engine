@@ -29,11 +29,19 @@ import {
   HIST_SPEC,
   KIN_SPEC,
 } from '../../src/generated/situation.js';
-import type { ApplicabilityData, Entry, Predicate, Situation, Subject } from '../../src/types.js';
+import type {
+  ApplicabilityData,
+  Entry,
+  Predicate,
+  RuleCategory,
+  Situation,
+  Subject,
+} from '../../src/types.js';
 
 import { numericRepresentatives } from './enumerate.js';
 import { ENUM_REFINEMENTS, referenceWhenMatches } from './reference.js';
 import {
+  ENCOUNTER_CATEGORIES,
   RULE18_CLASS_VALUES,
   decodeRowsFor,
   referenceRule18Class,
@@ -187,8 +195,12 @@ function walkStrings(c: unknown, visit: (s: string) => void): void {
   if (Array.isArray(obj.any_of)) for (const sub of obj.any_of) walkStrings(sub, visit);
 }
 
-function isTwoSubject(e: Entry): boolean {
-  return (e.category ?? 'category:display') !== 'category:display';
+/** The entries this partition is for: the three categories the encounter
+ * verb reads, not every non-display entry. `category:conduct` reads a trace
+ * and `category:departure` a solver, and an axis only they name would widen
+ * the space without any encounter entry ever reading it. */
+function readsSituation(e: Entry): boolean {
+  return ENCOUNTER_CATEGORIES.includes((e.category ?? 'category:display') as RuleCategory);
 }
 
 // ---------------------------------------------------------------------
@@ -221,7 +233,7 @@ export function extractSituationAxes(data: ApplicabilityData): SituationExtract 
   const strings = new Map<string, Set<string>>();
 
   for (const e of data.entries) {
-    if (!isTwoSubject(e)) continue;
+    if (!readsSituation(e)) continue;
     for (const when of collectWhens(e)) {
       walkWhen(when, (key, constraint) => {
         const { subject } = splitKey(key);
@@ -359,7 +371,7 @@ function framed(when: Predicate): FramedWhen {
 function framedWhens(data: ApplicabilityData): FramedWhen[] {
   const out: FramedWhen[] = [];
   for (const e of data.entries) {
-    if (!isTwoSubject(e)) continue;
+    if (!readsSituation(e)) continue;
     for (const when of collectWhens(e)) {
       out.push(framed(when));
       out.push(framed(swapKeys(when)));

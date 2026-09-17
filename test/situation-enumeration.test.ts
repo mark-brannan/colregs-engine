@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json';
 
-import type { ApplicabilityData, Entry, Predicate } from '../src/types';
+import type { ApplicabilityData, Entry, Predicate, RuleCategory } from '../src/types';
 import { validateSituation } from '../src/facts';
 import { rule18Class } from '../src/situation';
 import {
@@ -18,6 +18,7 @@ import {
   type SituationAxis,
 } from '../research/conformance/enumerate-situation';
 import {
+  ENCOUNTER_CATEGORIES,
   RULE18_CLASS_VALUES,
   referenceRule18Class,
 } from '../research/conformance/reference-encounter';
@@ -26,8 +27,9 @@ const data = applicabilityJson as unknown as ApplicabilityData;
 const { axes, undeclaredEnumValues } = extractSituationAxes(data);
 const axisByKey = new Map(axes.map((a) => [a.key, a]));
 
-/** What the two-subject entries read, walked here a second time so the
- * assertions below are against the data and not against the extractor. */
+/** What the entries the encounter verb reads ask for, walked here a second
+ * time so the assertions below are against the data and not against the
+ * extractor. */
 function walk(when: Predicate, visit: (key: string, constraint: unknown) => void): void {
   for (const [key, constraint] of Object.entries(when)) {
     if (key === 'any_of') {
@@ -38,8 +40,8 @@ function walk(when: Predicate, visit: (key: string, constraint: unknown) => void
   }
 }
 
-const twoSubject: Entry[] = data.entries.filter(
-  (e) => (e.category ?? 'category:display') !== 'category:display',
+const twoSubject: Entry[] = data.entries.filter((e) =>
+  ENCOUNTER_CATEGORIES.includes((e.category ?? 'category:display') as RuleCategory),
 );
 
 const readKeys = new Set<string>();
@@ -84,8 +86,21 @@ for (const e of twoSubject) {
 }
 
 describe('the situation axis table', () => {
-  it('has one axis per key the two-subject entries read', () => {
+  it('has one axis per key the encounter categories read', () => {
     expect([...axisByKey.keys()].sort()).toEqual([...readKeys].sort());
+  });
+
+  it('reads no category the encounter verb does not', () => {
+    // A `conduct` or `departure` entry reads a trace or a solver, not a
+    // situation; an axis only one of those names would widen the partition
+    // without any encounter entry ever reading it.
+    const categories = new Set(twoSubject.map((e) => e.category));
+    for (const category of categories) {
+      expect(ENCOUNTER_CATEGORIES).toContain(category);
+    }
+    expect(twoSubject.length).toBe(
+      data.entries.filter((e) => ENCOUNTER_CATEGORIES.includes(e.category as RuleCategory)).length,
+    );
   });
 
   it('names no enum value the generated specs do not declare', () => {
