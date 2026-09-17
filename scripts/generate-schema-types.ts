@@ -66,7 +66,8 @@ const OWNED_BY_FACT_RECORD_GENERATOR = new Set(['fact-record', 'situation']);
 const BANNER = `/**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs@%VERSION% schema/%FILE%
+ * Source: colregs schema/%FILE%
+ * Version: declared in package.json, resolved in package-lock.json
  * Regenerate with \`npm run generate\`; \`npm run generate:check\` fails the
  * build if this file and the pinned schema disagree.
  */`;
@@ -132,10 +133,7 @@ for (const file of files) {
     style: { singleQuote: true },
   });
 
-  const banner = BANNER.replace('%VERSION%', colregsVersion).replace(
-    '%FILE%',
-    file,
-  );
+  const banner = BANNER.replace('%FILE%', file);
   writeFileSync(join(OUT_DIR, `${stem}.ts`), `${banner}\n\n${body}`);
   modules.push({ module: stem, root });
 }
@@ -145,10 +143,7 @@ for (const file of files) {
 // `export type *` keeps the emitted JS empty), and every root type is
 // re-exported by name.
 const barrel = [
-  BANNER.replace('%VERSION%', colregsVersion).replace(
-    ' schema/%FILE%',
-    ' schema/*.schema.json',
-  ),
+  BANNER.replace('schema/%FILE%', 'schema/*.schema.json'),
   '',
   ...modules.map(
     ({ module }) =>
