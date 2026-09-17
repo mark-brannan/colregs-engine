@@ -182,5 +182,5 @@ export interface RepresentedParagraph {
   id: string;
   jurisdiction: string;
   cite: string;
-  category: 'category:care' | 'category:meta';
+  category: 'category:care' | 'category:meta' | 'category:scope';
 }

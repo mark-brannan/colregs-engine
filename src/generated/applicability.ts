@@ -53,6 +53,7 @@ export type Modality =
   | 'modality:exempt'
   | 'modality:shall-not'
   | 'modality:shall-not-impede';
+export type RepresentedCategory = 'category:care' | 'category:meta' | 'category:scope';
 export type RuleCategory =
   | 'category:definition'
   | 'category:standard'
@@ -171,7 +172,7 @@ export interface ApplicabilityData {
     id: RuleId;
     jurisdiction: string;
     cite: string;
-    category: 'category:care' | 'category:meta' | 'category:scope';
+    category: RepresentedCategory;
     note: string;
   }[];
   /**
