@@ -35,7 +35,7 @@ each line below names the point that owns it.
 
 2. **How far a relation reaches** — ADR 0019 point 1: `rel:overrides`
    fires from an obligation and reaches entries in force; `rel:excludes`
-   fires from nowhere and is a co-occurrence check between displays.
+   fires from nowhere and is a co-occurrence check within a display.
 3. **Alternatives whose `rel:in_lieu_of` targets intersect never share a
    display** — ADR 0019 point 4.
 4. **What an import reads** — ADR 0019 point 3: lights, their modality and
