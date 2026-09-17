@@ -37,6 +37,7 @@ export const FACT_SPEC = {
   'fact:following_traffic_lane': { kind: 'boolean' },
   'fact:obstruction_side': { kind: 'enum', values: ['obstruction_side:port', 'obstruction_side:starboard'] },
   'fact:time': { kind: 'enum', values: ['time:day', 'time:night'] },
+  'fact:visibility': { kind: 'enum', values: ['visibility:good', 'visibility:restricted'] },
 } as const;
 
 /** Every fact key colregs defines. */

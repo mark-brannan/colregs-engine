@@ -205,24 +205,17 @@ export function resolveModality(entry: Entry, facts: FactRecord): Modality {
 // Applied right after an entry's own modality resolves (resolveModality):
 // a shift maps a resolved modality to another when its jurisdiction is in
 // force, its `when` holds against the fact record, and it *reaches* the
-// entry. `mark-brannan/colregs#184` is what actually ships
-// `modality_shifts` and the `fact:time`/`fact:visibility` a shift's `when`
-// reads; until it releases and the pin bumps (issue #125 step 5), neither
-// exists in this package's own resolved data or vocabulary, so every
-// function below is inert on real data — exercised only by its own unit
-// tests, against synthetic `opts.data`.
+// entry.
 
 /** A LightRef's signal kind, read off its `light` id's namespace prefix —
  * the same convention every other colregs vocabulary uses (`modality:`,
- * `category:`, `rel:`...). `light:*` is `'lights'`; colregs-engine#125's
- * fixtures name `'shapes'` (cones) as the other kind a display entry can
- * carry, so `shape:*` is assumed to name it the same way once day shapes
- * ship in a released `lights.json` — unverified against colregs' actual
- * data, since no resolved release carries a shape-kind light ref yet. */
+ * `category:`, `rel:`...). `light:*` is `'lights'`; day shapes are never a
+ * `LightRef` (confirmed against colregs' real `data/applicability.json` on
+ * `#184` landing) — they carry their own `shapes: ShapeRef[]` field on the
+ * entry, handled separately in {@link entrySignalKinds}. */
 function signalKindOf(ref: { light: string }): string {
   const prefix = ref.light.slice(0, ref.light.indexOf(':'));
   if (prefix === 'light') return 'lights';
-  if (prefix === 'shape') return 'shapes';
   return `${prefix}s`;
 }
 
@@ -252,6 +245,7 @@ export function entrySignalKinds(
   if (!entry) throw new Error(`unknown entry ref ${id} via ${via}`);
   const kinds = new Set<string>();
   for (const ref of entry.lights ?? []) kinds.add(signalKindOf(ref));
+  if (entry.shapes?.length) kinds.add('shapes');
   const pull = (refId: string) => {
     const ref = byId.get(refId);
     if (!ref) throw new Error(`unknown entry ref ${refId} via ${id}`);

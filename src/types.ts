@@ -80,38 +80,23 @@ export interface Entry
   'rel:conditional_includes'?: ConditionalInclude[];
 }
 
-export interface ApplicabilityData extends Omit<SchemaApplicabilityData, 'entries'> {
+export interface ApplicabilityData extends Omit<SchemaApplicabilityData, 'entries' | 'modality_shifts'> {
   entries: Entry[];
-  /** See {@link ModalityShift}. Absent from every colregs release this
-   * package resolves today (`mark-brannan/colregs#184` is still open) —
-   * only ever populated via a caller's `opts.data` until it lands. */
   modality_shifts?: ModalityShift[];
 }
+
+type SchemaModalityShift = NonNullable<SchemaApplicabilityData['modality_shifts']>[number];
 
 /**
  * One record of colregs' `data/applicability.json` `modality_shifts` array
  * (colregs ADR 0021, colregs-engine#125): a paragraph that changes the
  * *modality* of the signals other entries prescribe, rather than
  * prescribing signals of its own — Rule 20(c) is the first ("by day ...
- * need not be exhibited"). Hand-typed ahead of the schema generator the
- * same way `AXIS_FACTS` (evaluate.ts) anticipated colregs-engine#9/#13:
- * delete this and let `npm run generate` produce the real shape once
- * `mark-brannan/colregs#184` releases.
+ * need not be exhibited"). Generated shape, with `when` overridden to
+ * {@link Predicate} for the same not/any_of reasons `Entry` overrides it.
  */
-export interface ModalityShift {
-  id: string;
-  /** Resolved the same way an entry's jurisdiction is (ADR 0018): `intl` is
-   * always in force, a named jurisdiction only for itself. */
-  jurisdiction: string;
-  cite: string;
-  /** The signal kind this shift reaches — `'lights'` for shift:20c. An
-   * entry qualifies only if every signal it carries, including everything
-   * it pulls in via `rel:includes`/`rel:conditional_includes`, is of this
-   * kind (see `shiftReaches` in evaluate.ts). */
-  applies_to: string;
+export interface ModalityShift extends Omit<SchemaModalityShift, 'when'> {
   when: Predicate;
-  /** A modality not among these keys is left alone. */
-  map: Partial<Record<Modality, Modality>>;
 }
 
 /**

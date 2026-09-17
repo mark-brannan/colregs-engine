@@ -19,10 +19,14 @@ function evaluate(
   return evaluateDisplay(facts, { data, jurisdiction });
 }
 
+/** A plain entry id, or (ADR 0021) an `{entry, modality}` pair asserting the
+ * resolved modality after any shift — e.g. Rule 20(c) in force. */
+type FixtureExpectation = string | { entry: string; modality: string };
+
 interface FixtureCase {
   name: string;
   facts: FactRecord;
-  expect: string[];
+  expect: FixtureExpectation[];
   /** colregs 0.2.2 (ADR 0008): a case may declare a jurisdiction other than
    * the file's default, for a national delta (e.g. the mooring-buoy case). */
   jurisdiction?: string;
@@ -35,7 +39,7 @@ const fixtures = fixturesJson as unknown as {
 
 describe('colregs applicability fixtures (verbatim replay)', () => {
   it('has the full fixture set', () => {
-    expect(fixtures.cases.length).toBe(111);
+    expect(fixtures.cases.length).toBe(114);
   });
 
   // The fixtures are colregs' contract, so an evaluation of one must say
@@ -51,7 +55,13 @@ describe('colregs applicability fixtures (verbatim replay)', () => {
     it(c.name, () => {
       const jurisdiction = c.jurisdiction ?? fixtures.jurisdiction;
       const result = evaluate(applicability, c.facts, jurisdiction);
-      expect([...result.applied].sort()).toEqual([...c.expect].sort());
+      const expectedIds = c.expect.map((e) => (typeof e === 'string' ? e : e.entry));
+      expect([...result.applied].sort()).toEqual([...expectedIds].sort());
+
+      for (const e of c.expect) {
+        if (typeof e === 'string') continue;
+        expect(result.modalities[e.entry]).toBe(e.modality);
+      }
     });
   }
 });

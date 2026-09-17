@@ -91,7 +91,7 @@ const unpoison = () => {
 interface FixtureCase {
   name: string;
   facts: FactRecord;
-  expect: string[];
+  expect: (string | { entry: string; modality: string })[];
   jurisdiction?: string;
 }
 
@@ -144,7 +144,8 @@ describe('ADR 0010 (engine half): nothing in colregs-engine reads rule text', ()
       for (const c of displayCases) {
         const jurisdiction = c.jurisdiction ?? fixtures.jurisdiction;
         const result = evaluateDisplay(c.facts, { data: applicability, jurisdiction });
-        expect([...result.applied].sort()).toEqual([...c.expect].sort());
+        const expectedIds = c.expect.map((e) => (typeof e === 'string' ? e : e.entry));
+        expect([...result.applied].sort()).toEqual([...expectedIds].sort());
       }
     } finally {
       unpoison();
