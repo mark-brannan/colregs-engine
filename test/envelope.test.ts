@@ -11,7 +11,7 @@ import type {
   ApplicabilityData,
   FactRecord,
   RuleCategory,
-  Rule2DepartureStatus,
+  DepartureStatus,
 } from '../src/types';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
@@ -48,7 +48,7 @@ const CATEGORIES: RuleCategory[] = [
   'category:meta',
 ];
 
-const STATUSES: Rule2DepartureStatus[] = [
+const STATUSES: DepartureStatus[] = [
   'not-flagged',
   'model-rule-conflict',
   'no-robust-policy-in-model',
