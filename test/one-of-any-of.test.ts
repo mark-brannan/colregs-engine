@@ -1,4 +1,4 @@
-// claude-code-review on #13: importAvailable() routed every `ref.when` key,
+// Regression: importAvailable() routed every `ref.when` key,
 // `any_of` included, through valueMatches(facts['any_of'], ...) -- which
 // always reads undefined and fails, so a one_of option gated by a
 // predicate-level `any_of` was silently always unavailable, the same
