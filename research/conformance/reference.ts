@@ -140,11 +140,36 @@ function isDisplay(e: Entry): boolean {
   return (e.category ?? 'category:display') === 'category:display';
 }
 
-/** Ids of the entries whose `when` holds for this fact record — the
+/** Entries in force under `jurisdiction` (colregs ADR 0018) — the
  * reference-implementation counterpart to src/evaluate.ts's
- * appliedEntries(). */
-export function referenceAppliedEntries(data: ApplicabilityData, facts: FactRecord): string[] {
-  return data.entries
+ * jurisdictionEntries(): every `intl` entry not named by one of the
+ * jurisdiction's own `suppressions`, plus the jurisdiction's own entries.
+ * `intl` needs no suppression lookup; it is the base the patch applies over. */
+function jurisdictionEntries(data: ApplicabilityData, jurisdiction: string): Entry[] {
+  if (jurisdiction === 'intl') {
+    return data.entries.filter((e) => e.jurisdiction === 'intl');
+  }
+  const suppressed = new Set(
+    (data.suppressions ?? [])
+      .filter((s) => s.jurisdiction === jurisdiction)
+      .map((s) => s.suppresses),
+  );
+  return data.entries.filter(
+    (e) =>
+      (e.jurisdiction === 'intl' && !suppressed.has(e.id)) ||
+      e.jurisdiction === jurisdiction,
+  );
+}
+
+/** Ids of the entries whose `when` holds for this fact record, under
+ * `jurisdiction` (default `intl`) — the reference-implementation
+ * counterpart to src/evaluate.ts's appliedEntryList(). */
+export function referenceAppliedEntries(
+  data: ApplicabilityData,
+  facts: FactRecord,
+  jurisdiction = 'intl',
+): string[] {
+  return jurisdictionEntries(data, jurisdiction)
     .filter((e) => isDisplay(e) && referenceWhenMatches(e.when, facts))
     .map((e) => e.id);
 }

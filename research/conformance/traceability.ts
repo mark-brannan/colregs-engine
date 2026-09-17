@@ -24,6 +24,19 @@ export function expandCite(cite: string): string[] {
   return [before, endCite];
 }
 
-export function unresolvedCite(cite: string, rules: RulesData): string[] {
-  return expandCite(cite).filter((c) => !(c in rules.paragraphs));
+/** Paragraph paths a jurisdiction's resolved skeleton spells (ADR 0020): the
+ * `intl` base plus, for a non-`intl` jurisdiction, its own delta paths --
+ * the union is enough to check a cite resolves, since a suppressed path is
+ * never what an entry in force under that jurisdiction cites. */
+function resolvedPaths(rules: RulesData, jurisdiction: string): Set<string> {
+  const paths = new Set(Object.keys(rules.paragraphs));
+  for (const path of Object.keys(rules.deltas?.[jurisdiction]?.paragraphs ?? {})) {
+    paths.add(path);
+  }
+  return paths;
+}
+
+export function unresolvedCite(cite: string, rules: RulesData, jurisdiction: string): string[] {
+  const paths = resolvedPaths(rules, jurisdiction);
+  return expandCite(cite).filter((c) => !paths.has(c));
 }

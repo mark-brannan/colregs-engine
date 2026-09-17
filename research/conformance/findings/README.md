@@ -26,4 +26,4 @@ overwrites.
 
 | id | check | records | description | cites | status | triage note |
 |---|---|---|---|---|---|---|
-
+| FIND-01 | consistency-no-obligation | 76032 | record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:underway | - | candidate | - |
