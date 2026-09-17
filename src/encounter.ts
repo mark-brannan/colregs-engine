@@ -91,50 +91,54 @@ function precedenceEntries(data: ApplicabilityData, flat: FlatSituation): Entry[
  * keyed by which actual vessel each fired for; `rel:overrides` resolves over
  * the pool, and only the survivors' `effect.self`/`effect.other` become
  * roles. `applied`/`scope`/`encounter`/`modalities`/`categories` stay
- * self-frame (§4) and are computed elsewhere from `flat` alone. */
+ * self-frame (§4) and are computed elsewhere from `flat` alone.
+ *
+ * Deduplicated by entry id, self-frame preferred: no precedence entry in
+ * colregs' table can match both frames at once today (every one gates on an
+ * asymmetric self/other predicate, e.g. opposite bearing sectors), but a
+ * future entry that did would otherwise emit two roles for one rule firing
+ * once, so the pool keeps exactly one frame's reading per id rather than
+ * relying on that holding forever. */
 function pooledRoles(
   data: ApplicabilityData,
   flat: FlatSituation,
   situation: Situation,
-): { self: SubjectRole[]; other: SubjectRole[] } {
+): { roles: { self: SubjectRole[]; other: SubjectRole[] }; overridden: { id: string; by: string }[] } {
   const swapped = swappedSituation(situation);
   const flatSwap = swapped ? flattenSituation(swapped) : undefined;
 
-  const instances: { entry: Entry; frame: 'self' | 'swap' }[] = [
-    ...precedenceEntries(data, flat).map((entry) => ({ entry, frame: 'self' as const })),
-    ...(flatSwap ? precedenceEntries(data, flatSwap) : []).map((entry) => ({
-      entry,
-      frame: 'swap' as const,
-    })),
-  ];
-
+  const frameOf = new Map<string, 'self' | 'swap'>();
   const pooledById = new Map<string, Entry>();
   const pooledModalities: Record<string, Modality> = {};
-  // Swap first, self second, so a rare entry matching both frames at once
-  // (none exist in colregs' own precedence table today) keeps a deterministic,
-  // self-frame-preferred modality rather than depending on array order.
-  for (const inst of instances.filter((i) => i.frame === 'swap')) {
-    pooledById.set(inst.entry.id, inst.entry);
-    pooledModalities[inst.entry.id] = resolveModality(inst.entry, flatSwap as unknown as FactRecord);
+  // Swap first, self second, so an entry matching both frames at once keeps
+  // a deterministic, self-frame-preferred reading rather than depending on
+  // array order.
+  for (const entry of flatSwap ? precedenceEntries(data, flatSwap) : []) {
+    frameOf.set(entry.id, 'swap');
+    pooledById.set(entry.id, entry);
+    pooledModalities[entry.id] = resolveModality(entry, flatSwap as unknown as FactRecord);
   }
-  for (const inst of instances.filter((i) => i.frame === 'self')) {
-    pooledById.set(inst.entry.id, inst.entry);
-    pooledModalities[inst.entry.id] = resolveModality(inst.entry, flat as unknown as FactRecord);
+  for (const entry of precedenceEntries(data, flat)) {
+    frameOf.set(entry.id, 'self');
+    pooledById.set(entry.id, entry);
+    pooledModalities[entry.id] = resolveModality(entry, flat as unknown as FactRecord);
   }
 
-  const { overriddenIds } = resolveOverrides([...pooledById.values()], pooledModalities, OBLIGATIONS);
+  const pooled = [...pooledById.values()];
+  const { overridden, overriddenIds } = resolveOverrides(pooled, pooledModalities, OBLIGATIONS);
 
   const roles: { self: SubjectRole[]; other: SubjectRole[] } = { self: [], other: [] };
-  for (const { entry, frame } of instances) {
+  for (const entry of pooled) {
     if (overriddenIds.has(entry.id)) continue;
     const effect = entry.effect as Record<string, unknown> | undefined;
     const selfEffect = effect?.self as SubjectRole['role'] | undefined;
     const otherEffect = effect?.other as SubjectRole['role'] | undefined;
+    const frame = frameOf.get(entry.id);
     const [toSelf, toOther] = frame === 'self' ? [selfEffect, otherEffect] : [otherEffect, selfEffect];
     if (toSelf !== undefined && toSelf !== 'role:none') roles.self.push({ role: toSelf, by: entry.id });
     if (toOther !== undefined && toOther !== 'role:none') roles.other.push({ role: toOther, by: entry.id });
   }
-  return roles;
+  return { roles, overridden };
 }
 
 /**
@@ -206,7 +210,14 @@ export function evaluateEncounter(
     }
   }
 
-  const roles = pooledRoles(data, flat, situation);
+  const { roles, overridden: pooledOverridden } = pooledRoles(data, flat, situation);
+  // `overridden`'s self-frame entries win on a ties (they're already visible
+  // in `applied`); a pooled pair only adds an id resolveOverrides' self-frame
+  // call could never see -- exactly the cross-frame case ADR 0016 exists for.
+  const selfFrameOverriddenIds = new Set(overridden.map((o) => o.id));
+  for (const pair of pooledOverridden) {
+    if (!selfFrameOverriddenIds.has(pair.id)) overridden.push(pair);
+  }
 
   // Rule 7(a) makes risk a judgement on all available means; a caller who
   // states it has made that judgement, and 7(d)(i) can only add a ground.
