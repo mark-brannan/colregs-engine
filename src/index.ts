@@ -52,6 +52,7 @@ export type {
   Display,
   DisplayEvaluation,
   DisplayLight,
+  DisplayShape,
   EncounterEvaluation,
   EvaluationProvenance,
   ParagraphCite,
