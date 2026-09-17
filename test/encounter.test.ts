@@ -53,6 +53,14 @@ describe('evaluateEncounter', () => {
     expect(r.roles.self).toEqual([{ role: 'role:give-way', by: 'rule:13a' }]);
   });
 
+  it("18(a)(i) over 15(a) across frames: the public `overridden` names the cross-frame override too", () => {
+    // rule:18a_i fires only in the swapped frame (ADR 0016) and overrides
+    // rule:15a:keep_out_of_the_way, which fires only in the self frame --
+    // self-frame-only override resolution could never see this pair.
+    const r = evaluateEncounter(fixture('18(a)(i) over 15(a) across frames'));
+    expect(r.overridden).toContainEqual({ id: 'rule:15a:keep_out_of_the_way', by: 'rule:18a_i' });
+  });
+
   it('a stated risk of collision is asserted even when no entry grounds it', () => {
     const r = evaluateEncounter(fixture('7(d)(i) does not apply'));
     expect(r.risk_of_collision).toEqual({ asserted: true, by: [] });

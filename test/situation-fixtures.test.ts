@@ -3,6 +3,9 @@
 // the entries it `expect`s must be exactly the ones appliedEncounterEntries
 // returns, with the modality each `{entry, modality}` element names. An
 // illustrative case fixes shape only; its expect is empty and not asserted.
+// A case carrying `roles` binds evaluateEncounter's pooled, resolved read
+// (ADR 0016 §5) — self-frame `expect` and pooled `roles` are asserted
+// independently, since §4 keeps them on separate frames.
 
 import { describe, expect, it } from 'vitest';
 import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
@@ -12,11 +15,17 @@ import { validateSituation } from '../src/facts';
 
 type Expectation = string | { entry: string; modality: string };
 
+interface FixtureRoles {
+  self: { role: string; by: string }[];
+  other: { role: string; by: string }[];
+}
+
 interface SituationFixtureCase {
   name: string;
   status: 'illustrative' | 'binding';
   expect: Expectation[];
   situation: Situation;
+  roles?: FixtureRoles;
 }
 
 const fixtures = situationFixturesJson as unknown as {
@@ -45,12 +54,19 @@ describe('colregs situation fixtures (verbatim replay)', () => {
     });
 
     const withModality = c.expect.filter((e) => typeof e !== 'string');
-    if (withModality.length === 0) continue;
-    it(`${c.name}: expected modalities match`, () => {
+    if (withModality.length > 0) {
+      it(`${c.name}: expected modalities match`, () => {
+        const result = evaluateEncounter(c.situation);
+        for (const e of withModality) {
+          expect(result.modalities[idOf(e)]).toBe((e as { modality: string }).modality);
+        }
+      });
+    }
+
+    if (!c.roles) continue;
+    it(`${c.name}: pooled roles match (ADR 0016)`, () => {
       const result = evaluateEncounter(c.situation);
-      for (const e of withModality) {
-        expect(result.modalities[idOf(e)]).toBe((e as { modality: string }).modality);
-      }
+      expect(result.roles).toEqual(c.roles);
     });
   }
 });
