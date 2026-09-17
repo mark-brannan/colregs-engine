@@ -16,6 +16,7 @@ import type {
   Constraint,
   Display,
   DisplayLight,
+  DisplayShape,
   DisplayEvaluation,
   Entry,
   EvaluationProvenance,
@@ -383,24 +384,51 @@ function displayLights(
   // colregs 0.2.0 made `lights` optional on an entry (conduct-only entries
   // such as precedence/scope carry none); absent is equivalent to the
   // empty array this always effectively was for such entries.
-  return (node.entry.lights ?? []).map((spec) => {
-    // A light's own modality override bypasses node.modality (already
-    // shifted) entirely, so it needs the same shifts applied to it
-    // directly -- otherwise a shift silently misses any entry whose lights
-    // carry a per-light override (claude-review, PR #128).
-    const own = spec.modality as Modality | undefined;
-    const modality =
-      own !== undefined
-        ? applyShifts(own, node.entry, facts, jurisdiction, shifts, byId)
-        : node.modality;
-    return {
-      spec,
-      source_entry: node.id,
-      sourceEntry: node.id,
-      via: node.via,
-      modality,
-    };
-  });
+  return (node.entry.lights ?? []).map((spec) => ({
+    spec,
+    source_entry: node.id,
+    sourceEntry: node.id,
+    via: node.via,
+    modality: specModality(spec, node, facts, jurisdiction, shifts, byId),
+  }));
+}
+
+/** A signal's resolved modality. A spec's own modality override bypasses
+ * node.modality (already shifted) entirely, so it needs the same shifts
+ * applied to it directly -- otherwise a shift silently misses any entry
+ * whose lights carry a per-light override (claude-review, PR #128). Shared
+ * by lights and shapes so the shift path has one home. */
+function specModality(
+  spec: { modality?: string },
+  node: Node,
+  facts: FactRecord,
+  jurisdiction: string,
+  shifts: readonly ModalityShift[],
+  byId: ReadonlyMap<string, Entry>,
+): Modality {
+  const own = spec.modality as Modality | undefined;
+  return own !== undefined
+    ? applyShifts(own, node.entry, facts, jurisdiction, shifts, byId)
+    : node.modality;
+}
+
+/** {@link displayLights} for the entry's `shapes` clause. Shapes are never
+ * a `LightRef` (see {@link signalKindOf}), so this is the one place they
+ * are read out; a shift declaring `applies_to: 'shapes'` reaches them
+ * through {@link specModality}, the same path a per-light override takes. */
+function displayShapes(
+  node: Node,
+  facts: FactRecord,
+  jurisdiction: string,
+  shifts: readonly ModalityShift[],
+  byId: ReadonlyMap<string, Entry>,
+): DisplayShape[] {
+  return (node.entry.shapes ?? []).map((spec) => ({
+    spec,
+    source_entry: node.id,
+    via: node.via,
+    modality: specModality(spec, node, facts, jurisdiction, shifts, byId),
+  }));
 }
 
 // colregs 0.2.0 (REQ-CAT-1) gave every entry a `category`, defaulting to
@@ -833,9 +861,11 @@ export function evaluateDisplay(
     if (!valid) continue;
 
     const lights: DisplayLight[] = [];
+    const shapes: DisplayShape[] = [];
     for (const n of members.values()) {
       if (carrierLightsDropped.has(n.id)) continue;
       lights.push(...displayLights(n, facts, jurisdiction, shifts, byId));
+      shapes.push(...displayShapes(n, facts, jurisdiction, shifts, byId));
     }
 
     const entryIds = [...members.keys()].sort();
@@ -844,6 +874,9 @@ export function evaluateDisplay(
       lights
         .map((l) => JSON.stringify(l.spec))
         .sort(),
+      shapes
+        .map((s) => JSON.stringify(s.spec))
+        .sort(),
     ]);
     if (seen.has(fingerprint)) continue;
     seen.add(fingerprint);
@@ -851,6 +884,7 @@ export function evaluateDisplay(
     displays.push({
       entries: entryIds,
       lights,
+      shapes,
       chosen: [
         ...chosenBinaries.map((n) => n.id),
         ...chosenGroupOptions.map((g) => g.node.id),
@@ -862,6 +896,7 @@ export function evaluateDisplay(
     id: n.id,
     via: n.via,
     lights: displayLights(n, facts, jurisdiction, shifts, byId),
+    shapes: displayShapes(n, facts, jurisdiction, shifts, byId),
     cite: n.entry.cite,
   }));
 

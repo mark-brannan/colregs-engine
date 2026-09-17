@@ -553,3 +553,36 @@ describe('fact-record validation', () => {
     expect(() => evaluate(applicability, sloop12)).not.toThrow();
   });
 });
+
+describe('day shapes (Rule 20(d))', () => {
+  const trawlerBase: FactRecord = {
+    'fact:propulsion': 'propulsion:power',
+    'fact:activity': 'activity:trawling',
+    'fact:position': 'position:underway',
+    'fact:length_m': 30,
+  };
+
+  it('a trawler by day shows two cones apexes together, with provenance', () => {
+    const e = evaluate(applicability, { ...trawlerBase, 'fact:time': 'time:day' });
+    expect(e.applied).toContain('rule:26b_i:two_cones');
+    const shapes = e.displays.flatMap((d) => d.shapes);
+    expect(shapes.map((s) => s.spec.shape)).toEqual(['shape:cone_down', 'shape:cone_up']);
+    for (const s of shapes) {
+      expect(s.source_entry).toBe('rule:26b_i:two_cones');
+      expect(s.modality).toBe('modality:shall');
+    }
+    expect(Object.keys(shapes[0]).sort()).toEqual(['modality', 'source_entry', 'spec', 'via']);
+  });
+
+  it('the same trawler by night carries no shapes, and shapes is still an array', () => {
+    const e = evaluate(applicability, { ...trawlerBase, 'fact:time': 'time:night' });
+    for (const d of e.displays) expect(d.shapes).toEqual([]);
+    for (const a of e.optional_additions) expect(a.shapes).toEqual([]);
+  });
+
+  it('every display and optional addition carries shapes beside lights', () => {
+    const e = evaluate(applicability, sloop12);
+    for (const d of e.displays) expect(Array.isArray(d.shapes)).toBe(true);
+    for (const a of e.optional_additions) expect(Array.isArray(a.shapes)).toBe(true);
+  });
+});
