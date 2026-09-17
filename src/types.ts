@@ -99,6 +99,13 @@ export interface ModalityShift extends Omit<SchemaModalityShift, 'when'> {
   when: Predicate;
 }
 
+/** One element of a colregs fixture's `expect` array (applicability or
+ * situation fixtures alike): a plain entry id, or (ADR 0021) an
+ * `{entry, modality}` pair asserting the resolved modality — e.g. Rule
+ * 20(c) in force. Shared so the fixture-replay tests don't each redeclare
+ * the same union. */
+export type FixtureExpectation = string | { entry: string; modality: string };
+
 /**
  * What an evaluation read, and therefore what its answer does not cover.
  * Provenance, not hedging: an evaluation that silently narrows the data it

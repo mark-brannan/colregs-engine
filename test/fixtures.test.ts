@@ -7,7 +7,12 @@ import fixturesJson from 'colregs/fixtures/applicability-fixtures.json';
 import applicabilityJson from 'colregs/data/applicability.json';
 import colregsPackage from 'colregs/package.json';
 import { evaluateDisplay } from '../src/evaluate';
-import type { ApplicabilityData, DisplayEvaluation, FactRecord } from '../src/types';
+import type {
+  ApplicabilityData,
+  DisplayEvaluation,
+  FactRecord,
+  FixtureExpectation,
+} from '../src/types';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
 
@@ -18,10 +23,6 @@ function evaluate(
 ): DisplayEvaluation {
   return evaluateDisplay(facts, { data, jurisdiction });
 }
-
-/** A plain entry id, or (ADR 0021) an `{entry, modality}` pair asserting the
- * resolved modality after any shift — e.g. Rule 20(c) in force. */
-type FixtureExpectation = string | { entry: string; modality: string };
 
 interface FixtureCase {
   name: string;

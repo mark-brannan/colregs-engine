@@ -40,7 +40,12 @@ import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
 import { evaluateDisplay } from '../src/evaluate';
 import { evaluateEncounter } from '../src/encounter';
 import type { CorporaData } from '../src/generated/corpora';
-import type { ApplicabilityData, DisplayEvaluation, FactRecord } from '../src/types';
+import type {
+  ApplicabilityData,
+  DisplayEvaluation,
+  FactRecord,
+  FixtureExpectation,
+} from '../src/types';
 import type { Situation } from '../src/index';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
@@ -91,7 +96,7 @@ const unpoison = () => {
 interface FixtureCase {
   name: string;
   facts: FactRecord;
-  expect: (string | { entry: string; modality: string })[];
+  expect: FixtureExpectation[];
   jurisdiction?: string;
 }
 
@@ -102,7 +107,7 @@ const displayCases = fixtures.cases;
 interface SituationFixtureCase {
   name: string;
   status: 'illustrative' | 'binding';
-  expect: (string | { entry: string; modality: string })[];
+  expect: FixtureExpectation[];
   situation: Situation;
 }
 
