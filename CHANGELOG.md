@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.7](https://github.com/mark-brannan/colregs-engine/compare/v0.1.6...v0.1.7) (2026-09-17)
+
+
+### Added
+
+* consume colregs' operations manifest (ADR 0014) ([#95](https://github.com/mark-brannan/colregs-engine/issues/95)) ([18207a5](https://github.com/mark-brannan/colregs-engine/commit/18207a5ecae393e2c1317f5a9138e3c2840c54d5)), closes [#86](https://github.com/mark-brannan/colregs-engine/issues/86)
+* relation reach and import reads follow colregs ADR 0019 ([#98](https://github.com/mark-brannan/colregs-engine/issues/98)) ([#100](https://github.com/mark-brannan/colregs-engine/issues/100)) ([b6e7d07](https://github.com/mark-brannan/colregs-engine/commit/b6e7d07d46c1337522e89793565074c5f09d3c25))
+* stub traffic facts on Situation and the n-vessel Scene ([#82](https://github.com/mark-brannan/colregs-engine/issues/82)) ([#90](https://github.com/mark-brannan/colregs-engine/issues/90)) ([9563b67](https://github.com/mark-brannan/colregs-engine/commit/9563b6749e3dc90535b5b5d54b50c38e18f88ad6))
+
 ## [0.1.6](https://github.com/mark-brannan/colregs-engine/compare/v0.1.5...v0.1.6) (2026-09-16)
 
 
