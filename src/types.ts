@@ -236,7 +236,7 @@ export interface Situation {
   self: Subject;
   other?: Subject;
   pair?: Pair;
-  /** Other traffic, reduced to facts about `own`'s options (issue #82,
+  /** Other traffic, reduced to facts about `self`'s options (issue #82,
    * decisions.md 2026-09-16). Not vessels: `Situation` stays two-vessel,
    * `evaluateEncounter` reads none of these keys, and `Trace` keeps the same
    * two vessels throughout. Flattens to `traffic:<sector>:<key>`. Produced
@@ -244,7 +244,7 @@ export interface Situation {
   traffic?: TrafficFacts;
 }
 
-/** Sectors around `own`, as the Rules and the grid predicates divide them. */
+/** Sectors around `self`, as the Rules and the grid predicates divide them. */
 export type TrafficSector = 'ahead' | 'starboard' | 'astern' | 'port';
 
 /** One sector's reduced facts. Every field is pencil until `reduceTraffic`
@@ -263,12 +263,12 @@ export interface TrafficSectorFacts {
 /** `Situation.traffic`: facts per sector, symmetric with nothing. */
 export type TrafficFacts = Partial<Record<TrafficSector, TrafficSectorFacts>>;
 
-/** The deferred n-vessel input (issue #82 "Deferred"): `own` and every
- * other vessel. `evaluateScene` evaluates each pair with `evaluateEncounter`
- * unchanged, reduces the rest to `TrafficFacts`, and reports where pairwise
- * duties conflict. Pencil throughout. */
+/** The n-vessel input (issue #82 "Deferred", colregs ADR 0023): `self` and
+ * every other vessel. `evaluateScene` evaluates each pair with
+ * `evaluateEncounter` unchanged, reduces the rest to `TrafficFacts`, and
+ * reports where pairwise duties conflict. Pencil throughout. */
 export interface Scene {
-  own: Subject;
+  self: Subject;
   others: Subject[];
   pairs?: Pair[];
 }
@@ -293,7 +293,7 @@ export interface SceneEvaluation {
 // The three verbs ADR 0011 §4 and ADR 0012 name but do not build. Their
 // shapes live here, exported and compiler-checked, from the day they are
 // named; the verbs themselves are stubs in encounter.ts, conduct.ts and
-// rule2.ts. Every field below is pencil until the verb that fills it is
+// departure.ts. Every field below is pencil until the verb that fills it is
 // written — see each ADR's register for what would settle it.
 // ---------------------------------------------------------------------------
 
@@ -399,9 +399,9 @@ export interface SolverParameters {
 }
 
 /** One solved region grid, named immutably by `version`. Required and
- * positional on `evaluateRule2Departure`: a grid has no default. Any field
+ * positional on `evaluateDeparture`: a grid has no default. Any field
  * beyond these is the artefact's own, not API. */
-export interface Rule2DepartureModel extends SolverParameters {
+export interface DepartureModel extends SolverParameters {
   version: string;
   /** The colregs release the grid was solved against. A mismatch with
    * `rules.colregs.version` is reported, not refused. */
@@ -410,15 +410,15 @@ export interface Rule2DepartureModel extends SolverParameters {
    * space as predicates over the flat `<subject>:<class>:<key>` namespace,
    * first match wins, no match is `inconclusive-in-model`. A grid in any
    * other encoding is the artefact's own and is not read. */
-  regions?: Rule2DepartureRegion[];
+  regions?: DepartureRegion[];
 }
 
 /** One region of a solved grid: the situations it covers and what the
  * solver found there. `when` is the ordinary predicate language. */
-export interface Rule2DepartureRegion {
+export interface DepartureRegion {
   when: Predicate;
-  status: Rule2DepartureStatus;
-  advisories?: Rule2DepartureAdvisory[];
+  status: DepartureStatus;
+  advisories?: DepartureAdvisory[];
   /** Display text, never matched on. */
   assumptions_violated?: string[];
 }
@@ -426,14 +426,14 @@ export interface Rule2DepartureRegion {
 /** What the model knows, as a closed alphabet colregs' ADR 0005 §5 owns and
  * this package may not rename. `not-flagged` means "not flagged by this
  * model", never "the rules suffice". */
-export type Rule2DepartureStatus =
+export type DepartureStatus =
   | 'not-flagged'
   | 'model-rule-conflict'
   | 'no-robust-policy-in-model'
   | 'inconclusive-in-model';
 
 /** One escape the grid holds. Information, not a prescription. */
-export interface Rule2DepartureAdvisory {
+export interface DepartureAdvisory {
   action: { alter_deg?: number; sog_kn?: number };
   margin_m: number;
   /** The paragraphs this action breaks. Cites, never entry ids. */
@@ -441,14 +441,14 @@ export interface Rule2DepartureAdvisory {
   envelope: { holds_until_s: number };
 }
 
-/** The result of `evaluateRule2Departure` (ADR 0012 §4). The rule-derived
+/** The result of `evaluateDeparture` (ADR 0012 §4). The rule-derived
  * obligations sit in `rules` unchanged, so a reader sees what the Rules
  * said; advisories are ranked best margin first, and are empty under
  * `no-robust-policy-in-model`. */
-export interface Rule2DepartureFinding {
-  status: Rule2DepartureStatus;
+export interface DepartureFinding {
+  status: DepartureStatus;
   rules: EncounterEvaluation;
-  advisories: Rule2DepartureAdvisory[];
+  advisories: DepartureAdvisory[];
   model: {
     version: string;
     colregs_version: string;

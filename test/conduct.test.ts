@@ -4,7 +4,8 @@
 import { describe, expect, it } from 'vitest';
 import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
 import applicabilityJson from 'colregs/data/applicability.json';
-import { appliedConductEntries, evaluateConduct, evaluateEncounter } from '../src/index';
+import { evaluateConduct, evaluateEncounter } from '../src/index';
+import { appliedConductEntries } from '../src/conduct';
 import type { Situation, Trace } from '../src/index';
 import type { ApplicabilityData, Entry } from '../src/types';
 
