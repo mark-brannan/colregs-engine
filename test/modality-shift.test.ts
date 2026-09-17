@@ -30,12 +30,19 @@ const shift20c: ModalityShift = {
   map: { 'modality:shall': 'modality:may', 'modality:shall-if-practicable': 'modality:may' },
 };
 
-const dayGoodVis: FactRecord = { 'fact:time': 'time:day', 'fact:visibility': 'visibility:good' };
-const dayRestrictedVis: FactRecord = {
+// fact:time/fact:visibility don't exist in this package's own generated
+// FactRecord yet (they ship with colregs#184), so these are cast the same
+// way test/predicate.test.ts and test/z3-encoding.test.ts cast synthetic
+// fact records ahead of what the generated type currently declares.
+const dayGoodVis = {
+  'fact:time': 'time:day',
+  'fact:visibility': 'visibility:good',
+} as unknown as FactRecord;
+const dayRestrictedVis = {
   'fact:time': 'time:day',
   'fact:visibility': 'visibility:restricted',
-};
-const goodVisNoTime: FactRecord = { 'fact:visibility': 'visibility:good' };
+} as unknown as FactRecord;
+const goodVisNoTime = { 'fact:visibility': 'visibility:good' } as unknown as FactRecord;
 
 function lightsOnlyEntry(): Entry {
   return {
