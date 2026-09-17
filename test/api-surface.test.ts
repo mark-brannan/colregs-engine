@@ -8,8 +8,9 @@ import {
   appliedDisplayEntries,
   evaluateDisplay,
 } from '../src/evaluate';
+import { evaluateScene, reduceTraffic } from '../src/index';
 import { DataVersionMismatchError } from '../src/errors';
-import type { ApplicabilityData, FactRecord } from '../src/types';
+import type { ApplicabilityData, FactRecord, Subject } from '../src/types';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
 
@@ -83,5 +84,30 @@ describe('camelCase field aliases', () => {
     const lights = result.displays.flatMap((d) => d.lights);
     expect(lights.length).toBeGreaterThan(0);
     for (const light of lights) expect(light.sourceEntry).toBe(light.source_entry);
+  });
+});
+
+describe('the traffic reduction and the scene combinator', () => {
+  const own: Subject = {
+    fact: sloop12,
+    kin: { 'kin:position': { latitude: 50, longitude: 0 }, 'kin:heading_deg': 0 },
+  };
+
+  it('are exported from the package root and answer', () => {
+    expect(reduceTraffic(own, []).ahead).toEqual({ count: 0, foreclosed: false });
+    expect(evaluateScene({ own, others: [] })).toEqual({
+      pairs: [],
+      traffic: reduceTraffic(own, []),
+      conflicts: [],
+    });
+  });
+
+  it('carry opts.data through to every pair', () => {
+    const other: Subject = {
+      fact: sloop12,
+      kin: { 'kin:position': { latitude: 50.01, longitude: 0.01 }, 'kin:heading_deg': 180 },
+    };
+    const scene = evaluateScene({ own, others: [other] }, { data: applicability });
+    expect(scene.pairs[0].colregs).toEqual({ version: colregsPackage.version, source: 'caller' });
   });
 });

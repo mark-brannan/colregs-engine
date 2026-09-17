@@ -26,7 +26,9 @@ export { appliedConductEntries, evaluateConduct };
 import { evaluateRule2Departure } from './rule2.js';
 export { evaluateRule2Departure };
 export { reduceTraffic } from './traffic.js';
+export type { TrafficOptions } from './traffic.js';
 export { evaluateScene } from './scene.js';
+export type { SceneOptions } from './scene.js';
 export { NotImplementedError } from './errors.js';
 export { validateSituation, validateTrace } from './facts.js';
 

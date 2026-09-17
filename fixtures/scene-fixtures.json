@@ -1,0 +1,200 @@
+{
+  "$comment": "Scenes for evaluateScene, in the shape of colregs' fixtures/situation-fixtures.json: one named case per scene, the scene assignable to `Scene` unedited, and what the evaluation must return.",
+  "cases": [
+    {
+      "name": "two on the starboard bow, each foreclosing the other",
+      "narrative": "Own power-driven, heading 000 at 12 kn, two power-driven vessels crossing right to left on her starboard bow, both inside the model's 500 m separation. Own is give-way to both under Rule 15(a), and the alteration to starboard each duty asks for is foreclosed by the other vessel.",
+      "model": {
+        "version": "test-grid-1",
+        "colregs_version": "0.3.2",
+        "dynamics": ["dynamics:cargo"],
+        "horizon_s": 600,
+        "cadence_s": 10,
+        "separation_m": 500,
+        "information": "full",
+        "adversary": "compliant"
+      },
+      "scene": {
+        "own": {
+          "fact": {
+            "fact:propulsion": "propulsion:power",
+            "fact:activity": "activity:none",
+            "fact:position": "position:underway",
+            "fact:making_way": true,
+            "fact:length_m": 15
+          },
+          "kin": {
+            "kin:position": { "latitude": 50, "longitude": 0 },
+            "kin:heading_deg": 0,
+            "kin:sog_kn": 12,
+            "kin:rot_deg_min": 0,
+            "kin:dynamics": "dynamics:yacht"
+          },
+          "geo": { "geo:rel_bearing_deg": 40 },
+          "hist": { "hist:was_overtaking": false, "hist:latched_at_s": null }
+        },
+        "others": [
+          {
+            "fact": {
+              "fact:propulsion": "propulsion:power",
+              "fact:activity": "activity:none",
+              "fact:position": "position:underway",
+              "fact:making_way": true,
+              "fact:length_m": 40
+            },
+            "kin": {
+              "kin:position": { "latitude": 50.002067, "longitude": 0.002698 },
+              "kin:heading_deg": 300,
+              "kin:sog_kn": 8,
+              "kin:rot_deg_min": 0,
+              "kin:dynamics": "dynamics:cargo"
+            },
+            "geo": { "geo:rel_bearing_deg": 280 },
+            "hist": { "hist:was_overtaking": false, "hist:latched_at_s": null }
+          },
+          {
+            "fact": {
+              "fact:propulsion": "propulsion:power",
+              "fact:activity": "activity:none",
+              "fact:position": "position:underway",
+              "fact:making_way": true,
+              "fact:length_m": 25
+            },
+            "kin": {
+              "kin:position": { "latitude": 50.00123, "longitude": 0.005259 },
+              "kin:heading_deg": 300,
+              "kin:sog_kn": 10,
+              "kin:rot_deg_min": 0,
+              "kin:dynamics": "dynamics:ferry"
+            },
+            "geo": { "geo:rel_bearing_deg": 280 },
+            "hist": { "hist:was_overtaking": false, "hist:latched_at_s": null }
+          }
+        ],
+        "pairs": [
+          {
+            "geo": {
+              "geo:range_m": 300,
+              "geo:bearing_change_deg_min": 0,
+              "geo:cpa_m": 20,
+              "geo:tcpa_s": 60,
+              "geo:in_sight": true,
+              "geo:risk_of_collision": true
+            }
+          },
+          {
+            "geo": {
+              "geo:range_m": 400,
+              "geo:bearing_change_deg_min": 0,
+              "geo:cpa_m": 30,
+              "geo:tcpa_s": 80,
+              "geo:in_sight": true,
+              "geo:risk_of_collision": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "conflicts": [
+          { "duty": "rule:15a:keep_out_of_the_way", "to": 0, "blocked_by": [1] },
+          { "duty": "rule:15a:keep_out_of_the_way", "to": 1, "blocked_by": [0] }
+        ]
+      }
+    },
+    {
+      "name": "the same two, both beyond the separation",
+      "narrative": "The same geometry with the two vessels at 2000 m and 3000 m. Own holds the same give-way duty to each, the starboard sector is not foreclosed for either pair, and the scene reports no conflict.",
+      "model": {
+        "version": "test-grid-1",
+        "colregs_version": "0.3.2",
+        "dynamics": ["dynamics:cargo"],
+        "horizon_s": 600,
+        "cadence_s": 10,
+        "separation_m": 500,
+        "information": "full",
+        "adversary": "compliant"
+      },
+      "scene": {
+        "own": {
+          "fact": {
+            "fact:propulsion": "propulsion:power",
+            "fact:activity": "activity:none",
+            "fact:position": "position:underway",
+            "fact:making_way": true,
+            "fact:length_m": 15
+          },
+          "kin": {
+            "kin:position": { "latitude": 50, "longitude": 0 },
+            "kin:heading_deg": 0,
+            "kin:sog_kn": 12,
+            "kin:rot_deg_min": 0,
+            "kin:dynamics": "dynamics:yacht"
+          },
+          "geo": { "geo:rel_bearing_deg": 40 },
+          "hist": { "hist:was_overtaking": false, "hist:latched_at_s": null }
+        },
+        "others": [
+          {
+            "fact": {
+              "fact:propulsion": "propulsion:power",
+              "fact:activity": "activity:none",
+              "fact:position": "position:underway",
+              "fact:making_way": true,
+              "fact:length_m": 40
+            },
+            "kin": {
+              "kin:position": { "latitude": 50.013778, "longitude": 0.017986 },
+              "kin:heading_deg": 300,
+              "kin:sog_kn": 8,
+              "kin:rot_deg_min": 0,
+              "kin:dynamics": "dynamics:cargo"
+            },
+            "geo": { "geo:rel_bearing_deg": 280 },
+            "hist": { "hist:was_overtaking": false, "hist:latched_at_s": null }
+          },
+          {
+            "fact": {
+              "fact:propulsion": "propulsion:power",
+              "fact:activity": "activity:none",
+              "fact:position": "position:underway",
+              "fact:making_way": true,
+              "fact:length_m": 25
+            },
+            "kin": {
+              "kin:position": { "latitude": 50.009228, "longitude": 0.039442 },
+              "kin:heading_deg": 300,
+              "kin:sog_kn": 10,
+              "kin:rot_deg_min": 0,
+              "kin:dynamics": "dynamics:ferry"
+            },
+            "geo": { "geo:rel_bearing_deg": 280 },
+            "hist": { "hist:was_overtaking": false, "hist:latched_at_s": null }
+          }
+        ],
+        "pairs": [
+          {
+            "geo": {
+              "geo:range_m": 2000,
+              "geo:bearing_change_deg_min": 0,
+              "geo:cpa_m": 20,
+              "geo:tcpa_s": 400,
+              "geo:in_sight": true,
+              "geo:risk_of_collision": true
+            }
+          },
+          {
+            "geo": {
+              "geo:range_m": 3000,
+              "geo:bearing_change_deg_min": 0,
+              "geo:cpa_m": 30,
+              "geo:tcpa_s": 600,
+              "geo:in_sight": true,
+              "geo:risk_of_collision": true
+            }
+          }
+        ]
+      },
+      "expect": { "conflicts": [] }
+    }
+  ]
+}
