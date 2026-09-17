@@ -108,7 +108,11 @@ function walkWhen(when: Predicate, visit: (key: string, constraint: unknown) => 
   }
 }
 
-function numericRepresentatives(constants: number[]): number[] {
+/** 2k+1 representatives for k comparison constants: each constant, one
+ * point in each open interval between them, and one on each side. Shared
+ * with the situation enumerator so both partitions are the one
+ * `research/rocq/Partition.v` reasons about. */
+export function numericRepresentatives(constants: number[]): number[] {
   const sorted = [...new Set(constants)].sort((a, b) => a - b);
   const reps: number[] = [];
   // below the first constant

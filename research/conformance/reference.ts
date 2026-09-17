@@ -35,7 +35,7 @@ import type { ApplicabilityData, Entry, FactRecord, FactValue, Modality, Predica
  * So this is hardcoded, exactly as issue #6's spec anticipates, and
  * declared here rather than silently assumed.
  */
-const ENUM_REFINEMENTS: Record<string, string> = {
+export const ENUM_REFINEMENTS: Record<string, string> = {
   'activity:ram_underwater': 'activity:ram',
 };
 
