@@ -39,8 +39,7 @@ export interface LightsData {
      * via the `patternProperty` "^light:[a-z_]+$".
      */
     [k: string]: {
-      name: string;
-      colregs_term: string;
+      term: string;
       cite: string;
       color?: string | null;
       color_note?: string;

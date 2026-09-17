@@ -12,19 +12,37 @@
  */
 export interface RulesData {
   note?: string;
-  paragraphs: {
+  paragraphs: Paragraphs;
+  /**
+   * Per-jurisdiction skeleton deltas over `paragraphs` (ADR 0020): own paragraphs by path, suppressed paths, everything else inherited.
+   */
+  deltas?: {
     /**
      * This interface was referenced by `undefined`'s JSON-Schema definition
-     * via the `patternProperty` "^[0-9]+(\([a-z]\))?(\([ivx]+\))?$".
+     * via the `patternProperty` "^[a-z]+(/[a-z]+)+$".
      */
     [k: string]: {
-      path: string;
-      rule: string;
-      jurisdiction: string;
-      /**
-       * @minItems 1
-       */
-      images?: string[];
+      note?: string;
+      paragraphs: Paragraphs;
+      suppressions: {
+        path: string;
+        why: string;
+      }[];
     };
+  };
+}
+export interface Paragraphs {
+  /**
+   * This interface was referenced by `Paragraphs`'s JSON-Schema definition
+   * via the `patternProperty` "^[0-9]+(\([a-z]\))?(\([ivx]+\))?$".
+   */
+  [k: string]: {
+    path: string;
+    rule: string;
+    jurisdiction: string;
+    /**
+     * @minItems 1
+     */
+    images?: string[];
   };
 }
