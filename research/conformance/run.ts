@@ -194,137 +194,149 @@ let modalityMismatches = 0;
 // ---------------------------------------------------------------------
 // Main pass
 // ---------------------------------------------------------------------
+// Every jurisdiction the data offers (colregs ADR 0018): each is its own
+// merge patch over `intl`, so an entry's applicability set differs by
+// jurisdiction on the same fact record. Coverage, consistency and the
+// engine/reference conformance check all run once per jurisdiction, or a
+// jurisdiction's own entries (rule:23d, rule:24c:towing_lights, the
+// mooring-buoy pair) would never be exercised at all.
+const jurisdictions = [...new Set(displayEntries.map((e) => e.jurisdiction))];
+
 const t0 = Date.now();
 let n = 0;
 
-for (const facts of enumerateRecords(axes)) {
-  if (sampleSize && n >= sampleSize) break;
-  n++;
+for (const jurisdiction of jurisdictions) {
+  let jn = 0;
+  for (const facts of enumerateRecords(axes)) {
+    if (sampleSize && jn >= sampleSize) break;
+    jn++;
+    n++;
 
-  const evalResult = evaluateDisplay(facts, { data });
-  const engineApplied = evalResult.applied;
-  const refApplied = referenceAppliedEntries(data, facts);
+    const evalResult = evaluateDisplay(facts, { data, jurisdiction });
+    const engineApplied = evalResult.applied;
+    const refApplied = referenceAppliedEntries(data, facts, jurisdiction);
 
-  const engineSet = new Set(engineApplied);
-  const refSet = new Set(refApplied);
-  const sameSet =
-    engineSet.size === refSet.size && [...engineSet].every((id) => refSet.has(id));
+    const engineSet = new Set(engineApplied);
+    const refSet = new Set(refApplied);
+    const sameSet =
+      engineSet.size === refSet.size && [...engineSet].every((id) => refSet.has(id));
 
-  if (!sameSet) {
-    conformanceFailures++;
-    const missing = refApplied.filter((id) => !engineSet.has(id));
-    const extra = engineApplied.filter((id) => !refSet.has(id));
-    const key = `missing:${missing.sort().join(',')}|extra:${extra.sort().join(',')}`;
-    record(
-      'conformance-applied',
-      key,
-      `engine and reference disagree on applied entries: engine is missing ${JSON.stringify(missing)}, has extra ${JSON.stringify(extra)}`,
-      [...missing, ...extra].map((id) => byId.get(id)?.cite ?? id),
-      facts,
-    );
-  }
-  // Order mismatches are structurally unreachable: both engineApplied and
-  // refApplied are built by filtering data.entries in the same fixed order,
-  // so whenever their sets match, their orders match too. Left uncounted —
-  // see the review thread on PR #14 for the reasoning.
+    if (!sameSet) {
+      conformanceFailures++;
+      const missing = refApplied.filter((id) => !engineSet.has(id));
+      const extra = engineApplied.filter((id) => !refSet.has(id));
+      const key = `missing:${missing.sort().join(',')}|extra:${extra.sort().join(',')}`;
+      record(
+        'conformance-applied',
+        key,
+        `engine and reference disagree on applied entries: engine is missing ${JSON.stringify(missing)}, has extra ${JSON.stringify(extra)}`,
+        [...missing, ...extra].map((id) => byId.get(id)?.cite ?? id),
+        facts,
+      );
+    }
+    // Order mismatches are structurally unreachable: both engineApplied and
+    // refApplied are built by filtering data.entries in the same fixed order,
+    // so whenever their sets match, their orders match too. Left uncounted —
+    // see the review thread on PR #14 for the reasoning.
 
-  if (sameSet) {
+    if (sameSet) {
+      for (const id of engineApplied) {
+        const engineM = evalResult.modalities[id];
+        const refM = referenceResolveModality(byId.get(id)!, facts);
+        if (engineM !== refM) {
+          modalityMismatches++;
+          record(
+            'conformance-modality',
+            `${id}:${engineM}!=${refM}`,
+            `entry ${id} resolves to modality '${engineM}' in the engine but '${refM}' in the reference`,
+            [byId.get(id)?.cite ?? id],
+            facts,
+          );
+        }
+      }
+    }
+
+    // Coverage
     for (const id of engineApplied) {
-      const engineM = evalResult.modalities[id];
-      const refM = referenceResolveModality(byId.get(id)!, facts);
-      if (engineM !== refM) {
-        modalityMismatches++;
+      everApplied.add(id);
+      trackModalityByBranch(byId.get(id)!, facts);
+    }
+    for (const d of evalResult.displays) {
+      for (const id of d.chosen) oneOfEverChosen.add(id);
+    }
+
+    // Consistency
+    if (engineApplied.length === 0) {
+      noObligationCount++;
+      const pos = String(facts['fact:position'] ?? '(absent)');
+      noObligationPositions.set(pos, (noObligationPositions.get(pos) ?? 0) + 1);
+      if (!EXPECTED_EMPTY_POSITIONS.has(pos)) {
         record(
-          'conformance-modality',
-          `${id}:${engineM}!=${refM}`,
-          `entry ${id} resolves to modality '${engineM}' in the engine but '${refM}' in the reference`,
-          [byId.get(id)?.cite ?? id],
+          'consistency-no-obligation',
+          pos,
+          `record has zero applied lights entries and so no lawful display, for a vessel with fact:position = ${pos}`,
+          [],
           facts,
         );
       }
     }
-  }
 
-  // Coverage
-  for (const id of engineApplied) {
-    everApplied.add(id);
-    trackModalityByBranch(byId.get(id)!, facts);
-  }
-  for (const d of evalResult.displays) {
-    for (const id of d.chosen) oneOfEverChosen.add(id);
-  }
-
-  // Consistency
-  if (engineApplied.length === 0) {
-    noObligationCount++;
-    const pos = String(facts['fact:position'] ?? '(absent)');
-    noObligationPositions.set(pos, (noObligationPositions.get(pos) ?? 0) + 1);
-    if (!EXPECTED_EMPTY_POSITIONS.has(pos)) {
+    for (const [aId, bId] of excludingPairs) {
+      if (evalResult.modalities[aId] !== 'modality:shall' || evalResult.modalities[bId] !== 'modality:shall') continue;
+      if (!engineApplied.includes(aId) || !engineApplied.includes(bId)) continue;
+      conflictingObligationCount++;
       record(
-        'consistency-no-obligation',
-        pos,
-        `record has zero applied lights entries and so no lawful display, for a vessel with fact:position = ${pos}`,
-        [],
+        'consistency-conflicting-shall',
+        `${aId},${bId}`,
+        `entries ${aId} and ${bId} are both resolved 'shall' and rel:excludes the other: a conflicting obligation`,
+        [byId.get(aId)!.cite, byId.get(bId)!.cite],
         facts,
       );
     }
-  }
 
-  for (const [aId, bId] of excludingPairs) {
-    if (evalResult.modalities[aId] !== 'modality:shall' || evalResult.modalities[bId] !== 'modality:shall') continue;
-    if (!engineApplied.includes(aId) || !engineApplied.includes(bId)) continue;
-    conflictingObligationCount++;
-    record(
-      'consistency-conflicting-shall',
-      `${aId},${bId}`,
-      `entries ${aId} and ${bId} are both resolved 'shall' and rel:excludes the other: a conflicting obligation`,
-      [byId.get(aId)!.cite, byId.get(bId)!.cite],
-      facts,
-    );
-  }
-
-  const contributingIds = new Set<string>();
-  for (const d of evalResult.displays) {
-    for (const id of d.entries) contributingIds.add(id);
-  }
-  // rel:overrides and rel:exempts already give an applied `shall` entry a
-  // named, relation-based reason for contributing nothing (reported in
-  // `overridden` / `exempted` respectively) -- that is correctly-modeled
-  // displacement, not the orphan shape this check exists to catch. Skipping
-  // them means the FIND-01/02 fix (26(a) moving from rel:excludes to
-  // rel:overrides) won't re-trip this check on the same entry under a new
-  // name, and the 30(e) clear-of-channel exemption (30a/30b exempted, not
-  // overridden) doesn't false-positive here either (review thread on
-  // colregs-engine#41).
-  const displacedIds = new Set<string>([
-    ...evalResult.overridden.map((x) => x.id),
-    ...evalResult.exempted.map((x) => x.id),
-  ]);
-  for (const id of engineApplied) {
-    const m = evalResult.modalities[id];
-    if (m !== 'modality:shall' && m !== 'modality:shall-if-practicable') continue;
-    if (contributingIds.has(id)) continue;
-    if (displacedIds.has(id)) continue;
-    orphanShallCount++;
-    record(
-      'consistency-orphan-shall',
-      id,
-      `entry ${id} is applied and resolved '${m}' but contributes to no display: no own lights, no surviving import, no one_of group it belongs to`,
-      [byId.get(id)?.cite ?? id],
-      facts,
-    );
-  }
-
-  for (const id of engineApplied) {
-    if (evalResult.modalities[id] === 'modality:conditional') {
-      unresolvedConditionalCount++;
+    const contributingIds = new Set<string>();
+    for (const d of evalResult.displays) {
+      for (const id of d.entries) contributingIds.add(id);
+    }
+    // rel:overrides and rel:exempts already give an applied `shall` entry a
+    // named, relation-based reason for contributing nothing (reported in
+    // `overridden` / `exempted` respectively) -- that is correctly-modeled
+    // displacement, not the orphan shape this check exists to catch. Skipping
+    // them means the FIND-01/02 fix (26(a) moving from rel:excludes to
+    // rel:overrides) won't re-trip this check on the same entry under a new
+    // name, and the 30(e) clear-of-channel exemption (30a/30b exempted, not
+    // overridden) doesn't false-positive here either (review thread on
+    // colregs-engine#41).
+    const displacedIds = new Set<string>([
+      ...evalResult.overridden.map((x) => x.id),
+      ...evalResult.exempted.map((x) => x.id),
+    ]);
+    for (const id of engineApplied) {
+      const m = evalResult.modalities[id];
+      if (m !== 'modality:shall' && m !== 'modality:shall-if-practicable') continue;
+      if (contributingIds.has(id)) continue;
+      if (displacedIds.has(id)) continue;
+      orphanShallCount++;
       record(
-        'consistency-unresolved-conditional',
+        'consistency-orphan-shall',
         id,
-        `entry ${id} is applied and modality: conditional, but no modality_by branch matched this fact record`,
+        `entry ${id} is applied and resolved '${m}' but contributes to no display: no own lights, no surviving import, no one_of group it belongs to`,
         [byId.get(id)?.cite ?? id],
         facts,
       );
+    }
+
+    for (const id of engineApplied) {
+      if (evalResult.modalities[id] === 'modality:conditional') {
+        unresolvedConditionalCount++;
+        record(
+          'consistency-unresolved-conditional',
+          id,
+          `entry ${id} is applied and modality: conditional, but no modality_by branch matched this fact record`,
+          [byId.get(id)?.cite ?? id],
+          facts,
+        );
+      }
     }
   }
 }
@@ -390,7 +402,7 @@ console.log(`never-fired entries: ${neverFired.map((e) => e.id).join(', ') || '(
 // ---------------------------------------------------------------------
 const unresolvedCites: { id: string; cite: string; missing: string[] }[] = [];
 for (const e of entries) {
-  const missing = unresolvedCite(e.cite, rules);
+  const missing = unresolvedCite(e.cite, rules, e.jurisdiction);
   if (missing.length > 0) {
     unresolvedCites.push({ id: e.id, cite: e.cite, missing });
     record(
@@ -411,11 +423,13 @@ interface FixtureCase {
   name: string;
   facts: FactRecord;
   expect: string[];
+  jurisdiction?: string;
 }
-const fixtures = fixturesJson as unknown as { cases: FixtureCase[] };
+const fixtures = fixturesJson as unknown as { jurisdiction: string; cases: FixtureCase[] };
 let fixtureFailures = 0;
 for (const c of fixtures.cases) {
-  const got = referenceAppliedEntries(data, c.facts).slice().sort();
+  const jurisdiction = c.jurisdiction ?? fixtures.jurisdiction;
+  const got = referenceAppliedEntries(data, c.facts, jurisdiction).slice().sort();
   const want = [...c.expect].sort();
   if (got.join(',') !== want.join(',')) {
     fixtureFailures++;
