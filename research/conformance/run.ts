@@ -104,6 +104,8 @@ const shard = parseShard(shardArg);
 const jobs = jobsArg !== undefined ? Number(jobsArg) : sampleSize !== undefined ? 1 : availableParallelism();
 if (!Number.isInteger(jobs) || jobs < 1) throw new Error(`--jobs wants a positive integer, got '${jobsArg}'`);
 if (shardArg !== undefined && outArg === undefined) throw new Error('--shard needs --out=<tally.json>');
+// A sample walks the first N records in order, which only one process can do.
+if (sampleSize !== undefined && jobs > 1) throw new Error('--sample runs in-process; drop --jobs or set it to 1');
 
 // ---------------------------------------------------------------------
 // Axis table / enumeration
