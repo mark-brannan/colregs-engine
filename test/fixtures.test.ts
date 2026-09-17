@@ -7,7 +7,12 @@ import fixturesJson from 'colregs/fixtures/applicability-fixtures.json';
 import applicabilityJson from 'colregs/data/applicability.json';
 import colregsPackage from 'colregs/package.json';
 import { evaluateDisplay } from '../src/evaluate';
-import type { ApplicabilityData, DisplayEvaluation, FactRecord } from '../src/types';
+import type {
+  ApplicabilityData,
+  DisplayEvaluation,
+  FactRecord,
+  FixtureExpectation,
+} from '../src/types';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
 
@@ -22,7 +27,7 @@ function evaluate(
 interface FixtureCase {
   name: string;
   facts: FactRecord;
-  expect: string[];
+  expect: FixtureExpectation[];
   /** colregs 0.2.2 (ADR 0008): a case may declare a jurisdiction other than
    * the file's default, for a national delta (e.g. the mooring-buoy case). */
   jurisdiction?: string;
@@ -35,7 +40,7 @@ const fixtures = fixturesJson as unknown as {
 
 describe('colregs applicability fixtures (verbatim replay)', () => {
   it('has the full fixture set', () => {
-    expect(fixtures.cases.length).toBe(111);
+    expect(fixtures.cases.length).toBe(114);
   });
 
   // The fixtures are colregs' contract, so an evaluation of one must say
@@ -51,7 +56,13 @@ describe('colregs applicability fixtures (verbatim replay)', () => {
     it(c.name, () => {
       const jurisdiction = c.jurisdiction ?? fixtures.jurisdiction;
       const result = evaluate(applicability, c.facts, jurisdiction);
-      expect([...result.applied].sort()).toEqual([...c.expect].sort());
+      const expectedIds = c.expect.map((e) => (typeof e === 'string' ? e : e.entry));
+      expect([...result.applied].sort()).toEqual([...expectedIds].sort());
+
+      for (const e of c.expect) {
+        if (typeof e === 'string') continue;
+        expect(result.modalities[e.entry]).toBe(e.modality);
+      }
     });
   }
 });

@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json';
 import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
 
-import type { ApplicabilityData, Situation } from '../src/types';
+import type { ApplicabilityData, FixtureExpectation, Situation } from '../src/types';
 import { appliedEncounterEntries, evaluateEncounter } from '../src/index';
 import { rule18Class } from '../src/situation';
 import {
@@ -22,7 +22,7 @@ const data = applicabilityJson as unknown as ApplicabilityData;
 interface FixtureCase {
   name: string;
   status: 'illustrative' | 'binding';
-  expect: (string | { entry: string; modality: string })[];
+  expect: FixtureExpectation[];
   situation: Situation;
   roles?: { self: { role: string; by: string }[]; other: { role: string; by: string }[] };
 }

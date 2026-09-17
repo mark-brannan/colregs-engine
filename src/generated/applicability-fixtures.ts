@@ -7,7 +7,21 @@
  * build if this file and the pinned schema disagree.
  */
 
+export type ExpectItem =
+  | RuleId
+  | {
+      entry: RuleId;
+      modality: Modality;
+    };
 export type RuleId = string;
+export type Modality =
+  | 'modality:shall'
+  | 'modality:may'
+  | 'modality:shall-if-practicable'
+  | 'modality:conditional'
+  | 'modality:exempt'
+  | 'modality:shall-not'
+  | 'modality:shall-not-impede';
 
 /**
  * The cross-implementation contract: fact record -> expected entry ids. Structure only -- see docs/adr/0006-json-schema-and-identifier-diff.md.
@@ -22,7 +36,7 @@ export interface ApplicabilityFixtures {
     name: string;
     jurisdiction?: string;
     facts: FactRecord;
-    expect: RuleId[];
+    expect: ExpectItem[];
   }[];
 }
 /**

@@ -12,8 +12,7 @@ import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
 import type { Situation } from '../src/index';
 import { appliedEncounterEntries, evaluateEncounter } from '../src/index';
 import { validateSituation } from '../src/facts';
-
-type Expectation = string | { entry: string; modality: string };
+import type { FixtureExpectation as Expectation } from '../src/types';
 
 interface FixtureRoles {
   self: { role: string; by: string }[];

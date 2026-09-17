@@ -8,17 +8,11 @@
  */
 
 export type RuleId = string;
-export type RuleCategory =
-  | 'category:definition'
-  | 'category:standard'
-  | 'category:scope'
-  | 'category:display'
-  | 'category:classification'
-  | 'category:precedence'
-  | 'category:conduct'
-  | 'category:care'
-  | 'category:meta';
+export type ShiftId = string;
 /**
+ * This interface was referenced by `When`'s JSON-Schema definition
+ * via the `patternProperty` "^fact:[a-z0-9_]+$".
+ *
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
  * via the `patternProperty` "^fact:[a-z0-9_]+$".
  *
@@ -27,9 +21,6 @@ export type RuleCategory =
  *
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
  * via the `patternProperty` "^pair:(geo|env):[a-z0-9_]+$".
- *
- * This interface was referenced by `When`'s JSON-Schema definition
- * via the `patternProperty` "^fact:[a-z0-9_]+$".
  */
 export type PredicateValue =
   | {
@@ -50,6 +41,10 @@ export type PredicateValue =
        */
       any_of: PredicateValue[];
     };
+/**
+ * This interface was referenced by `undefined`'s JSON-Schema definition
+ * via the `patternProperty` "^modality:[a-z-]+$".
+ */
 export type Modality =
   | 'modality:shall'
   | 'modality:may'
@@ -58,6 +53,17 @@ export type Modality =
   | 'modality:exempt'
   | 'modality:shall-not'
   | 'modality:shall-not-impede';
+export type RepresentedCategory = 'category:care' | 'category:meta' | 'category:scope';
+export type RuleCategory =
+  | 'category:definition'
+  | 'category:standard'
+  | 'category:scope'
+  | 'category:display'
+  | 'category:classification'
+  | 'category:precedence'
+  | 'category:conduct'
+  | 'category:care'
+  | 'category:meta';
 export type Effect =
   | {
       part: string;
@@ -146,6 +152,17 @@ export interface ApplicabilityData {
     cite: string;
     why: string;
   }[];
+  modality_shifts?: {
+    id: ShiftId;
+    jurisdiction: string;
+    cite: string;
+    applies_to: 'lights' | 'shapes';
+    when: When;
+    map: {
+      [k: string]: Modality;
+    };
+    note?: string;
+  }[];
   known_omissions?: {
     cite: string;
     what: string;
@@ -155,7 +172,7 @@ export interface ApplicabilityData {
     id: RuleId;
     jurisdiction: string;
     cite: string;
-    category: 'category:care' | 'category:meta';
+    category: RepresentedCategory;
     note: string;
   }[];
   /**
@@ -195,6 +212,13 @@ export interface ApplicabilityData {
     'rel:overrides'?: RuleIdList;
   }[];
 }
+export interface When {
+  /**
+   * @minItems 1
+   */
+  any_of?: When[];
+  [k: string]: PredicateValue | When[] | undefined;
+}
 export interface SituationWhen {
   /**
    * @minItems 1
@@ -221,13 +245,6 @@ export interface ShapeRef {
   arrangement?: 'vertical';
   note?: string;
   modality?: Modality;
-}
-export interface When {
-  /**
-   * @minItems 1
-   */
-  any_of?: When[];
-  [k: string]: PredicateValue | When[] | undefined;
 }
 export interface ConditionalInclude {
   when?: When;
