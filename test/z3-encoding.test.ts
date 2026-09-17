@@ -338,6 +338,10 @@ describe('the encoding against Z3', () => {
       'fact:obstruction_exists': false,
       'fact:position': 'position:anchored',
       'fact:propulsion': 'propulsion:power',
+      // fact:time is an axis as of colregs@0.3.4's `main`, so pinRecord
+      // requires a value. Every entry pinned below is a light entry, which
+      // reads no time fact and is in force either way (20(c)).
+      'fact:time': 'time:night',
       'fact:tow_length_m': 0,
       'fact:wig': false,
       'fact:wig_near_surface': false,

@@ -34,7 +34,7 @@ Each axis gets representatives:
 | boolean | `true`, `false` |
 | numeric | every constant a predicate compares against, plus one interior point per open interval — `2k+1` for `k` constants |
 
-The product of these representative counts is an upper bound of 5,930,496
+The product of these representative counts is an upper bound of 47,443,968
 records:
 
 | axis | kind | representatives |
@@ -45,11 +45,14 @@ records:
 | `fact:length_m` | numeric | 11 |
 | `fact:making_way` | boolean | 2 |
 | `fact:max_speed_kn` | numeric | 3 |
+| `fact:motorsailing` | boolean | 2 |
 | `fact:near_channel` | boolean | 2 |
 | `fact:non_displacement` | boolean | 2 |
 | `fact:obstruction_exists` | boolean | 2 |
+| `fact:on_mooring_buoy` | boolean | 2 |
 | `fact:position` | enum | 4 |
 | `fact:propulsion` | enum | 3 |
+| `fact:time` | enum | 2 |
 | `fact:tow_length_m` | numeric | 3 |
 | `fact:wig` | boolean | 2 |
 | `fact:wig_near_surface` | boolean | 2 |
@@ -58,13 +61,14 @@ records:
 against five constants — 7, 12, 20, 50 and 100 m; the last is Rule 30(c),
 which is easy to forget when counting by hand.
 
-`fact:making_way` is declared in facts.json as a modifier that `refines`
-`fact:position=position:underway`, so it isn't a free axis: a record carries
-it only where `fact:position` is already `position:underway`, and leaves it
-absent (never `false`) everywhere else, which is what rules out incoherent
-records like `position:moored` + `making_way: true`. That brings the actual
-count to 3,706,560; the bound above is what `totalRecords()` reports, and
-the run's own "processed N records" line is the true count.
+`fact:making_way`, `fact:on_mooring_buoy` and `fact:motorsailing` are
+declared in facts.json as modifiers that `refine` `position:underway`,
+`position:moored` and `propulsion:power` respectively, so they aren't free
+axes: a record carries one only where the refined axis already holds that
+value, and leaves it absent (never `false`) everywhere else, which rules out
+incoherent records like `position:moored` + `making_way: true`. That brings
+the actual count to 11,860,992; the bound above is what `totalRecords()`
+reports, and the run's own "processed N records" line is the true count.
 
 Enumeration is a mixed-radix walk over the axis list, so a record is
 addressable by its index and the pass holds one record at a time.

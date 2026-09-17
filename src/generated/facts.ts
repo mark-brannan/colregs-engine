@@ -99,6 +99,7 @@ export interface FactsData {
       values: FactValue[];
       cite: string;
       actuable?: boolean;
+      note?: string;
     };
   };
   derived?: {

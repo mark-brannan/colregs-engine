@@ -40,6 +40,7 @@ export interface Display {
   entries: RuleIds;
   lights: DisplayLight[];
   chosen: string[];
+  shapes?: DisplayShape[];
 }
 export interface DisplayLight {
   spec: LightRef;
@@ -85,11 +86,48 @@ export interface LightRef {
     | 'modality:shall-not'
     | 'modality:shall-not-impede';
 }
+export interface DisplayShape {
+  spec: ShapeRef;
+  source_entry: string;
+  via?: string;
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  modality:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
+export interface ShapeRef {
+  shape: string;
+  position?: string;
+  count?: number;
+  arrangement?: 'vertical';
+  note?: string;
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  modality?:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
 export interface Items {
   id: string;
   via?: string;
   lights: DisplayLight[];
   cite: string;
+  shapes?: DisplayShape[];
 }
 export interface Modalities {
   /**

@@ -52,20 +52,27 @@ export interface GeometryData {
     cite: string;
     color: string;
     ball?: {
+      shape?: string;
       min_diameter_m?: number;
       cite?: string;
     };
     cone?: {
+      /**
+       * @minItems 1
+       */
+      shapes?: string[];
       min_base_diameter_m?: number;
       height_equals_diameter?: boolean;
       cite?: string;
     };
     cylinder?: {
+      shape?: string;
       min_diameter_m?: number;
       height_multiple_of_diameter?: number;
       cite?: string;
     };
     diamond?: {
+      shape?: string;
       composition?: string;
       cite?: string;
     };

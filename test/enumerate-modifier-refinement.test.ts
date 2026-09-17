@@ -85,8 +85,13 @@ describe('the real fact space: no incoherent or duplicate records', () => {
       // 3,706,560 before colregs@0.2.2 added fact:on_mooring_buoy as a
       // second modifier (refining position:moored, same shape as
       // making_way refining position:underway) — that split moored's one
-      // slot into two, same as underway's, raising the product.
-      expect(n).toBe(4447872);
+      // slot into two, same as underway's, raising the product; was
+      // 4,447,872 before colregs@0.3.4's `main` added fact:time (a free
+      // two-value enum axis the Rule 20(d) day-shape entries read) and
+      // fact:motorsailing (a third modifier, refining
+      // propulsion:power), which multiply the product by 2 and by 4/3
+      // — fact:propulsion's three slots become four — for 8/3 exactly.
+      expect(n).toBe(11860992);
     },
     20_000,
   );
