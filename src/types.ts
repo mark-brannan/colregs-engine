@@ -9,7 +9,7 @@
 // tests, which read applicability.json directly.
 
 import type { Effect, EffectRole, RuleId, Modality } from './generated/applicability.js';
-import type { LightSpec, RepresentedParagraph, RuleCategory } from './schema.js';
+import type { LightSpec, RepresentedParagraph, RuleCategory, ShapeSpec } from './schema.js';
 import type { FactRecord } from './generated/fact-record.js';
 import type {
   DirectionalGeometry,
@@ -149,11 +149,26 @@ export interface DisplayLight {
   modality: Modality;
 }
 
+/** One day shape as it appears in a resolved display, with its provenance.
+ * Same provenance fields as {@link DisplayLight}, minus the deprecated
+ * alias: this field is younger than the rename. */
+export interface DisplayShape {
+  spec: ShapeSpec;
+  /** Entry whose shapes clause prescribes this shape. */
+  source_entry: string;
+  /** Entry that pulled it in, when different (rel:includes / one_of import). */
+  via?: string;
+  /** Resolved modality of the component carrying this shape. */
+  modality: Modality;
+}
+
 /** One complete lawful display. */
 export interface Display {
-  /** Entry ids whose lights this display shows (applied + imported). */
+  /** Entry ids whose lights and shapes this display shows (applied + imported). */
   entries: string[];
   lights: DisplayLight[];
+  /** Day shapes (Rule 20(d)); empty unless the record states `time:day`. */
+  shapes: DisplayShape[];
   /** Choice labels that distinguish this display from its siblings. */
   chosen: string[];
 }
@@ -193,6 +208,7 @@ export interface DisplayEvaluation {
     id: string;
     via?: string;
     lights: DisplayLight[];
+    shapes: DisplayShape[];
     cite: string;
   }[];
   /** @deprecated Renamed to {@link DisplayEvaluation.optional_additions} —

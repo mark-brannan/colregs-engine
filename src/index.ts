@@ -76,6 +76,7 @@ export type {
   Display,
   DisplayEvaluation,
   DisplayLight,
+  DisplayShape,
   EncounterEvaluation,
   EvaluationProvenance,
   SceneConflict,
