@@ -1,15 +1,15 @@
 {
-  "id": "FIND-01",
+  "id": "FIND-11",
   "check": "conformance-modality",
-  "description": "entry rule:23a_i resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference",
+  "description": "entry rule:24c:towing_lights resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference",
   "cites": [
-    "23(a)(i)"
+    "24(c)"
   ],
-  "records": 608256,
+  "records": 912384,
   "status": "candidate",
   "facts": {
-    "fact:activity": "activity:none",
-    "fact:composite_unit": true,
+    "fact:activity": "activity:pushing",
+    "fact:composite_unit": false,
     "fact:gear_extent_m": 149,
     "fact:length_m": 6,
     "fact:manned": true,
@@ -28,5 +28,5 @@
     "fact:making_way": true,
     "fact:motorsailing": true
   },
-  "prose": "a 6 m vessel, underway (a composite unit, operating in non-displacement mode, a wing-in-ground craft, near the surface, near a narrow channel, with an obstruction to the passage of another vessel, 6 kn max speed, 199 m tow, 149 m gear extent)."
+  "prose": "a 6 m vessel, underway, engaged in pushing (operating in non-displacement mode, a wing-in-ground craft, near the surface, near a narrow channel, with an obstruction to the passage of another vessel, 6 kn max speed, 199 m tow, 149 m gear extent)."
 }

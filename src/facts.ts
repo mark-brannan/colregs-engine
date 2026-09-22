@@ -1,5 +1,5 @@
 // Runtime validation of a fact record — and, per ADR 0011 §3, a situation's
-// five generated classes — against colregs' vocabulary.
+// six generated classes — against colregs' vocabulary.
 //
 // The types in src/generated/fact-record.ts and src/generated/situation.ts
 // make a bad key or value a compile error, but the engine is also reached
@@ -11,6 +11,7 @@
 
 import { FACT_SPEC, type FactRecord } from './generated/fact-record.js';
 import {
+  ACT_SPEC,
   ENV_SPEC,
   GEO_OWN_SPEC,
   GEO_PAIR_SPEC,
@@ -37,6 +38,8 @@ const GEO_OWN: Record<string, Spec | undefined> = GEO_OWN_SPEC;
 const GEO_OWN_KEYS = Object.keys(GEO_OWN_SPEC);
 const GEO_PAIR: Record<string, Spec | undefined> = GEO_PAIR_SPEC;
 const GEO_PAIR_KEYS = Object.keys(GEO_PAIR_SPEC);
+const ACT: Record<string, Spec | undefined> = ACT_SPEC;
+const ACT_KEYS = Object.keys(ACT_SPEC);
 const ENV: Record<string, Spec | undefined> = ENV_SPEC;
 const ENV_KEYS = Object.keys(ENV_SPEC);
 
@@ -158,11 +161,14 @@ function validateSubject(which: 'self' | 'other', subject: Subject): void {
   if (subject.hist !== undefined) {
     checkRecord(subject.hist, HIST, HIST_KEYS, 'hist');
   }
+  if (subject.act !== undefined) {
+    checkRecord(subject.act, ACT, ACT_KEYS, 'act');
+  }
 }
 
 /**
  * Throws on the same terms as validateFacts(), extended to a situation's
- * `kin`/`geo`/`hist`/`env` classes (ADR 0011 §3): an unknown key or a value
+ * `kin`/`geo`/`hist`/`act`/`env` classes (ADR 0011 §3): an unknown key or a value
  * outside its accepted set is rejected with a "did you mean" hint, for both
  * subjects and the pair. `self`/`self.fact` are ADR 0011 §3's two required
  * fields, so a missing one is named directly rather than surfacing as

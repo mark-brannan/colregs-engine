@@ -26,4 +26,50 @@ overwrites.
 
 | id | check | records | description | cites | status | triage note |
 |---|---|---|---|---|---|---|
-| FIND-01 | consistency-no-obligation | 190080 | record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:underway | - | candidate | - |
+| FIND-01 | conformance-modality | 608256 | entry rule:23a_i resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 23(a)(i) | candidate | - |
+| FIND-02 | conformance-modality | 221184 | entry rule:23a_ii resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 23(a)(ii) | candidate | - |
+| FIND-03 | conformance-modality | 608256 | entry rule:23a_iii_iv resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 23(a)(iii)-(iv) | candidate | - |
+| FIND-04 | conformance-modality | 304128 | entry rule:23b resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 23(b) | candidate | - |
+| FIND-05 | conformance-modality | 152064 | entry rule:23c resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 23(c) | candidate | - |
+| FIND-06 | conformance-modality | 1216512 | entry rule:24a_i:exceeds_200m resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 24(a)(i) | candidate | - |
+| FIND-07 | conformance-modality | 2433024 | entry rule:24a_i resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 24(a)(i) | candidate | - |
+| FIND-08 | conformance-modality | 3649536 | entry rule:24a_ii_iv resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 24(a)(ii)-(iv) | candidate | - |
+| FIND-09 | conformance-modality | 608256 | entry rule:24b resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 24(b) | candidate | - |
+| FIND-10 | conformance-modality | 912384 | entry rule:24c resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 24(c) | candidate | - |
+| FIND-11 | conformance-modality | 912384 | entry rule:24c:towing_lights resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 24(c) | candidate | - |
+| FIND-12 | conformance-modality | 304128 | entry rule:24c:underway_lights resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 24(c) | candidate | - |
+| FIND-13 | conformance-modality | 3649536 | entry rule:24e resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 24(e) | candidate | - |
+| FIND-14 | conformance-modality | 304128 | entry rule:25a resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 25(a) | candidate | - |
+| FIND-15 | conformance-modality | 27648 | entry rule:25d_i resolves to modality 'modality:may' in the engine but 'modality:shall-if-practicable' in the reference | 25(d)(i) | candidate | - |
+| FIND-16 | conformance-modality | 3041280 | entry rule:26b_i resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 26(b)(i) | candidate | - |
+| FIND-17 | conformance-modality | 1105920 | entry rule:26b_ii resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 26(b)(ii) | candidate | - |
+| FIND-18 | conformance-modality | 608256 | entry rule:26b_iii resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 26(b)(iii) | candidate | - |
+| FIND-19 | conformance-modality | 3041280 | entry rule:26c_i resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 26(c)(i) | candidate | - |
+| FIND-20 | conformance-modality | 1013760 | entry rule:26c_ii resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 26(c)(ii) | candidate | - |
+| FIND-21 | conformance-modality | 608256 | entry rule:26c_iii resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 26(c)(iii) | candidate | - |
+| FIND-22 | conformance-modality | 1216512 | entry rule:27a_i resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 27(a)(i) | candidate | - |
+| FIND-23 | conformance-modality | 608256 | entry rule:27a_iii resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 27(a)(iii) | candidate | - |
+| FIND-24 | conformance-modality | 7299072 | entry rule:27b_i resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 27(b)(i) | candidate | - |
+| FIND-25 | conformance-modality | 1216512 | entry rule:27b_iii resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 27(b)(iii) | candidate | - |
+| FIND-26 | conformance-modality | 1216512 | entry rule:27b_iv resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 27(b)(iv) | candidate | - |
+| FIND-27 | conformance-modality | 1824768 | entry rule:27d resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 27(d) | candidate | - |
+| FIND-28 | conformance-modality | 3649536 | entry rule:27e_i resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 27(e)(i) | candidate | - |
+| FIND-29 | conformance-modality | 3649536 | entry rule:27f resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 27(f) | candidate | - |
+| FIND-30 | conformance-modality | 3649536 | entry rule:29a resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 29(a) | candidate | - |
+| FIND-31 | conformance-modality | 7907328 | entry rule:30a resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 30(a) | candidate | - |
+| FIND-32 | conformance-modality | 3953664 | entry rule:30a:mooring_buoy resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 30(a) | candidate | - |
+| FIND-33 | conformance-modality | 1437696 | entry rule:30c resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 30(c) | candidate | - |
+| FIND-34 | conformance-modality | 5750784 | entry rule:30d_i resolves to modality 'modality:may' in the engine but 'modality:shall-if-practicable' in the reference | 30(d)(i) | candidate | - |
+| FIND-35 | conformance-modality | 7907328 | entry rule:30d resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference | 30(d) | candidate | - |
+| FIND-36 | consistency-no-obligation | 380160 | record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:underway | - | candidate | - |
+| FIND-37 | coverage-entry-never-fires | 1 | entry rule:34a:astern never applies across the enumerated fact space | 34(a) | candidate | - |
+| FIND-38 | coverage-entry-never-fires | 1 | entry rule:34a:port never applies across the enumerated fact space | 34(a) | candidate | - |
+| FIND-39 | coverage-entry-never-fires | 1 | entry rule:34a:starboard never applies across the enumerated fact space | 34(a) | candidate | - |
+| FIND-40 | coverage-entry-never-fires | 1 | entry rule:34b:astern never applies across the enumerated fact space | 34(b) | candidate | - |
+| FIND-41 | coverage-entry-never-fires | 1 | entry rule:34b:port never applies across the enumerated fact space | 34(b) | candidate | - |
+| FIND-42 | coverage-entry-never-fires | 1 | entry rule:34b:starboard never applies across the enumerated fact space | 34(b) | candidate | - |
+| FIND-43 | coverage-entry-never-fires | 1 | entry rule:34c_i:port never applies across the enumerated fact space | 34(c)(i) | candidate | - |
+| FIND-44 | coverage-entry-never-fires | 1 | entry rule:34c_i:starboard never applies across the enumerated fact space | 34(c)(i) | candidate | - |
+| FIND-45 | coverage-entry-never-fires | 1 | entry rule:34c_ii never applies across the enumerated fact space | 34(c)(ii) | candidate | - |
+| FIND-46 | coverage-entry-never-fires | 1 | entry rule:34d never applies across the enumerated fact space | 34(d) | candidate | - |
+| FIND-47 | coverage-entry-never-fires | 1 | entry rule:34d:flashes never applies across the enumerated fact space | 34(d) | candidate | - |

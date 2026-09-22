@@ -198,7 +198,13 @@ function walkStrings(c: unknown, visit: (s: string) => void): void {
 /** The entries this partition is for: the three categories the encounter
  * verb reads, not every non-display entry. `category:conduct` reads a trace
  * and `category:departure` a solver, and an axis only they name would widen
- * the space without any encounter entry ever reading it. */
+ * the space without any encounter entry ever reading it.
+ *
+ * Part D signal entries (Rule 34) are deliberately excluded too, despite
+ * the encounter verb now reading them (src/encounter.ts's `isSignal`):
+ * they gate on `self:act:`/`other:act:` keys this extractor has no spec
+ * for, and widening the match here throws (`no class 'act' under subject
+ * 'self'`) the moment an entry's `when` names one. Tracked as #143. */
 function readsSituation(e: Entry): boolean {
   return ENCOUNTER_CATEGORIES.includes((e.category ?? 'category:display') as RuleCategory);
 }
