@@ -12,6 +12,7 @@ import type { Effect, EffectRole, RuleId, Modality } from './generated/applicabi
 import type { LightSpec, RepresentedParagraph, RuleCategory, ShapeSpec } from './schema.js';
 import type { FactRecord } from './generated/fact-record.js';
 import type {
+  Acts,
   DirectionalGeometry,
   Environment,
   History,
@@ -239,6 +240,11 @@ export interface Subject {
   fact: FactRecord;
   kin?: Kinematics;
   geo?: DirectionalGeometry;
+  /** What this subject is doing or intending now (colregs facts.json
+   * §situation.acts). Stated, never derived, and absent unless the caller
+   * supplies it: a Part D signal is never demanded because a field was
+   * left out. */
+  act?: Acts;
   hist?: History;
 }
 

@@ -47,7 +47,7 @@ export function rule18Class(fact: FactRecord): string | undefined {
   return undefined;
 }
 
-const SUBJECT_CLASSES = ['fact', 'kin', 'geo', 'hist'] as const;
+const SUBJECT_CLASSES = ['fact', 'kin', 'geo', 'hist', 'act'] as const;
 
 function flattenSubject(out: FlatSituation, prefix: string, subject: Subject, bare: boolean) {
   for (const cls of SUBJECT_CLASSES) {

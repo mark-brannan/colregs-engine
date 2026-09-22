@@ -112,7 +112,7 @@ export function decodeRowsFor(value: string): readonly Predicate[] {
  * keys also appear bare, so every one-subject predicate stays valid. */
 export type ReferenceFlat = Record<string, unknown>;
 
-const SUBJECT_CLASSES = ['fact', 'kin', 'geo', 'hist'] as const;
+const SUBJECT_CLASSES = ['fact', 'kin', 'geo', 'hist', 'act'] as const;
 
 function flattenSubject(out: ReferenceFlat, prefix: string, subject: Subject, bare: boolean): void {
   for (const cls of SUBJECT_CLASSES) {
@@ -172,11 +172,22 @@ export function referenceEncounterModality(entry: Entry, flat: ReferenceFlat): M
   return 'modality:conditional';
 }
 
-/** The ids of the entries in the three encounter categories whose predicate
- * holds — the situation-fixture contract's `expect`, in data order. */
+/** A Part D signal entry: filed under `category:display` like a light or a
+ * shape, but emitting a `signal` sequence, and addressed to the other
+ * vessel. The encounter verb reads these and no other display entry. */
+function isSignalEntry(e: Entry): boolean {
+  return categoryOf(e) === 'category:display' && e.signal !== undefined;
+}
+
+/** The ids of the entries in the three encounter categories, plus the Part D
+ * signal entries, whose predicate holds — the situation-fixture contract's
+ * `expect`, in data order. */
 export function referenceEncounterApplied(data: ApplicabilityData, flat: ReferenceFlat): string[] {
   return data.entries
-    .filter((e) => ENCOUNTER_CATEGORIES.includes(categoryOf(e)) && matches(e.when, flat))
+    .filter(
+      (e) =>
+        (ENCOUNTER_CATEGORIES.includes(categoryOf(e)) || isSignalEntry(e)) && matches(e.when, flat),
+    )
     .map((e) => e.id);
 }
 
