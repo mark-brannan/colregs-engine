@@ -45,6 +45,7 @@ export interface EncounterEvaluation {
   modalities: Modalities;
   categories: Categories;
   provenance: Provenance;
+  signals?: EncounterSignal[];
 }
 export interface Colregs {
   version: string;
@@ -111,7 +112,64 @@ export interface RepresentedParagraph {
   id: string;
   jurisdiction: string;
   cite: string;
-  category: 'category:care' | 'category:meta' | 'category:scope';
+  category:
+    | 'category:care'
+    | 'category:meta'
+    | 'category:scope'
+    | 'category:definition'
+    | 'category:standard'
+    | 'category:display';
+}
+export interface EncounterSignal {
+  spec: SignalRef;
+  source_entry: string;
+  cite?: string;
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  modality:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
+export interface SignalRef {
+  /**
+   * @minItems 1
+   */
+  sequence: SignalElement[];
+  repeat?: {
+    max_interval_s?: number;
+    min_interval_s?: number;
+  };
+  gap_s?: number;
+  rapid?: boolean;
+  note?: string;
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  modality?:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
+export interface SignalElement {
+  element: string;
+  count?: number;
+  at_least?: boolean;
+  duration_s?: number;
+  gap_s?: number;
+  placement?: string;
+  note?: string;
 }
 export interface Advisory {
   action: {

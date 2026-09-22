@@ -47,6 +47,7 @@ const ROOT_NAMES: Record<string, string> = {
   'rule2-departure-model': 'Rule2DepartureModelSchema',
   shapes: 'ShapesData',
   'situation-fixtures': 'SituationFixtures',
+  sounds: 'SoundsData',
   trace: 'TraceSchema',
   version: 'VersionData',
 };

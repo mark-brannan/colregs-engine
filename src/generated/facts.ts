@@ -208,11 +208,16 @@ export interface FactsData {
         geo: string;
         hist: string;
         env: string;
+        act: string;
       };
       bare_key?: string;
       directional_note?: string;
     };
     kinematics: {
+      note?: string;
+      [k: string]: SituationFact | string | undefined;
+    };
+    acts: {
       note?: string;
       [k: string]: SituationFact | string | undefined;
     };
@@ -268,6 +273,9 @@ export interface NumericGate {
 /**
  * This interface was referenced by `undefined`'s JSON-Schema definition
  * via the `patternProperty` "^kin:[a-z0-9_]+$".
+ *
+ * This interface was referenced by `undefined`'s JSON-Schema definition
+ * via the `patternProperty` "^act:[a-z0-9_]+$".
  *
  * This interface was referenced by `undefined`'s JSON-Schema definition
  * via the `patternProperty` "^geo:[a-z0-9_]+$".
