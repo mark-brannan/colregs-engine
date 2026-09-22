@@ -56,21 +56,32 @@ each line below names the point that owns it.
    fingerprint, and every display records which choices produced it —
    that is the data behind the elimination UX.
 
+8. **`displays[]` is ordered most specific concession first, base rule
+   last; consumers take index 0.** A `may` entry `in_lieu_of` a base in
+   play, gated on a scalar fact (30(b) below 50 m, 23(d)(i) below 12 m,
+   25(b) below 20 m), outranks its base; two sharing a base rank by more
+   scalar gates, then the tighter bound. A `may` one_of carrier's own
+   lights, no option taken, rank first (25(d)(ii): the torch). Every other
+   modality keeps enumeration order: `shall-if-practicable` (25(d)(i)) is
+   a floor with a fallback, not a concession. Read from `entries`, never
+   `chosen`. Ruled by Solace on
+   [searoom #152](https://github.com/mark-brannan/searoom/issues/152).
+
 ## Encounter, conduct and Rule 2 decisions
 
-8. **Bare keys mean `own:`; `fact:rule18_class` is decoded per subject first.**
-9. **Any obligation overrides, `shall-not-impede` included** (9(b) is
+9. **Bare keys mean `own:`; `fact:rule18_class` is decoded per subject first.**
+10. **Any obligation overrides, `shall-not-impede` included** (9(b) is
    written with it and overrides 18(a)(iv)); only a `may` overrider is inert.
-10. **A `none` effect confers no role.** 8(f)(iii) still appears in `applied`.
-11. **Competing classifications resolve overtaking, head-on, crossing, in
+11. **A `none` effect confers no role.** 8(f)(iii) still appears in `applied`.
+12. **Competing classifications resolve overtaking, head-on, crossing, in
     that order:** 13(d) forbids reclassifying a latch, 14(c) errs head-on.
-12. **A stated `pair:geo:risk_of_collision` counts as asserted, `by: []`.**
-13. **A latch in a classified overtaking is `13(d)`, read before any role;
+13. **A stated `pair:geo:risk_of_collision` counts as asserted, `by: []`.**
+14. **A latch in a classified overtaking is `13(d)`, read before any role;
     then phases follow roles, strongest first:** give-way `16`, keep-clear
     `18(f)(i)`, stand-on `17(a)(i)` (`17(a)(ii)` once turning),
     shall-not-impede `8(f)(i)`. `17(b)` is not emitted.
-14. **Every conduct verdict is `pending`** until a monitor exists.
-15. **A Rule 2 grid is a first-match list of predicate regions.** None, or
+15. **Every conduct verdict is `pending`** until a monitor exists.
+16. **A Rule 2 grid is a first-match list of predicate regions.** None, or
     no match, is `inconclusive-in-model`, named in `assumptions_violated`.
 
 If any of these turn out to disagree with the data's intent, that is a
