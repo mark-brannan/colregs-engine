@@ -40,10 +40,14 @@ choice and the engine never picks for you:
 ```
 applied:  25a, 25b, 25c
 displays:
-  chosen []      sidelights[shall], sternlight[shall]
   chosen [25b]   combined lantern[may]
+  chosen []      sidelights[shall], sternlight[shall]
   chosen [25c]   sidelights[shall], sternlight[shall], all-round red[may], all-round green[may]
 ```
+
+The order is the order to consider the rules in: the most specific
+concession the Convention wrote for this vessel first (25(b) below 20 m),
+the rule as written last. Take index 0 for the usual display.
 
 Every light in a display names the entry that prescribes it (`source_entry`),
 the entry that pulled it in if different (`via`), and how strongly the rule

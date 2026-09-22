@@ -76,7 +76,7 @@ type Spec =
   | { kind: 'string' };
 
 /** Self's keys also appear bare in the flat namespace, so a bare key reads
- * self (engine-notes item 8). Normalising first makes the frame swap below a
+ * self (engine-notes item 9). Normalising first makes the frame swap below a
  * rename of two prefixes and nothing else. */
 function normaliseKey(key: string): string {
   const head = key.slice(0, key.indexOf(':'));
