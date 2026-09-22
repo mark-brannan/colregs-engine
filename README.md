@@ -100,7 +100,7 @@ evaluates every pair of an n-vessel scene and reports where pairwise duties
 conflict; `reduceTraffic(self, others)` reduces the rest of the traffic to
 the per-sector facts a situation's `traffic` class carries. The envelope says what
 it could not decide: nothing throws for want of data, though a malformed situation, trace or model still does. The shapes and the `opts.data` / `colregs.source` contract are settled in colregs
-[ADR 0011](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0011-api-shape.md) and [ADR 0012](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0012-trace-and-rule2-departure-api.md); the surface as a whole, one operation per thing and no companions, in [ADR 0023](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0023-surface-is-the-manifest.md).
+[ADR 0011](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0011-api-shape.md) and [ADR 0012](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0012-trace-and-rule2-departure-api.md); the surface as a whole, one operation per thing and no companions, is proposed in colregs [0023](https://github.com/mark-brannan/colregs/blob/main/docs/proposals/0023-surface-is-the-manifest.md), not yet ruled.
 
 ## Entry points
 
