@@ -594,7 +594,7 @@ describe('display order (engine-notes item 8)', () => {
   }
   const vessel = (
     propulsion: 'power' | 'sail' | 'oars',
-    position: 'underway' | 'anchored' | 'aground',
+    position: 'underway' | 'anchored' | 'aground' | 'moored',
     length: number,
     extra: FactRecord = {},
   ): FactRecord => ({
@@ -660,6 +660,14 @@ describe('display order (engine-notes item 8)', () => {
       ['rule:25d_ii'],
       ['rule:25b', 'rule:25d_ii'],
       ['rule:25a', 'rule:25d_ii'],
+    ]);
+  });
+
+  it('us/inland: 30(b) on a mooring buoy outranks 30(a) the same way', () => {
+    const moored = vessel('power', 'moored', 10, { 'fact:on_mooring_buoy': true });
+    expect(evaluateDisplayIn('us/inland', moored).displays.map((d) => d.entries)).toEqual([
+      ['rule:30b:mooring_buoy'],
+      ['rule:30a:mooring_buoy'],
     ]);
   });
 
