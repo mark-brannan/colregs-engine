@@ -586,3 +586,97 @@ describe('day shapes (Rule 20(d))', () => {
     for (const a of e.optional_additions) expect(Array.isArray(a.shapes)).toBe(true);
   });
 });
+
+describe('display order (engine-notes item 8)', () => {
+  // Same call shape as searoom's evaluateDisplayIn: jurisdiction first.
+  function evaluateDisplayIn(jurisdiction: string, facts: FactRecord): DisplayEvaluation {
+    return evaluateDisplay(facts, { jurisdiction });
+  }
+  const vessel = (
+    propulsion: 'power' | 'sail' | 'oars',
+    position: 'underway' | 'anchored' | 'aground' | 'moored',
+    length: number,
+    extra: FactRecord = {},
+  ): FactRecord => ({
+    'fact:propulsion': `propulsion:${propulsion}`,
+    'fact:activity': 'activity:none',
+    'fact:position': `position:${position}`,
+    'fact:length_m': length,
+    ...extra,
+  });
+  const orderOf = (facts: FactRecord) =>
+    evaluateDisplayIn('intl', facts).displays.map((d) => d.entries);
+
+  const table: [string, FactRecord, string[]][] = [
+    ['sail 10 m anchored', vessel('sail', 'anchored', 10), ['rule:30b']],
+    ['power 10 m underway', vessel('power', 'underway', 10), ['rule:23d_i']],
+    [
+      'power 6 m / 7 kn underway',
+      vessel('power', 'underway', 6, { 'fact:max_speed_kn': 7 }),
+      ['rule:23d_ii'],
+    ],
+    ['sail 10 m underway', vessel('sail', 'underway', 10), ['rule:25b']],
+    ['oars 4 m: torch only', vessel('oars', 'underway', 4), ['rule:25d_ii']],
+    ['sail 6 m underway', vessel('sail', 'underway', 6), ['rule:25b']],
+    ['sail 10 m aground', vessel('sail', 'aground', 10), ['rule:30b', 'rule:30d']],
+    [
+      'RAM 30 m anchored',
+      vessel('power', 'anchored', 30, { 'fact:activity': 'activity:ram' }),
+      ['rule:27b_i', 'rule:27b_iv', 'rule:30b'],
+    ],
+    [
+      'pilot 15 m anchored',
+      vessel('power', 'anchored', 15, { 'fact:activity': 'activity:pilot' }),
+      ['rule:29a', 'rule:30b'],
+    ],
+  ];
+
+  for (const [name, facts, first] of table) {
+    it(`${name}: display 0 is the concession`, () => {
+      expect(orderOf(facts)[0]).toEqual(first);
+    });
+  }
+
+  it('the base rule is last: 30(a) after 30(b), 23(a) after both 23(d) forms', () => {
+    expect(orderOf(vessel('sail', 'anchored', 10))).toEqual([['rule:30b'], ['rule:30a']]);
+    expect(orderOf(vessel('power', 'underway', 6, { 'fact:max_speed_kn': 7 }))).toEqual([
+      ['rule:23d_ii'],
+      ['rule:23d_i'],
+      ['rule:23a_i', 'rule:23a_iii_iv'],
+    ]);
+  });
+
+  it('shall-if-practicable is a floor, not a concession: 25(d)(i) torch stays last', () => {
+    expect(orderOf(vessel('sail', 'underway', 6))).toEqual([
+      ['rule:25b'],
+      ['rule:25a'],
+      ['rule:25a', 'rule:25c'],
+      ['rule:25d_i'],
+    ]);
+  });
+
+  it('a may carrier keeps its own lights first, then its options in enumeration order', () => {
+    expect(orderOf(vessel('oars', 'underway', 4))).toEqual([
+      ['rule:25d_ii'],
+      ['rule:25b', 'rule:25d_ii'],
+      ['rule:25a', 'rule:25d_ii'],
+    ]);
+  });
+
+  it('us/inland: 30(b) on a mooring buoy outranks 30(a) the same way', () => {
+    const moored = vessel('power', 'moored', 10, { 'fact:on_mooring_buoy': true });
+    expect(evaluateDisplayIn('us/inland', moored).displays.map((d) => d.entries)).toEqual([
+      ['rule:30b:mooring_buoy'],
+      ['rule:30a:mooring_buoy'],
+    ]);
+  });
+
+  it('no concession in play: enumeration order is kept', () => {
+    expect(orderOf(vessel('sail', 'anchored', 60))).toEqual([['rule:30a']]);
+    // 25(c) is an addition (`rel:includes`), not a concession: base first.
+    expect(orderOf(vessel('sail', 'underway', 30))).toEqual([
+      ['rule:25a'],
+      ['rule:25a', 'rule:25c'],
+    ]);
+  });
+});

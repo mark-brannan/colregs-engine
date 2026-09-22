@@ -8,7 +8,9 @@
 // made here are documented in docs/engine-notes.md (items 2-5 point at
 // colregs ADR 0019, which owns them) and tested in
 // displays.test.ts. The engine never selects a display: every lawful
-// alternative is returned (REQ-MODEL-8 / REQ-CONS-3).
+// alternative is returned (REQ-MODEL-8 / REQ-CONS-3), ordered most specific
+// concession first and base rule last (engine-notes item 8), so index 0 is
+// the display to consider first.
 
 import type {
   AnyOfConstraint,
@@ -589,6 +591,120 @@ export function appliedDisplayEntries(
   ).map((e) => e.id);
 }
 
+// Display order (engine-notes item 8): most specific concession first, base
+// rule last. A concession is a `may` entry offered in lieu of a base that
+// is itself in play, gated on a scalar fact -- 30(b) below 50 m, 23(d)(i)
+// below 12 m, 25(b) below 20 m -- and it outranks its base. Two sharing a
+// base: more scalar gates first, then the tighter bound (23(d)(ii) before
+// 23(d)(i)). A `may` one_of carrier's own lights, no option taken, rank
+// first (25(d)(ii): the torch is the concession written for a vessel under
+// oars). Everything else keeps enumeration order; `shall-if-practicable`
+// (25(d)(i)) is a floor with a fallback, not a concession. Read from
+// `entries`, never `chosen`: `chosen` is [] for 30(a) under 27(b)(iv) but
+// ["rule:30a"] under 30(d).
+
+/** The bounds of one scalar gate, with the `not` arm already excluded. */
+interface ScalarGate {
+  gte?: number;
+  gt?: number;
+  lte?: number;
+  lt?: number;
+}
+
+interface Concession {
+  id: string;
+  bases: string[];
+  gates: Record<string, ScalarGate>;
+}
+
+interface DisplayRank {
+  /** `may` one_of carriers whose own lights this display keeps. */
+  kept: number;
+  concessions: Concession[];
+}
+
+function scalarGates(when: Predicate): Record<string, ScalarGate> {
+  const gates: Record<string, ScalarGate> = {};
+  for (const [key, c] of Object.entries(when)) {
+    if (Array.isArray(c) || isNotConstraint(c) || !isNumericConstraint(c)) continue;
+    gates[key] = c as ScalarGate;
+  }
+  return gates;
+}
+
+/** -1 when `a` is the tighter bound on some shared key and `b` on none;
+ * 1 for the reverse; 0 when neither or both. */
+function compareTightness(
+  a: Record<string, ScalarGate>,
+  b: Record<string, ScalarGate>,
+): number {
+  let aTighter = false;
+  let bTighter = false;
+  for (const key of Object.keys(a)) {
+    if (!(key in b)) continue;
+    const upperA = a[key].lt ?? a[key].lte;
+    const upperB = b[key].lt ?? b[key].lte;
+    if (upperA !== undefined && upperB !== undefined && upperA !== upperB) {
+      if (upperA < upperB) aTighter = true;
+      else bTighter = true;
+    }
+    const lowerA = a[key].gt ?? a[key].gte;
+    const lowerB = b[key].gt ?? b[key].gte;
+    if (lowerA !== undefined && lowerB !== undefined && lowerA !== lowerB) {
+      if (lowerA > lowerB) aTighter = true;
+      else bTighter = true;
+    }
+  }
+  if (aTighter === bTighter) return 0;
+  return aTighter ? -1 : 1;
+}
+
+function compareRank(a: DisplayRank, b: DisplayRank): number {
+  if (a.kept !== b.kept) return b.kept - a.kept;
+  if (a.concessions.length !== b.concessions.length) {
+    return b.concessions.length - a.concessions.length;
+  }
+  for (const x of a.concessions) {
+    for (const y of b.concessions) {
+      if (x.id === y.id || !x.bases.some((base) => y.bases.includes(base))) continue;
+      const xGates = Object.keys(x.gates).length;
+      const yGates = Object.keys(y.gates).length;
+      if (xGates !== yGates) return yGates - xGates;
+      const t = compareTightness(x.gates, y.gates);
+      if (t !== 0) return t;
+    }
+  }
+  return 0;
+}
+
+function rankDisplays(
+  displays: Display[],
+  nodes: ReadonlyMap<string, Node>,
+  groups: readonly OneOfGroup[],
+): void {
+  const rankOf = (d: Display): DisplayRank => {
+    const members = new Set(d.entries);
+    let kept = 0;
+    for (const g of groups) {
+      if (g.optional && !g.options.some((o) => members.has(o))) kept++;
+    }
+    const concessions: Concession[] = [];
+    for (const id of d.entries) {
+      const n = nodes.get(id);
+      if (!n || n.modality !== 'modality:may') continue;
+      const bases = (n.entry['rel:in_lieu_of'] ?? []).filter((r) => nodes.has(r));
+      if (bases.length === 0) continue;
+      const gates = scalarGates(n.entry.when);
+      if (Object.keys(gates).length === 0) continue;
+      concessions.push({ id, bases, gates });
+    }
+    return { kept, concessions };
+  };
+  const ranks = new Map(displays.map((d) => [d, rankOf(d)]));
+  // Array.prototype.sort is stable: ties keep enumeration order.
+  displays.sort((a, b) => compareRank(ranks.get(a)!, ranks.get(b)!));
+}
+
 /**
  * Evaluates one vessel's `facts`, returning every lawful display.
  *
@@ -765,7 +881,8 @@ export function evaluateDisplay(
   }
 
   // Enumerate lawful displays: product over binary choices and one_of
-  // groups, validated against in_lieu_of and excludes.
+  // groups, validated against in_lieu_of and excludes. Combination 0 is
+  // "no alternative taken"; rankDisplays below reorders the result.
   const displays: Display[] = [];
   const seen = new Set<string>();
 
@@ -891,6 +1008,8 @@ export function evaluateDisplay(
       ],
     });
   }
+
+  rankDisplays(displays, nodes, groups);
 
   const optionalAdditions = additions.map((n) => ({
     id: n.id,
