@@ -2,7 +2,7 @@
 // `scope`, `classification` and `precedence` entries say about one situation.
 // Written from colregs ADR 0005 (the situation record and its namespace),
 // ADR 0016 (two frames, pooled, resolved, then roles), ADR 0019 point 1
-// (how far rel:overrides reaches) and docs/engine-notes.md items 8-12 — not
+// (how far rel:overrides reaches) and docs/engine-notes.md items 9-13 — not
 // from src/encounter.ts, and not importing it. Its only job is to be a
 // second opinion for the Part B conformance check; src/encounter.ts is the
 // engine under test.
@@ -36,7 +36,7 @@ export const ENCOUNTER_CATEGORIES: readonly RuleCategory[] = [
 ];
 
 /** Any obligation's rel:overrides fires; a `may` overrider is inert
- * (engine-notes item 9, colregs ADR 0019 point 1). */
+ * (engine-notes item 10, colregs ADR 0019 point 1). */
 const OBLIGATIONS: ReadonlySet<Modality> = new Set<Modality>([
   'modality:shall',
   'modality:shall-if-practicable',
@@ -45,7 +45,7 @@ const OBLIGATIONS: ReadonlySet<Modality> = new Set<Modality>([
 ]);
 
 /** Competing classifications resolve overtaking, head-on, crossing, in that
- * order (engine-notes item 11: 13(d) forbids reclassifying a latch, 14(c)
+ * order (engine-notes item 12: 13(d) forbids reclassifying a latch, 14(c)
  * errs head-on). A value this release does not name ranks below all of them:
  * reported when nothing known fired, never displacing something known. */
 const ENCOUNTER_ORDER: readonly string[] = [
@@ -106,7 +106,7 @@ export function decodeRowsFor(value: string): readonly Predicate[] {
 }
 
 // ---------------------------------------------------------------------
-// Flattening (colregs ADR 0005 'Two subjects', engine-notes item 8)
+// Flattening (colregs ADR 0005 'Two subjects', engine-notes item 9)
 // ---------------------------------------------------------------------
 /** A situation in the `<subject>:<class>:<key>` predicate namespace. Self's
  * keys also appear bare, so every one-subject predicate stays valid. */
@@ -275,7 +275,7 @@ export function referencePooledRoles(
     // In the swapped frame the entry's `self` is the situation's `other`.
     const [toSelf, toOther] =
       frames[e.id] === 'self' ? [onFrameSelf, onFrameOther] : [onFrameOther, onFrameSelf];
-    // A `none` effect confers no role (engine-notes item 10).
+    // A `none` effect confers no role (engine-notes item 11).
     if (toSelf !== undefined && toSelf !== 'role:none') roles.self.push({ role: toSelf, by: e.id });
     if (toOther !== undefined && toOther !== 'role:none') roles.other.push({ role: toOther, by: e.id });
   }
@@ -342,7 +342,7 @@ export function referenceEncounter(
 
   // Rule 7(a) makes risk a judgement on all available means: a caller who
   // states it has made that judgement, and 7(d)(i) only adds a ground
-  // (engine-notes item 12).
+  // (engine-notes item 13).
   const stated = situation.pair?.geo?.['geo:risk_of_collision'] === true;
 
   return {
