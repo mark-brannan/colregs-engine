@@ -20,6 +20,7 @@ import type {
 } from './generated/index.js';
 import type {
   LightRef,
+  ShapeRef,
   PredicateValue,
   When,
 } from './generated/applicability.js';
@@ -105,6 +106,9 @@ export type NumericConstraint = Exclude<
 
 /** One light as an entry's `lights` clause references it. */
 export type LightSpec = LightRef;
+
+/** One day shape as an entry's `shapes` clause references it. */
+export type ShapeSpec = ShapeRef;
 
 /** One light definition from data/lights.json. */
 export type LightDef = LightsData['lights'][string];
