@@ -1,0 +1,6 @@
+Revision history for #141:
+
+rev 2 (content) 2026-09-23 00:46 UTC — scale the conformance CI matrix 4->32 shards: this commit's new fact axes grow the exhaustive conformance space 8x, which timed out the 15-min conformance job (repo precedent: 902ace0)
+rev 1 (initial) 2026-09-23 00:46 UTC
+
+<!-- mergify-revision-data: {"schema_version":1,"pull_number":141,"entries":[{"number":1,"change_type":"initial","old_sha":null,"new_sha":"72aeec71d8c7a56f494ee973916fb502c294c307","timestamp_iso":"2026-09-23T00:46:52Z","reason":"","replay_sha":null,"compare_url":null},{"number":2,"change_type":"content","old_sha":"72aeec71d8c7a56f494ee973916fb502c294c307","new_sha":"5868282a946172d2fee8bfeb55fc071efff71a08","timestamp_iso":"2026-09-23T00:46:52Z","reason":"scale the conformance CI matrix 4->32 shards: this commit's new fact axes grow the exhaustive conformance space 8x, which timed out the 15-min conformance job (repo precedent: 902ace0)","replay_sha":"9ba874bfda2dc7cd3210f624f38f1bb46a3df24f","compare_url":"https://github.com/mark-brannan/colregs-engine/compare/72aeec71d8c7a56f494ee973916fb502c294c307...9ba874bfda2dc7cd3210f624f38f1bb46a3df24f"}]} -->
