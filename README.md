@@ -91,17 +91,20 @@ evaluateDisplay({ propulsion: 'sail' } as unknown as FactRecord);
 
 A malformed record is an error, not an empty display; an empty display is
 the honest answer for a vessel that lawfully shows nothing, and the two must
-not look alike. `appliedDisplayEntries(facts)` returns just the matching
-entry ids, without composing displays, and validates on the same terms.
+not look alike. The envelope's `applied` is just the matching entry ids,
+in data order: the fixture contract, and the only list of them.
 
 `evaluateEncounter(situation)` reads two vessels at one instant: encounter
 type, each vessel's roles, what overrode what; every case of colregs'
 `situation-fixtures.json` replays. `evaluateConduct(trace)` and
-`evaluateRule2Departure(situation, model)` are partial: the window and the
+`evaluateDeparture(situation, model)` are partial: the window and the
 Rule 13(d)/17 phases with every verdict `pending`, and a region lookup in
-the model's `regions`, else `inconclusive-in-model`. The envelope says what
+the model's `regions`, else `inconclusive-in-model`. `evaluateScene(scene)`
+evaluates every pair of an n-vessel scene and reports where pairwise duties
+conflict; `reduceTraffic(self, others)` reduces the rest of the traffic to
+the per-sector facts a situation's `traffic` class carries. The envelope says what
 it could not decide: nothing throws for want of data, though a malformed situation, trace or model still does. The shapes and the `opts.data` / `colregs.source` contract are settled in colregs
-[ADR 0011](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0011-api-shape.md) and [ADR 0012](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0012-trace-and-rule2-departure-api.md).
+[ADR 0011](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0011-api-shape.md) and [ADR 0012](https://github.com/mark-brannan/colregs/blob/main/docs/adr/0012-trace-and-rule2-departure-api.md); the surface as a whole, one operation per thing and no companions, is proposed in colregs [0023](https://github.com/mark-brannan/colregs/blob/main/docs/proposals/0023-surface-is-the-manifest.md), not yet ruled.
 
 ## Entry points
 
@@ -111,14 +114,14 @@ own vocabulary and do not move when colregs releases data.
 | Export | What you get |
 | --- | --- |
 | [`evaluateDisplay(facts, opts?)`](src/evaluate.ts) | every complete lawful display for one vessel, plus which entries applied and which were excluded and by whom |
-| [`appliedDisplayEntries(facts, opts?)`](src/evaluate.ts) | just the ids of the entries whose conditions hold, no composition |
 | [`DisplayEvaluation`](src/types.ts) | the result: `applied`, `excluded`, `displays`, the per-entry `categories`, the `provenance` block and the `colregs` version stamp |
 | [`EvaluationProvenance`](src/types.ts), [`RuleCategory`](src/schema.ts), [`RepresentedParagraph`](src/schema.ts) | what the evaluation read: the categories it matched, the jurisdictions it offered, and Rule 2(a)/2(b) as represented but never computed |
-| [`Rule2DepartureStatus`](src/types.ts) | the closed status alphabet colregs' ADR 0005 §5 fixes, for `evaluateRule2Departure`; no field of `DisplayEvaluation` carries one |
+| [`DepartureStatus`](src/types.ts) | the closed status alphabet colregs' ADR 0005 §5 fixes, for `evaluateDeparture`; no field of `DisplayEvaluation` carries one |
 | [`Display`](src/types.ts), [`DisplayLight`](src/types.ts), [`DisplayShape`](src/types.ts) | one lawful display and one light or day shape in it, each citing `source_entry`, `via` and `modality` |
 | [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
 | [`Modality`](src/generated/applicability.ts) | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them |
-| [`evaluateEncounter(situation, opts?)`](src/encounter.ts), [`evaluateConduct(trace, opts?)`](src/conduct.ts), [`evaluateRule2Departure(situation, model, opts?)`](src/rule2.ts) | scope, encounter type, risk grounds, roles and overrides for two vessels, with `appliedEncounterEntries` as the fixture companion; the trace and Rule 2 verbs, partial as above |
+| [`evaluateEncounter(situation, opts?)`](src/encounter.ts), [`evaluateConduct(trace, opts?)`](src/conduct.ts), [`evaluateDeparture(situation, model, opts?)`](src/departure.ts) | scope, encounter type, risk grounds, roles and overrides for two vessels; the trace and departure verbs, partial as above |
+| [`evaluateScene(scene, opts?)`](src/scene.ts), [`reduceTraffic(self, others, opts?)`](src/traffic.ts) | every pair of an n-vessel scene, the traffic reduced per sector, and where pairwise duties conflict |
 
 `colregs-engine/schema` ([src/schema.ts](src/schema.ts)) is the colregs data
 shapes generated from that package's JSON Schema: `Entry`, `Predicate`,

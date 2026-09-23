@@ -18,6 +18,6 @@ describe('Situation.traffic', () => {
 
   it('reduceTraffic and evaluateScene are stubs that throw', () => {
     expect(() => reduceTraffic(own, [])).toThrow(/stub/);
-    expect(() => evaluateScene({ own, others: [] })).toThrow(/stub/);
+    expect(() => evaluateScene({ self: own, others: [] })).toThrow(/stub/);
   });
 });
