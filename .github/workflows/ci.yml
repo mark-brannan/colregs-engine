@@ -2,8 +2,16 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches-ignore: [main]
+  workflow_dispatch:
+  schedule:
+    # Weekly full conformance walk (Sunday 06:00 UTC); a pull_request runs
+    # only a sample. Ruled 2026-09-23: conformance is for later, CI minutes
+    # are for now.
+    - cron: '0 6 * * 0'
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -31,28 +39,44 @@ jobs:
       # the emitted ESM, would pass typecheck and tests and break consumers.
       - run: npm run build
 
-  # The exhaustive conformance harness (research/conformance/): every record
+  # The conformance harness (research/conformance/) on a pull_request: the
+  # first 100k records per jurisdiction of a ~47M-record space, in-process,
+  # about half a minute. The walk is in axis order, so this is one corner of
+  # the space, not a spread; it catches an engine regression, not a data
+  # finding. The register is not written in --sample mode. The whole space
+  # is the weekly job below.
+  conformance-sample:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run conformance -- --sample=100000
+
+  # The exhaustive walk, weekly or on workflow_dispatch only: every record
   # in the partitioned fact space, engine against an independent reference
   # reading of the predicate semantics. Runtime is linear in the record
-  # count and the count is a product over fact axes, so one job outgrows any
-  # timeout the moment colregs adds an axis. Each matrix leg walks one
-  # residue class of the space (`--shard=i/N`, split again over the runner's
-  # cores) and uploads a tally; `conformance-register` below reduces them.
-  # Adding legs to the matrix is the whole knob: `strategy.job-total` is N.
-  # A leg exits non-zero only on a conformance mismatch in its slice; data
-  # findings are printed, not failed.
-  #
-  # 32 legs since colregs 0.3.4's Rule 34 signal surface added three free
-  # boolean axes (fact:visibility, fact:manned, fact:nearing_obscured_bend),
-  # an 8x space growth -- 4 legs, ~2-3.5 min each on PR #138, blew straight
-  # through the 15-minute ceiling. 8x the legs restores that headroom.
+  # count and the count is a product over fact axes. Each matrix leg walks
+  # one residue class of the space (`--shard=i/N`, split again over the
+  # runner's cores) and uploads a tally; `conformance-register` below
+  # reduces them. `strategy.job-total` is N. Measured 2026-09-23: 4 legs
+  # took ~3.5 min each on the 47M-record space; 16 legs is ~1 min, and
+  # ~7.5 min after the 8x growth #139 brings. The timeout is set to that,
+  # not padded: a weekly timeout is a signal to read, not a nuisance to
+  # raise. A leg exits non-zero only on a conformance mismatch in its
+  # slice; data findings are printed, not failed.
   conformance:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -71,6 +95,7 @@ jobs:
   # here and not in a leg. Fails on a register this run would rewrite;
   # the diff step catches anything else the harness touched.
   conformance-register:
+    if: github.event_name != 'pull_request'
     needs: conformance
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -123,8 +148,8 @@ jobs:
   # evaluate when a dependency failed or was skipped, so it reports an explicit
   # pass or fail of its own rather than inheriting the skip.
   ci-gate:
-    needs: [test, conformance, conformance-register, partition-proof, prose-budget, nonempty]
-    if: always()
+    needs: [test, conformance-sample, partition-proof, prose-budget, nonempty]
+    if: ${{ always() && github.event_name == 'pull_request' }}
     # It reads nothing and writes nothing; the results go in as an input.
     permissions: {}
     uses: mark-brannan/.github/.github/workflows/ci-gate.yml@main
