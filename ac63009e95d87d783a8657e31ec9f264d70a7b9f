@@ -1,0 +1,1 @@
+fold in the enumerate-situation.ts fix flagged by review (readsSituation now matches signal entries) and add PR-body context on FIND-37..47 and the new modality candidates, per review threads PRRT_kwDOUIN0eM6k-79B and PRRT_kwDOUIN0eM6k-8B7
