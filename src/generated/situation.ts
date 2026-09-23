@@ -92,3 +92,19 @@ export type EnvironmentValues = {
 export type Environment = {
   [K in EnvironmentKey]?: EnvironmentValues[K];
 };
+
+/** What a subject is doing or intending now, stated and never derived (own/other only). */
+export const ACT_SPEC = {
+  'act:alter_course': { kind: 'enum', values: ['alter_course:starboard', 'alter_course:port'] },
+  'act:astern_propulsion': { kind: 'boolean' },
+  'act:overtake_intent': { kind: 'enum', values: ['overtake_intent:starboard', 'overtake_intent:port'] },
+  'act:overtaking_agreement': { kind: 'boolean' },
+  'act:doubt': { kind: 'boolean' },
+} as const;
+export type ActKey = keyof typeof ACT_SPEC;
+export type ActValues = {
+  [K in ActKey]: ValueOfSituationSpec<(typeof ACT_SPEC)[K]>;
+};
+export type Acts = {
+  [K in ActKey]?: ActValues[K];
+};

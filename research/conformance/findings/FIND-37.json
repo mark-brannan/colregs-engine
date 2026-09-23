@@ -1,0 +1,12 @@
+{
+  "id": "FIND-37",
+  "check": "coverage-entry-never-fires",
+  "description": "entry rule:34a:astern never applies across the enumerated fact space",
+  "cites": [
+    "34(a)"
+  ],
+  "records": 1,
+  "status": "candidate",
+  "facts": {},
+  "prose": "a vessel."
+}

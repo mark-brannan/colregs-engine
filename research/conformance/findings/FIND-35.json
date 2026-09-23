@@ -1,11 +1,11 @@
 {
-  "id": "FIND-01",
+  "id": "FIND-35",
   "check": "conformance-modality",
-  "description": "entry rule:23a_i resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference",
+  "description": "entry rule:30d resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference",
   "cites": [
-    "23(a)(i)"
+    "30(d)"
   ],
-  "records": 608256,
+  "records": 7907328,
   "status": "candidate",
   "facts": {
     "fact:activity": "activity:none",
@@ -18,15 +18,14 @@
     "fact:nearing_obscured_bend": true,
     "fact:non_displacement": true,
     "fact:obstruction_exists": true,
-    "fact:position": "position:underway",
+    "fact:position": "position:aground",
     "fact:propulsion": "propulsion:power",
     "fact:time": "time:day",
     "fact:tow_length_m": 199,
     "fact:visibility": "visibility:good",
     "fact:wig": true,
     "fact:wig_near_surface": true,
-    "fact:making_way": true,
     "fact:motorsailing": true
   },
-  "prose": "a 6 m vessel, underway (a composite unit, operating in non-displacement mode, a wing-in-ground craft, near the surface, near a narrow channel, with an obstruction to the passage of another vessel, 6 kn max speed, 199 m tow, 149 m gear extent)."
+  "prose": "a 6 m vessel, aground (a composite unit, operating in non-displacement mode, a wing-in-ground craft, near the surface, near a narrow channel, with an obstruction to the passage of another vessel, 6 kn max speed, 199 m tow, 149 m gear extent)."
 }

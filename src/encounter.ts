@@ -75,10 +75,27 @@ function encounterRank(value: string): number {
     : -1;
 }
 
+/** A Part D sound/light signal entry: `category:display` like a light or a
+ * shape, but carrying a `signal` sequence rather than a `lights`/`shapes`
+ * spec. Rule 34's signals are acts of the encounter — "I am altering my
+ * course to starboard" is addressed to the other vessel and most of them
+ * gate on `pair:geo:in_sight` — so the encounter verb reads them, where it
+ * reads no other display entry. The marker is the field, not the category:
+ * colregs files them under display because they are things a vessel emits,
+ * and widening ENCOUNTER_CATEGORIES to `category:display` would pull in
+ * every light and shape with them. */
+function isSignal(e: Entry): boolean {
+  return entryCategory(e) === 'category:display' && e.signal !== undefined;
+}
+
+/** The entries an encounter reads: the three categories above, plus the
+ * Part D signal entries. */
+function readsEncounter(e: Entry): boolean {
+  return ENCOUNTER_CATEGORIES.includes(entryCategory(e)) || isSignal(e);
+}
+
 function appliedEntries(data: ApplicabilityData, flat: FlatSituation): Entry[] {
-  return data.entries.filter(
-    (e) => ENCOUNTER_CATEGORIES.includes(entryCategory(e)) && situationMatches(e.when, flat),
-  );
+  return data.entries.filter((e) => readsEncounter(e) && situationMatches(e.when, flat));
 }
 
 function precedenceEntries(data: ApplicabilityData, flat: FlatSituation): Entry[] {

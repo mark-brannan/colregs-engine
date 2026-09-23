@@ -1,11 +1,11 @@
 {
-  "id": "FIND-01",
+  "id": "FIND-05",
   "check": "conformance-modality",
-  "description": "entry rule:23a_i resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference",
+  "description": "entry rule:23c resolves to modality 'modality:may' in the engine but 'modality:shall' in the reference",
   "cites": [
-    "23(a)(i)"
+    "23(c)"
   ],
-  "records": 608256,
+  "records": 152064,
   "status": "candidate",
   "facts": {
     "fact:activity": "activity:none",
