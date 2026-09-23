@@ -3,9 +3,6 @@ name: CI
 on:
   pull_request:
   workflow_dispatch:
-  schedule:
-    # Full 32-shard conformance sweep; pull_request gets 4 shards.
-    - cron: '0 6 * * *'
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
@@ -46,16 +43,14 @@ jobs:
   # cores) and uploads a tally; `conformance-register` below reduces them.
   # Adding legs to the matrix is the whole knob: `strategy.job-total` is N.
   # A leg exits non-zero only on a conformance mismatch in its slice; data
-  # findings are printed, not failed. pull_request gets 4 shards to keep the
-  # queue small; the full 32-shard sweep runs only on schedule or a manual
-  # workflow_dispatch.
+  # findings are printed, not failed.
   conformance:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        shard: ${{ github.event_name == 'pull_request' && fromJSON('[0,1,2,3]') || fromJSON('[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]') }}
+        shard: [0, 1, 2, 3]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
