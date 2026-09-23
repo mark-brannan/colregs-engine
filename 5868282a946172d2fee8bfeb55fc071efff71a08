@@ -1,0 +1,1 @@
+scale the conformance CI matrix 4->32 shards: this commit's new fact axes grow the exhaustive conformance space 8x, which timed out the 15-min conformance job (repo precedent: 902ace0)
