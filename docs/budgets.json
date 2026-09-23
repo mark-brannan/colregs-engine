@@ -7,7 +7,7 @@
     "docs/formal-methods-glossary.md": 190,
     "docs/formal-methods-reading-list.md": 70,
     "research/conformance/README.md": 200,
-    "research/conformance/findings/README.md": 60,
+    "research/conformance/findings/README.md": 100,
     "research/rocq/README.md": 60,
     "research/z3/README.md": 89,
     "docs/adr/0001-api-shape.md": 6,
