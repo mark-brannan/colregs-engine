@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.8](https://github.com/mark-brannan/colregs-engine/compare/v0.1.7...v0.1.8) (2026-09-23)
+
+
+### Added
+
+* adopt colregs 0.3.4 — jurisdiction resolution (ADR 0018/0020) and the excluded drop (ADR 0019) ([#123](https://github.com/mark-brannan/colregs-engine/issues/123)) ([840ca8a](https://github.com/mark-brannan/colregs-engine/commit/840ca8ad1b2c4ba32ee6cc2d70fae1602142263c))
+* apply the Rule 20(c) modality shift in evaluateDisplay (ADR 0021) ([#130](https://github.com/mark-brannan/colregs-engine/issues/130)) ([103e726](https://github.com/mark-brannan/colregs-engine/commit/103e7260956292baa42958430474b9c8a6816e3e))
+* **conformance:** shard the exhaustive walk across processes and CI runners ([#129](https://github.com/mark-brannan/colregs-engine/issues/129)) ([c936c7b](https://github.com/mark-brannan/colregs-engine/commit/c936c7bb079654cc08a6ee086e8e0de6d99f9000))
+* emit day shapes beside lights in evaluateDisplay ([#132](https://github.com/mark-brannan/colregs-engine/issues/132)) ([f1f88cd](https://github.com/mark-brannan/colregs-engine/commit/f1f88cdfe551cf28f27eb231dadba74957f3faf6)), closes [#118](https://github.com/mark-brannan/colregs-engine/issues/118)
+* evaluateEncounter reads roles from both frames, pooled (ADR 0016) ([#110](https://github.com/mark-brannan/colregs-engine/issues/110)) ([99b2d55](https://github.com/mark-brannan/colregs-engine/commit/99b2d5590eef8752a6da75daee5d3401360e0036))
+* rank displays[] most specific concession first, base rule last ([#138](https://github.com/mark-brannan/colregs-engine/issues/138)) ([f40b26c](https://github.com/mark-brannan/colregs-engine/commit/f40b26c79c4cb3f666aeef3ccc3daa43082c5d56))
+* **research:** situation enumerator and the ADR 0016 reference read ([#117](https://github.com/mark-brannan/colregs-engine/issues/117)) ([bb1f236](https://github.com/mark-brannan/colregs-engine/commit/bb1f23651cbf69e5a04a4f7968135126ecbf5562))
+* scaffold the Rule 20(c) modality shift mechanism (ADR 0021) ([#128](https://github.com/mark-brannan/colregs-engine/issues/128)) ([f331fb0](https://github.com/mark-brannan/colregs-engine/commit/f331fb019ded17b657b482d2808f8c8bedfad0e3))
+
 ## [0.1.7](https://github.com/mark-brannan/colregs-engine/compare/v0.1.6...v0.1.7) (2026-09-17)
 
 
