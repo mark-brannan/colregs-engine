@@ -38,11 +38,11 @@
 //      scalar-with-refinement), including the type mismatches: a numeric
 //      constraint on an enum axis is `false`, and `{not: {gte: 5}}` on that
 //      axis is therefore `true`.
-//   4. Only `category: 'display'` entries are encoded, the same filter
-//      src/evaluate.ts and research/conformance/ apply. The other categories
-//      (colregs 0.2.0's scope/precedence/classification) read own:/other:/
-//      pair:-scoped facts FACT_SPEC does not declare; they are counted in
-//      Encoding.excludedNonDisplay and reported by the run, not solved.
+//   4. Only one-vessel entries are encoded: the theory declares one constant
+//      per axis of ONE fact record, so an entry reading a
+//      self:/other:/pair:-scoped key has none to read -- every
+//      scope/precedence/classification entry, and since colregs 0.3.4 Rule
+//      34's display-category signals. Filtered by key scope, not category.
 //
 // `not` and both `any_of` forms are implemented, as reference.ts does;
 // test/z3-encoding.test.ts asserts that no display entry uses them yet.
@@ -121,6 +121,35 @@ export function isDisplay(e: Entry): boolean {
   return (e.category ?? 'category:display') === 'category:display';
 }
 
+/** Every key any of an entry's predicates reads, `any_of` and the
+ * modality/conditional branches included. Mirrors enumerate.ts's walk,
+ * which is what decides whether an axis exists for the key. */
+function predicateKeys(e: Entry): string[] {
+  const keys: string[] = [];
+  const walk = (when: Predicate): void => {
+    for (const [key, constraint] of Object.entries(when)) {
+      if (key === 'any_of') {
+        for (const sub of (constraint as unknown as Predicate[]) ?? []) walk(sub);
+        continue;
+      }
+      keys.push(key);
+    }
+  };
+  walk(e.when);
+  for (const branch of e.modality_by ?? []) walk(branch.when);
+  for (const ci of e['rel:conditional_includes'] ?? []) if (ci.when) walk(ci.when);
+  return keys;
+}
+
+/** Whether every key this entry reads is an unprefixed `fact:` key — the
+ * one-vessel vocabulary FACT_SPEC declares and enumerate.ts builds axes for.
+ * This, not the category, is what the encoding can actually solve: colregs
+ * 0.3.4's Rule 34 signal entries are `category:display` and still read
+ * `pair:geo:in_sight` and `self:act:*` (see header point 4). */
+export function isSingleSubject(e: Entry): boolean {
+  return predicateKeys(e).every((k) => k.startsWith('fact:'));
+}
+
 export interface Encoding {
   /** The axes the encoding declares, in the order enumerate.ts found them. */
   axes: Axis[];
@@ -128,11 +157,12 @@ export interface Encoding {
   enumIndex: Map<string, Map<string, number>>;
   /** The declarations + per-entry definitions, as SMT-LIB text. */
   base: string;
-  /** Entries actually encoded: category 'category:display' only. */
+  /** Entries actually encoded: one-vessel `category:display` entries only. */
   entries: Entry[];
   /** Entries `data.entries` carried but this encoding deliberately does not
-   * define `applies:`/`shall:` for, with the category that excluded them. */
-  excludedNonDisplay: { id: string; category: string }[];
+   * define `applies:`/`shall:` for — every one reads a scoped key — with
+   * each one's category, which is what the run breaks the count down by. */
+  excludedScoped: { id: string; category: string }[];
 }
 
 /**
@@ -230,9 +260,10 @@ export function buildEncoding(data: ApplicabilityData): Encoding {
   const axesByKey = new Map(axes.map((a) => [a.key as string, a]));
   const enumIndex = new Map<string, Map<string, number>>();
 
-  const displayEntries = data.entries.filter(isDisplay);
-  const excludedNonDisplay = data.entries
-    .filter((e) => !isDisplay(e))
+  const encodable = (e: Entry): boolean => isDisplay(e) && isSingleSubject(e);
+  const displayEntries = data.entries.filter(encodable);
+  const excludedScoped = data.entries
+    .filter((e) => !encodable(e))
     .map((e) => ({ id: e.id, category: e.category ?? 'category:display' }));
 
   const lines: string[] = [];
@@ -240,10 +271,11 @@ export function buildEncoding(data: ApplicabilityData): Encoding {
   lines.push(';;');
   lines.push(`;; Source: colregs applicability.json, ${data.entries.length} entries total,`);
   lines.push(
-    `;; ${displayEntries.length} category: 'category:display' (encoded below), ${excludedNonDisplay.length} excluded`,
+    `;; ${displayEntries.length} one-vessel category: 'category:display' (encoded below), ${excludedScoped.length} excluded`,
   );
-  lines.push(';; (scope/precedence/classification categories read a pair of vessels;');
-  lines.push(';; see encode.ts\'s file header, point 4).');
+  lines.push(';; (every excluded entry reads a self:/other:/pair:-scoped key,');
+  lines.push(';; which this theory declares no constant for; see encode.ts\'s');
+  lines.push(';; file header, point 4).');
   lines.push(';; Written to research/z3/out/ by `npm run z3` (gitignored: it is');
   lines.push(';; a function of the pinned colregs, not a source file). Hand it to');
   lines.push(';; any SMT-LIB 2 solver as-is.');
@@ -314,9 +346,9 @@ export function buildEncoding(data: ApplicabilityData): Encoding {
     lines.push('');
   }
 
-  if (excludedNonDisplay.length > 0) {
+  if (excludedScoped.length > 0) {
     lines.push(
-      `;; Excluded (not category: 'category:display', so not encoded): ${JSON.stringify(excludedNonDisplay)}`,
+      `;; Excluded (reads a scoped key, so not encoded): ${JSON.stringify(excludedScoped)}`,
     );
     lines.push('');
   }
@@ -365,6 +397,6 @@ export function buildEncoding(data: ApplicabilityData): Encoding {
     enumIndex,
     base: lines.join('\n') + '\n',
     entries: displayEntries,
-    excludedNonDisplay,
+    excludedScoped,
   };
 }

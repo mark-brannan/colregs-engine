@@ -1,0 +1,12 @@
+{
+  "id": "FIND-39",
+  "check": "coverage-entry-never-fires",
+  "description": "entry rule:34a:starboard never applies across the enumerated fact space",
+  "cites": [
+    "34(a)"
+  ],
+  "records": 1,
+  "status": "candidate",
+  "facts": {},
+  "prose": "a vessel."
+}

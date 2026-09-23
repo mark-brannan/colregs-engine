@@ -49,6 +49,7 @@ const ROOT_NAMES: Record<string, string> = {
   'scene-evaluation': 'SceneEvaluationSchema',
   shapes: 'ShapesData',
   'situation-fixtures': 'SituationFixtures',
+  sounds: 'SoundsData',
   trace: 'TraceSchema',
   'traffic-facts': 'TrafficFactsSchema',
   // The stems the pinned colregs still ships; gone at the bump to ADR 0023's manifest.

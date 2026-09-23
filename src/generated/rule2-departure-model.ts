@@ -20,7 +20,7 @@ export type Rule2DepartureModelSchema = SolverParameters & {
  * via the `patternProperty` "^fact:[a-z0-9_]+$".
  *
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
- * via the `patternProperty` "^(self|other):(fact|kin|geo|hist):[a-z0-9_]+$".
+ * via the `patternProperty` "^(self|other):(fact|kin|geo|hist|act):[a-z0-9_]+$".
  *
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
  * via the `patternProperty` "^pair:(geo|env):[a-z0-9_]+$".
@@ -70,7 +70,7 @@ export interface SituationWhen {
    * via the `patternProperty` "^fact:[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
-   * via the `patternProperty` "^(self|other):(fact|kin|geo|hist):[a-z0-9_]+$".
+   * via the `patternProperty` "^(self|other):(fact|kin|geo|hist|act):[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
    * via the `patternProperty` "^pair:(geo|env):[a-z0-9_]+$".
@@ -79,7 +79,7 @@ export interface SituationWhen {
    * via the `patternProperty` "^fact:[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
-   * via the `patternProperty` "^(self|other):(fact|kin|geo|hist):[a-z0-9_]+$".
+   * via the `patternProperty` "^(self|other):(fact|kin|geo|hist|act):[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
    * via the `patternProperty` "^pair:(geo|env):[a-z0-9_]+$".
@@ -88,7 +88,7 @@ export interface SituationWhen {
    * via the `patternProperty` "^fact:[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
-   * via the `patternProperty` "^(self|other):(fact|kin|geo|hist):[a-z0-9_]+$".
+   * via the `patternProperty` "^(self|other):(fact|kin|geo|hist|act):[a-z0-9_]+$".
    *
    * This interface was referenced by `SituationWhen`'s JSON-Schema definition
    * via the `patternProperty` "^pair:(geo|env):[a-z0-9_]+$".

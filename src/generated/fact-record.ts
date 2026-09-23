@@ -35,6 +35,8 @@ export const FACT_SPEC = {
   'fact:tow_restricts_deviation': { kind: 'boolean' },
   'fact:confined_to_channel': { kind: 'boolean' },
   'fact:following_traffic_lane': { kind: 'boolean' },
+  'fact:nearing_obscured_bend': { kind: 'boolean' },
+  'fact:manned': { kind: 'boolean' },
   'fact:obstruction_side': { kind: 'enum', values: ['obstruction_side:port', 'obstruction_side:starboard'] },
   'fact:time': { kind: 'enum', values: ['time:day', 'time:night'] },
   'fact:visibility': { kind: 'enum', values: ['visibility:good', 'visibility:restricted'] },

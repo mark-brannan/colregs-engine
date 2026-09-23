@@ -50,6 +50,7 @@ interface FactsJson {
       symmetric: Record<string, SituationField>;
     };
     environment: Record<string, SituationField | string>;
+    acts: Record<string, SituationField | string>;
   };
 }
 
@@ -157,7 +158,7 @@ console.log(
   `generated ${entries.length} fact keys from colregs@${colregsVersion}`,
 );
 
-// §situation's five classes. Same source, same key/value-union derivation as
+// §situation's six classes. Same source, same key/value-union derivation as
 // FACT_SPEC above; the one addition is `nullable`, because hist:latched_at_s
 // is documented (not schema-typed — facts.json states its type as plain
 // `number`) as null until Rule 13(d) latches. Detecting that from the note's
@@ -228,6 +229,14 @@ const classes: SituationClass[] = [
     valuesName: 'EnvironmentValues',
     doc: 'Where the encounter is happening — a property of the water, not of either vessel (pair only).',
     entries: sectionEntries(facts.situation.environment),
+  },
+  {
+    specName: 'ACT_SPEC',
+    typeName: 'Acts',
+    keyName: 'ActKey',
+    valuesName: 'ActValues',
+    doc: 'What a subject is doing or intending now, stated and never derived (own/other only).',
+    entries: sectionEntries(facts.situation.acts),
   },
 ];
 

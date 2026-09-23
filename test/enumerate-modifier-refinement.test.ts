@@ -68,7 +68,7 @@ describe('the real fact space: no incoherent or duplicate records', () => {
   it(
     'no record carries fact:making_way off position:underway, across the whole space',
     () => {
-      // A plain loop, one expect at the end: this walks the full ~3.7M-record
+      // A plain loop, one expect at the end: this walks the full ~95M-record
       // space, and a per-record `expect` there is what makes that slow.
       let n = 0;
       let incoherent = 0;
@@ -90,9 +90,18 @@ describe('the real fact space: no incoherent or duplicate records', () => {
       // two-value enum axis the Rule 20(d) day-shape entries read) and
       // fact:motorsailing (a third modifier, refining
       // propulsion:power), which multiply the product by 2 and by 4/3
-      // — fact:propulsion's three slots become four — for 8/3 exactly.
-      expect(n).toBe(11860992);
+      // — fact:propulsion's three slots become four — for 8/3 exactly; and
+      // was 11,860,992 before colregs@0.3.4's `main` added Part D. Rules 34
+      // and 35 brought three new free axes the older table never read —
+      // fact:visibility (a two-value enum), fact:manned and
+      // fact:nearing_obscured_bend (booleans) — for 2^3 exactly. Rule 34's
+      // other new keys (self:act:*, pair:geo:in_sight) are subject-scoped,
+      // and extractAxes reads bare fact: keys only, so they widen the
+      // situation partition rather than this one.
+      expect(n).toBe(94887936);
     },
-    20_000,
+    // Part D's three new axes multiplied the walk by 8; it now takes about
+    // two minutes, where 20s covered the 11.9M-record space.
+    240_000,
   );
 });

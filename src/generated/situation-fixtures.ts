@@ -70,7 +70,7 @@ export interface SituationFixtures {
   geometry_note?: string;
 }
 /**
- * Two vessels and the encounter at one instant: the input evaluateEncounter reads, nested by subject and class (ADR 0005 §2, ADR 0011 §3, ADR 0014). Structure only -- every kin:/geo:/hist:/env: key must be declared in data/facts.json §situation, checked in the tests.
+ * Two vessels and the encounter at one instant: the input evaluateEncounter reads, nested by subject and class (ADR 0005 §2, ADR 0011 §3, ADR 0014). Structure only -- every kin:/geo:/hist:/env:/act: key must be declared in data/facts.json §situation, checked in the tests.
  */
 export interface Situation {
   self: Subject;
@@ -85,6 +85,7 @@ export interface Subject {
   kin?: KinRecord;
   geo?: GeoRecord;
   hist?: HistRecord;
+  act?: ActRecord;
 }
 /**
  * What a consumer asserts about one vessel at one moment: the input evaluateDisplay reads (ADR 0011 §2, ADR 0014). Structure only -- which fact keys exist and which values each takes is data/facts.json's, checked in the tests; see docs/adr/0006-json-schema-and-identifier-diff.md.
@@ -106,6 +107,9 @@ export interface KinRecord {
    *
    * This interface was referenced by `HistRecord`'s JSON-Schema definition
    * via the `patternProperty` "^hist:[a-z0-9_]+$".
+   *
+   * This interface was referenced by `ActRecord`'s JSON-Schema definition
+   * via the `patternProperty` "^act:[a-z0-9_]+$".
    *
    * This interface was referenced by `EnvRecord`'s JSON-Schema definition
    * via the `patternProperty` "^env:[a-z0-9_]+$".
@@ -131,6 +135,9 @@ export interface GeoRecord {
    * This interface was referenced by `HistRecord`'s JSON-Schema definition
    * via the `patternProperty` "^hist:[a-z0-9_]+$".
    *
+   * This interface was referenced by `ActRecord`'s JSON-Schema definition
+   * via the `patternProperty` "^act:[a-z0-9_]+$".
+   *
    * This interface was referenced by `EnvRecord`'s JSON-Schema definition
    * via the `patternProperty` "^env:[a-z0-9_]+$".
    */
@@ -155,6 +162,36 @@ export interface HistRecord {
    * This interface was referenced by `HistRecord`'s JSON-Schema definition
    * via the `patternProperty` "^hist:[a-z0-9_]+$".
    *
+   * This interface was referenced by `ActRecord`'s JSON-Schema definition
+   * via the `patternProperty` "^act:[a-z0-9_]+$".
+   *
+   * This interface was referenced by `EnvRecord`'s JSON-Schema definition
+   * via the `patternProperty` "^env:[a-z0-9_]+$".
+   */
+  [k: string]:
+    | string
+    | number
+    | boolean
+    | null
+    | {
+        latitude: number;
+        longitude: number;
+      };
+}
+export interface ActRecord {
+  /**
+   * This interface was referenced by `KinRecord`'s JSON-Schema definition
+   * via the `patternProperty` "^kin:[a-z0-9_]+$".
+   *
+   * This interface was referenced by `GeoRecord`'s JSON-Schema definition
+   * via the `patternProperty` "^geo:[a-z0-9_]+$".
+   *
+   * This interface was referenced by `HistRecord`'s JSON-Schema definition
+   * via the `patternProperty` "^hist:[a-z0-9_]+$".
+   *
+   * This interface was referenced by `ActRecord`'s JSON-Schema definition
+   * via the `patternProperty` "^act:[a-z0-9_]+$".
+   *
    * This interface was referenced by `EnvRecord`'s JSON-Schema definition
    * via the `patternProperty` "^env:[a-z0-9_]+$".
    */
@@ -178,6 +215,9 @@ export interface EnvRecord {
    *
    * This interface was referenced by `HistRecord`'s JSON-Schema definition
    * via the `patternProperty` "^hist:[a-z0-9_]+$".
+   *
+   * This interface was referenced by `ActRecord`'s JSON-Schema definition
+   * via the `patternProperty` "^act:[a-z0-9_]+$".
    *
    * This interface was referenced by `EnvRecord`'s JSON-Schema definition
    * via the `patternProperty` "^env:[a-z0-9_]+$".

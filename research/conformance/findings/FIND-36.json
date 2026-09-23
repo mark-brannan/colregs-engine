@@ -1,0 +1,30 @@
+{
+  "id": "FIND-36",
+  "check": "consistency-no-obligation",
+  "description": "record has zero applied lights entries and so no lawful display, for a vessel with fact:position = position:underway",
+  "cites": [],
+  "records": 380160,
+  "status": "candidate",
+  "facts": {
+    "fact:activity": "activity:cbd",
+    "fact:composite_unit": true,
+    "fact:gear_extent_m": 149,
+    "fact:length_m": 6,
+    "fact:manned": true,
+    "fact:max_speed_kn": 6,
+    "fact:near_channel": true,
+    "fact:nearing_obscured_bend": false,
+    "fact:non_displacement": true,
+    "fact:obstruction_exists": true,
+    "fact:position": "position:underway",
+    "fact:propulsion": "propulsion:power",
+    "fact:time": "time:day",
+    "fact:tow_length_m": 199,
+    "fact:visibility": "visibility:good",
+    "fact:wig": true,
+    "fact:wig_near_surface": true,
+    "fact:making_way": true,
+    "fact:motorsailing": false
+  },
+  "prose": "a 6 m vessel, underway, engaged in cbd (a composite unit, operating in non-displacement mode, a wing-in-ground craft, near the surface, near a narrow channel, with an obstruction to the passage of another vessel, 6 kn max speed, 199 m tow, 149 m gear extent)."
+}
