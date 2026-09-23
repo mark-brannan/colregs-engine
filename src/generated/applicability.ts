@@ -17,7 +17,7 @@ export type ShiftId = string;
  * via the `patternProperty` "^fact:[a-z0-9_]+$".
  *
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
- * via the `patternProperty` "^(self|other):(fact|kin|geo|hist):[a-z0-9_]+$".
+ * via the `patternProperty` "^(self|other):(fact|kin|geo|hist|act):[a-z0-9_]+$".
  *
  * This interface was referenced by `SituationWhen`'s JSON-Schema definition
  * via the `patternProperty` "^pair:(geo|env):[a-z0-9_]+$".
@@ -53,7 +53,13 @@ export type Modality =
   | 'modality:exempt'
   | 'modality:shall-not'
   | 'modality:shall-not-impede';
-export type RepresentedCategory = 'category:care' | 'category:meta' | 'category:scope';
+export type RepresentedCategory =
+  | 'category:care'
+  | 'category:meta'
+  | 'category:scope'
+  | 'category:definition'
+  | 'category:standard'
+  | 'category:display';
 export type RuleCategory =
   | 'category:definition'
   | 'category:standard'
@@ -190,6 +196,7 @@ export interface ApplicabilityData {
      * @minItems 1
      */
     shapes?: ShapeRef[];
+    signal?: SignalRef[];
     effect?: Effect;
     modality: Modality;
     modality_by?: ModalityBy;
@@ -245,6 +252,29 @@ export interface ShapeRef {
   arrangement?: 'vertical';
   note?: string;
   modality?: Modality;
+}
+export interface SignalRef {
+  /**
+   * @minItems 1
+   */
+  sequence: SignalElement[];
+  repeat?: {
+    max_interval_s?: number;
+    min_interval_s?: number;
+  };
+  gap_s?: number;
+  rapid?: boolean;
+  note?: string;
+  modality?: Modality;
+}
+export interface SignalElement {
+  element: string;
+  count?: number;
+  at_least?: boolean;
+  duration_s?: number;
+  gap_s?: number;
+  placement?: string;
+  note?: string;
 }
 export interface ConditionalInclude {
   when?: When;

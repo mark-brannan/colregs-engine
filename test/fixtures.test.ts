@@ -40,7 +40,7 @@ const fixtures = fixturesJson as unknown as {
 
 describe('colregs applicability fixtures (verbatim replay)', () => {
   it('has the full fixture set', () => {
-    expect(fixtures.cases.length).toBe(114);
+    expect(fixtures.cases.length).toBe(133);
   });
 
   // The fixtures are colregs' contract, so an evaluation of one must say

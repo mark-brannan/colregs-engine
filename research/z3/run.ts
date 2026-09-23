@@ -149,15 +149,15 @@ async function main(): Promise<void> {
   writeFileSync(smtPath, encoding.base + queriesToSmtLib(queries));
 
   console.log(`Z3 encoding of the applicability table (issue #1, P2.1)`);
-  console.log(`  entries      ${data.entries.length} total, ${encoding.entries.length} encoded (category: display)`);
-  if (encoding.excludedNonDisplay.length > 0) {
+  console.log(`  entries      ${data.entries.length} total, ${encoding.entries.length} encoded (one-vessel category: display)`);
+  if (encoding.excludedScoped.length > 0) {
     const byCategory = new Map<string, number>();
-    for (const { category } of encoding.excludedNonDisplay) {
+    for (const { category } of encoding.excludedScoped) {
       byCategory.set(category, (byCategory.get(category) ?? 0) + 1);
     }
     const breakdown = [...byCategory.entries()].map(([c, n]) => `${n} ${c}`).join(', ');
     console.log(
-      `  excluded     ${encoding.excludedNonDisplay.length} (${breakdown}) -- own:/other:/pair:-scoped predicates, out of this encoding's scope (see encode.ts)`,
+      `  excluded     ${encoding.excludedScoped.length} (${breakdown}) -- self:/other:/pair:-scoped predicates, out of this encoding's scope (see encode.ts)`,
     );
   }
   console.log(`  axes         ${encoding.axes.length}`);

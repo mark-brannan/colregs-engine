@@ -27,6 +27,7 @@ export type * as rule2DepartureModel from './rule2-departure-model.js';
 export type * as rules from './rules.js';
 export type * as shapes from './shapes.js';
 export type * as situationFixtures from './situation-fixtures.js';
+export type * as sounds from './sounds.js';
 export type * as trace from './trace.js';
 export type * as version from './version.js';
 
@@ -50,5 +51,6 @@ export type { Rule2DepartureModelSchema } from './rule2-departure-model.js';
 export type { RulesData } from './rules.js';
 export type { ShapesData } from './shapes.js';
 export type { SituationFixtures } from './situation-fixtures.js';
+export type { SoundsData } from './sounds.js';
 export type { TraceSchema } from './trace.js';
 export type { VersionData } from './version.js';
