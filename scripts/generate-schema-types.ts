@@ -30,6 +30,8 @@ const ROOT_NAMES: Record<string, string> = {
   applicability: 'ApplicabilityData',
   'applicability-fixtures': 'ApplicabilityFixtures',
   'conduct-evaluation': 'ConductEvaluationSchema',
+  'departure-finding': 'DepartureFindingSchema',
+  'departure-model': 'DepartureModelSchema',
   corpora: 'CorporaData',
   corpus: 'CorpusData',
   'display-evaluation': 'DisplayEvaluationSchema',
@@ -43,12 +45,16 @@ const ROOT_NAMES: Record<string, string> = {
   lights: 'LightsData',
   operations: 'OperationsManifest',
   rules: 'RulesData',
-  'rule2-departure-finding': 'Rule2DepartureFindingSchema',
-  'rule2-departure-model': 'Rule2DepartureModelSchema',
+  scene: 'SceneSchema',
+  'scene-evaluation': 'SceneEvaluationSchema',
   shapes: 'ShapesData',
   'situation-fixtures': 'SituationFixtures',
   sounds: 'SoundsData',
   trace: 'TraceSchema',
+  'traffic-facts': 'TrafficFactsSchema',
+  // The stems the pinned colregs still ships; gone at the bump to ADR 0023's manifest.
+  'rule2-departure-finding': 'Rule2DepartureFindingSchema',
+  'rule2-departure-model': 'Rule2DepartureModelSchema',
   version: 'VersionData',
 };
 

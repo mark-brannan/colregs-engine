@@ -50,13 +50,21 @@ const colregsVersion: string = JSON.parse(
 const TYPE_BY_SCHEMA_REF: Record<string, string> = {
   'schema/fact-record.schema.json': 'FactRecord',
   'schema/situation.schema.json': 'Situation',
+  'schema/situation.schema.json#/$defs/subject': 'Subject',
   'schema/trace.schema.json': 'Trace',
-  'schema/rule2-departure-model.schema.json': 'Rule2DepartureModel',
+  'schema/departure-model.schema.json': 'DepartureModel',
+  'schema/scene.schema.json': 'Scene',
+  'schema/scene.schema.json#/$defs/subjects': 'Subject[]',
   'schema/display-evaluation.schema.json': 'DisplayEvaluation',
   'schema/encounter-evaluation.schema.json': 'EncounterEvaluation',
   'schema/conduct-evaluation.schema.json': 'ConductEvaluation',
-  'schema/rule2-departure-finding.schema.json': 'Rule2DepartureFinding',
+  'schema/departure-finding.schema.json': 'DepartureFinding',
+  'schema/scene-evaluation.schema.json': 'SceneEvaluation',
+  'schema/traffic-facts.schema.json': 'TrafficFacts',
   'schema/evaluation.schema.json#/$defs/ruleIds': 'RuleId[]',
+  // The stems the pinned colregs still ships; gone at the bump to ADR 0023's manifest.
+  'schema/rule2-departure-model.schema.json': 'DepartureModel',
+  'schema/rule2-departure-finding.schema.json': 'DepartureFinding',
 };
 
 function typeFor(ref: string): string {
@@ -70,13 +78,22 @@ function typeFor(ref: string): string {
 }
 
 const lines: string[] = [];
+// The import list is derived from the types the manifest actually names, so
+// a manifest that drops or adds an operation never leaves an unused import.
+const used = new Set<string>();
+const use = (ref: string): string => {
+  const t = typeFor(ref);
+  used.add(t.replace(/\[\]$/, ''));
+  return t;
+};
 for (const [verb, op] of Object.entries(operations)) {
-  const params = op.inputs.map((i) => `${i.name}: ${typeFor(i.schema)}`).join(', ');
-  lines.push(`  ${verb}(${params}): ${typeFor(op.output)};`);
+  const params = op.inputs.map((i) => `${i.name}: ${use(i.schema)}`).join(', ');
+  lines.push(`  ${verb}(${params}): ${use(op.output)};`);
   if (op.companion) {
-    lines.push(`  ${op.companion.verb}(${params}): ${typeFor(op.companion.output)};`);
+    lines.push(`  ${op.companion.verb}(${params}): ${use(op.companion.output)};`);
   }
 }
+const imports = [...used].sort().map((t) => `  ${t},`).join('\n');
 
 const out = `/**
  * GENERATED FILE — DO NOT EDIT.
@@ -88,23 +105,15 @@ const out = `/**
  */
 
 import type {
-  ConductEvaluation,
-  DisplayEvaluation,
-  EncounterEvaluation,
-  RuleId,
-  FactRecord,
-  Rule2DepartureFinding,
-  Rule2DepartureModel,
-  Situation,
-  Trace,
+${imports}
 } from '../types.js';
 
 /**
- * The engine interface colregs owns (ADR 0014): every verb ADR 0011 and ADR
- * 0012 name, positional inputs in the manifest's own order, and each verb's
- * entry-id companion. Trailing \`opts\` is this binding's own -- an options
- * bag colregs' manifest does not name -- so every export in src/index.ts
- * takes one more (optional) parameter than the signatures below.
+ * The engine interface colregs owns (ADR 0014): every operation the manifest
+ * names, positional inputs in the manifest's own order. Trailing \`opts\` is
+ * this binding's own -- an options bag colregs' manifest does not name -- so
+ * every export in src/index.ts takes one more (optional) parameter than the
+ * signatures below.
  */
 export interface ColregsEngine {
 ${lines.join('\n')}

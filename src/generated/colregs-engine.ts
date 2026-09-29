@@ -9,22 +9,22 @@
 
 import type {
   ConductEvaluation,
+  DepartureFinding,
+  DepartureModel,
   DisplayEvaluation,
   EncounterEvaluation,
-  RuleId,
   FactRecord,
-  Rule2DepartureFinding,
-  Rule2DepartureModel,
+  RuleId,
   Situation,
   Trace,
 } from '../types.js';
 
 /**
- * The engine interface colregs owns (ADR 0014): every verb ADR 0011 and ADR
- * 0012 name, positional inputs in the manifest's own order, and each verb's
- * entry-id companion. Trailing `opts` is this binding's own -- an options
- * bag colregs' manifest does not name -- so every export in src/index.ts
- * takes one more (optional) parameter than the signatures below.
+ * The engine interface colregs owns (ADR 0014): every operation the manifest
+ * names, positional inputs in the manifest's own order. Trailing `opts` is
+ * this binding's own -- an options bag colregs' manifest does not name -- so
+ * every export in src/index.ts takes one more (optional) parameter than the
+ * signatures below.
  */
 export interface ColregsEngine {
   evaluateDisplay(facts: FactRecord): DisplayEvaluation;
@@ -33,5 +33,5 @@ export interface ColregsEngine {
   appliedEncounterEntries(situation: Situation): RuleId[];
   evaluateConduct(trace: Trace): ConductEvaluation;
   appliedConductEntries(trace: Trace): RuleId[];
-  evaluateRule2Departure(situation: Situation, model: Rule2DepartureModel): Rule2DepartureFinding;
+  evaluateRule2Departure(situation: Situation, model: DepartureModel): DepartureFinding;
 }

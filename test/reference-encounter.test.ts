@@ -8,7 +8,8 @@ import applicabilityJson from 'colregs/data/applicability.json';
 import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
 
 import type { ApplicabilityData, FixtureExpectation, Situation } from '../src/types';
-import { appliedEncounterEntries, evaluateEncounter } from '../src/index';
+import { evaluateEncounter } from '../src/index';
+import { appliedEncounterEntries } from '../src/encounter';
 import { rule18Class } from '../src/situation';
 import {
   RULE18_CLASS_VALUES,

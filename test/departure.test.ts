@@ -1,10 +1,10 @@
-// evaluateRule2Departure: a lookup in whatever regions the model carries,
+// evaluateDeparture: a lookup in whatever regions the model carries,
 // `inconclusive-in-model` when it carries none, every finding naming its grid.
 
 import { describe, expect, it } from 'vitest';
 import colregsPackage from 'colregs/package.json';
-import { evaluateRule2Departure } from '../src/index';
-import type { Rule2DepartureModel, Situation } from '../src/index';
+import { evaluateDeparture } from '../src/index';
+import type { DepartureModel, Situation } from '../src/index';
 
 const situation: Situation = {
   self: {
@@ -24,7 +24,7 @@ const situation: Situation = {
   pair: { geo: { 'geo:in_sight': true, 'geo:risk_of_collision': true, 'geo:cpa_m': 20 } },
 };
 
-const model: Rule2DepartureModel = {
+const model: DepartureModel = {
   version: 'test-grid',
   colregs_version: colregsPackage.version,
   dynamics: ['dynamics:yacht'],
@@ -35,9 +35,9 @@ const model: Rule2DepartureModel = {
   adversary: 'compliant',
 };
 
-describe('evaluateRule2Departure', () => {
+describe('evaluateDeparture', () => {
   it('a grid without regions is inconclusive, and says so', () => {
-    const f = evaluateRule2Departure(situation, model);
+    const f = evaluateDeparture(situation, model);
     expect(f.status).toBe('inconclusive-in-model');
     expect(f.advisories).toEqual([]);
     expect(f.model.version).toBe('test-grid');
@@ -56,7 +56,7 @@ describe('evaluateRule2Departure', () => {
   });
 
   it('a matching region gives its status, advisories best margin first', () => {
-    const f = evaluateRule2Departure(situation, {
+    const f = evaluateDeparture(situation, {
       ...model,
       regions: [
         { when: { 'pair:geo:cpa_m': { gt: 500 } }, status: 'not-flagged' },
@@ -76,7 +76,7 @@ describe('evaluateRule2Departure', () => {
   });
 
   it('no robust policy carries no advisories, whatever the region lists', () => {
-    const f = evaluateRule2Departure(situation, {
+    const f = evaluateDeparture(situation, {
       ...model,
       regions: [
         {
@@ -91,7 +91,7 @@ describe('evaluateRule2Departure', () => {
   });
 
   it('an uncovered situation is inconclusive and names the grid', () => {
-    const f = evaluateRule2Departure(situation, {
+    const f = evaluateDeparture(situation, {
       ...model,
       regions: [{ when: { 'pair:geo:cpa_m': { gt: 500 } }, status: 'not-flagged' }],
     });
@@ -100,13 +100,13 @@ describe('evaluateRule2Departure', () => {
   });
 
   it('a colregs release mismatch is reported, not refused', () => {
-    const f = evaluateRule2Departure(situation, { ...model, colregs_version: '0.0.1', regions: [] });
+    const f = evaluateDeparture(situation, { ...model, colregs_version: '0.0.1', regions: [] });
     expect(f.model.assumptions_violated[0]).toMatch(/solved against colregs 0\.0\.1/);
   });
 
   it('rejects a model with no version', () => {
     expect(() =>
-      evaluateRule2Departure(situation, { ...model, version: '' }),
+      evaluateDeparture(situation, { ...model, version: '' }),
     ).toThrow(/version must be a non-empty string/);
   });
 });

@@ -1,4 +1,4 @@
-// evaluateRule2Departure — a lookup in a solved region grid (ADR 0012 §4).
+// evaluateDeparture — a lookup in a solved region grid (ADR 0012 §4).
 // The solver never moves into src/: what moves is its output. Until a grid
 // carries `regions` this package can read, every finding is
 // `inconclusive-in-model`, and the finding says so in
@@ -8,29 +8,29 @@ import type { EvaluateOptions } from './evaluate.js';
 import { evaluateEncounter } from './encounter.js';
 import { flattenSituation, situationMatches } from './situation.js';
 import type {
-  Rule2DepartureAdvisory,
-  Rule2DepartureFinding,
-  Rule2DepartureModel,
-  Rule2DepartureRegion,
+  DepartureAdvisory,
+  DepartureFinding,
+  DepartureModel,
+  DepartureRegion,
   Situation,
   SolverParameters,
 } from './types.js';
 
-function validateModel(model: Rule2DepartureModel): void {
+function validateModel(model: DepartureModel): void {
   if (typeof model !== 'object' || model === null) {
-    throw new Error(`Rule2DepartureModel must be an object, got ${JSON.stringify(model)}`);
+    throw new Error(`DepartureModel must be an object, got ${JSON.stringify(model)}`);
   }
   for (const key of ['version', 'colregs_version'] as const) {
     if (typeof model[key] !== 'string' || model[key] === '') {
-      throw new Error(`Rule2DepartureModel.${key} must be a non-empty string`);
+      throw new Error(`DepartureModel.${key} must be a non-empty string`);
     }
   }
   if (model.regions !== undefined && !Array.isArray(model.regions)) {
-    throw new Error('Rule2DepartureModel.regions must be an array when present');
+    throw new Error('DepartureModel.regions must be an array when present');
   }
 }
 
-function parametersOf(model: Rule2DepartureModel): SolverParameters {
+function parametersOf(model: DepartureModel): SolverParameters {
   return {
     dynamics: [...(model.dynamics ?? [])],
     horizon_s: model.horizon_s,
@@ -42,7 +42,7 @@ function parametersOf(model: Rule2DepartureModel): SolverParameters {
 }
 
 /** Best margin first; the grid's own order breaks ties. */
-function rankAdvisories(advisories: Rule2DepartureAdvisory[]): Rule2DepartureAdvisory[] {
+function rankAdvisories(advisories: DepartureAdvisory[]): DepartureAdvisory[] {
   return advisories
     .map((a, i) => ({ a, i }))
     .sort((x, y) => y.a.margin_m - x.a.margin_m || x.i - y.i)
@@ -58,11 +58,11 @@ function rankAdvisories(advisories: Rule2DepartureAdvisory[]): Rule2DepartureAdv
  * @alpha A grid without `regions` yields `inconclusive-in-model` for every
  * situation; no certified grid ships with this package.
  */
-export function evaluateRule2Departure(
+export function evaluateDeparture(
   situation: Situation,
-  model: Rule2DepartureModel,
+  model: DepartureModel,
   opts?: EvaluateOptions,
-): Rule2DepartureFinding {
+): DepartureFinding {
   validateModel(model);
   const rules = evaluateEncounter(situation, opts);
   const flat = flattenSituation(situation);
@@ -75,7 +75,7 @@ export function evaluateRule2Departure(
     );
   }
 
-  let region: Rule2DepartureRegion | undefined;
+  let region: DepartureRegion | undefined;
   if (model.regions === undefined) {
     assumptionsViolated.push(
       `grid ${model.version} carries no regions this package can read; every situation is inconclusive-in-model`,

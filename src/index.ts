@@ -1,4 +1,7 @@
-// Public API of the colregs-engine package.
+// Public API of the colregs-engine package: exactly the operations colregs'
+// manifest names (data/operations.json, ADR 0014, ADR 0023), one per thing
+// evaluated, the one error a verb throws about the caller's data, and the
+// types their inputs and answers are written in.
 //
 // Deliberately narrow. Everything here is API-tier: it must stay stable
 // across colregs data releases, so it is the engine's own vocabulary and
@@ -7,33 +10,36 @@
 // because they move when the data moves and a consumer should choose that
 // exposure rather than inherit it.
 //
-// predicateMatches and resolveModality are not exported: they are predicate
-// internals, not answers, and nothing outside src/evaluate.ts uses them.
+// Not here, by ADR 0023: no companion (`applied*Entries` was the envelope's
+// `applied`, from the same call), no validator (every verb validates its
+// input and throws), no error class nothing throws, no predicate internals.
 
-import { appliedDisplayEntries, evaluateDisplay } from './evaluate.js';
-export { appliedDisplayEntries, evaluateDisplay };
-export type { EvaluateOptions } from './evaluate.js';
+import { evaluateDisplay } from './evaluate.js';
+import { evaluateEncounter } from './encounter.js';
+import { evaluateConduct } from './conduct.js';
+import { evaluateDeparture } from './departure.js';
+import { evaluateScene } from './scene.js';
+import { reduceTraffic } from './traffic.js';
+export {
+  evaluateDisplay,
+  evaluateEncounter,
+  evaluateConduct,
+  evaluateDeparture,
+  evaluateScene,
+  reduceTraffic,
+};
 export { DataVersionMismatchError } from './errors.js';
+export type { EvaluateOptions } from './evaluate.js';
 
-// The three verbs ADR 0011 §4 and ADR 0012 name, built partially: each
-// answers an envelope from the data it has, and says in the envelope what it
-// could not decide. NotImplementedError stays exported for consumers that
-// catch it; no verb throws it any more.
-import { appliedEncounterEntries, evaluateEncounter } from './encounter.js';
-export { appliedEncounterEntries, evaluateEncounter };
-import { appliedConductEntries, evaluateConduct } from './conduct.js';
-export { appliedConductEntries, evaluateConduct };
-import { evaluateRule2Departure } from './rule2.js';
-export { evaluateRule2Departure };
-export { reduceTraffic } from './traffic.js';
-export { evaluateScene } from './scene.js';
-export { NotImplementedError } from './errors.js';
-export { validateSituation, validateTrace } from './facts.js';
-
-// The engine interface colregs owns (ADR 0014, data/operations.json):
-// checked here, once, against the exports above, rather than left to a
-// consumer to discover a drift at the call site. `satisfies` verifies
-// structurally and changes no runtime behavior; the object is not exported.
+// The engine interface colregs owns (ADR 0014): checked here, once, against
+// the exports above, rather than left to a consumer to discover a drift at
+// the call site. `satisfies` verifies structurally and changes no runtime
+// behaviour; the object is not exported. The pinned manifest still names
+// the three companions and the departure verb's old name; the bump to the
+// ADR 0023 manifest collapses this object to the six exports.
+import { appliedDisplayEntries } from './evaluate.js';
+import { appliedEncounterEntries } from './encounter.js';
+import { appliedConductEntries } from './conduct.js';
 import type { ColregsEngine } from './generated/colregs-engine.js';
 ({
   evaluateDisplay,
@@ -42,43 +48,47 @@ import type { ColregsEngine } from './generated/colregs-engine.js';
   appliedEncounterEntries,
   evaluateConduct,
   appliedConductEntries,
-  evaluateRule2Departure,
+  evaluateRule2Departure: evaluateDeparture,
 }) satisfies ColregsEngine;
 
+// Inputs.
+export type { FactRecord } from './generated/fact-record.js';
+export type {
+  DepartureModel,
+  DepartureRegion,
+  Pair,
+  Scene,
+  Situation,
+  SolverParameters,
+  Subject,
+  Trace,
+  TraceSample,
+} from './types.js';
+
+// Answers.
 export type {
   ConductEvaluation,
   ConductPhaseChange,
   ConductVerdict,
+  DepartureAdvisory,
+  DepartureFinding,
+  DepartureStatus,
   Display,
   DisplayEvaluation,
   DisplayLight,
   DisplayShape,
   EncounterEvaluation,
   EvaluationProvenance,
-  ParagraphCite,
-  Rule2DepartureAdvisory,
-  Rule2DepartureFinding,
-  Rule2DepartureModel,
-  Rule2DepartureRegion,
-  Rule2DepartureStatus,
-  SolverParameters,
-  SubjectRole,
-  Trace,
-  TraceSample,
-  Situation,
-  Subject,
-  Pair,
-  Scene,
   SceneConflict,
   SceneEvaluation,
+  SubjectRole,
   TrafficFacts,
   TrafficSector,
   TrafficSectorFacts,
 } from './types.js';
-export type { EffectRole, RuleId } from './generated/applicability.js';
-export type { FactRecord } from './generated/fact-record.js';
-export type { Modality } from './generated/applicability.js';
-// colregs' own vocabulary, re-exported here because the envelope's
-// `categories` and `provenance.represented` are typed in it — the same
-// reason Modality is above, and not a widening of `colregs-engine/schema`.
+
+// The vocabularies the answers are typed in — colregs' own, re-exported
+// because the envelopes carry them, not a widening of `colregs-engine/schema`.
+export type { ParagraphCite } from './types.js';
+export type { EffectRole, Modality, RuleId } from './generated/applicability.js';
 export type { RepresentedParagraph, RuleCategory } from './schema.js';

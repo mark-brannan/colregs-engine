@@ -1,6 +1,6 @@
 // Replays fixtures/situation-fixtures.json verbatim: every binding case's
 // `situation` must be assignable to `Situation` unedited (ADR 0011 §3), and
-// the entries it `expect`s must be exactly the ones appliedEncounterEntries
+// the entries it `expect`s must be exactly evaluateEncounter's `applied`, which
 // returns, with the modality each `{entry, modality}` element names. An
 // illustrative case fixes shape only; its expect is empty and not asserted.
 // A case carrying `roles` binds evaluateEncounter's pooled, resolved read
@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
 import type { Situation } from '../src/index';
-import { appliedEncounterEntries, evaluateEncounter } from '../src/index';
+import { evaluateEncounter } from '../src/index';
 import { validateSituation } from '../src/facts';
 import type { FixtureExpectation as Expectation } from '../src/types';
 
@@ -47,7 +47,7 @@ describe('colregs situation fixtures (verbatim replay)', () => {
     if (c.status !== 'binding') continue;
 
     it(`${c.name}: applied entries match`, () => {
-      expect([...appliedEncounterEntries(c.situation)].sort()).toEqual(
+      expect([...evaluateEncounter(c.situation).applied].sort()).toEqual(
         c.expect.map(idOf).sort(),
       );
     });
