@@ -3,7 +3,7 @@
   "status": "pencil",
   "marker": "✎",
   "defaults": {
-    "$note": "The expectation for any query not named below: the P1.3 properties as stated in issue #1, not observations.",
+    "$note": "The expectation for any query not named below: the P0.3 properties as stated in docs/research-programme.md, not observations.",
     "conflicting-shall": "unsat",
     "no-obligation": "unsat",
     "entry-fires": "sat",
