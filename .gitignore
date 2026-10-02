@@ -8,3 +8,6 @@ research/z3/out/
 *.vos
 *.glob
 .*.aux
+
+# Finished --full pieces, resumable (research/conformance/run.ts)
+research/conformance/.runs/

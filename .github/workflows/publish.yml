@@ -71,7 +71,7 @@ jobs:
       - run: npm test
         env:
           PROSE_BUDGET_ALLOW_MISSING_ENGINE: 1
-      - run: npm run conformance
+      - run: npm run conformance -- --sample=100000
 
       # No explicit `npm run build` step: this package ships dist/, not src/
       # (see package.json `files`), and `prepublishOnly` runs the build for

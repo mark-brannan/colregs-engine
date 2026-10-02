@@ -2,7 +2,7 @@
 // PreToolUse event on stdin, a transcript on disk, a deny decision on stdout.
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,13 +26,17 @@ function transcript(...asks: { question: string; answer: Answer }[]): string {
   return path;
 }
 
-function allowed(command: string, transcriptPath: string): boolean {
+function decision(command: string, transcriptPath: string): string {
   const run = spawnSync('python3', [HOOK], {
     input: JSON.stringify({ tool_name: 'Bash', tool_input: { command }, transcript_path: transcriptPath }),
     encoding: 'utf8',
   });
   expect(run.status, run.stderr).toBe(0);
-  return !run.stdout.includes('"deny"');
+  return run.stdout;
+}
+
+function allowed(command: string, transcriptPath: string): boolean {
+  return !decision(command, transcriptPath).includes('"deny"');
 }
 
 const ASK = 'Run the conformance sample (npm run conformance -- --sample=1000, ~1 min)?';
@@ -57,8 +61,17 @@ describe('conformance gate', () => {
     'pkill -f research/conformance/run.ts',
     'pgrep -f research/conformance/run.ts',
     'npm test',
+    'npm run conformance -- --help',
+    'npx tsx research/conformance/run.ts --full -h',
   ])('lets %s through, it does not start a run', (command) => {
     expect(allowed(command, '/nonexistent/transcript.jsonl')).toBe(true);
+  });
+
+  it("states the cost from run.ts's usage text, its one home", () => {
+    const usage = readFileSync(resolve(dirname(HOOK), '../../research/conformance/run.ts'), 'utf8');
+    const cost = /^\s*(cost: .*)$/m.exec(usage)?.[1];
+    expect(cost).toBeDefined();
+    expect(decision(RUN, transcript())).toContain(cost);
   });
 
   it('allows one run per approval', () => {
