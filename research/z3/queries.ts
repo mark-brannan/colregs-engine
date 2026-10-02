@@ -1,4 +1,4 @@
-// The P1.3 consistency and coverage properties as solver queries over the
+// The Phase 0 consistency and coverage properties as solver queries over the
 // definitions encode.ts emits. Expectations are data (expectations.json), not
 // code, and only category: 'display' entries have definitions to reference.
 
@@ -49,7 +49,7 @@ export function loadExpectations(path: string = EXPECTATIONS_PATH): Expectations
 
 export interface Query {
   id: string;
-  /** Which P1.3 property this is an instance of. */
+  /** Which P0.3 property this is an instance of. */
   property: Property;
   /** One line, for the SMT-LIB file and the run log. */
   title: string;

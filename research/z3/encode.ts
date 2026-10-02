@@ -1,6 +1,6 @@
-// SMT-LIB generator for the colregs applicability table (issue #1 Phase 2,
-// P2.1). Reads colregs' `applicability.json` through the same package the
-// engine depends on and emits a first-order theory in which:
+// SMT-LIB generator for the colregs applicability table (research
+// programme T1). Reads colregs' `applicability.json` through the same package
+// the engine depends on and emits a first-order theory in which:
 //
 //   * each fact axis a predicate reads is one SMT constant --- Bool for a
 //     boolean fact, Real for a numeric one, Int (an index into the axis's
@@ -11,15 +11,15 @@
 //     `|branch:<id>:<i>|` per modality_by branch (that branch is the FIRST
 //     match) plus `|unresolved:<id>|` (applies, no branch matched).
 //
-// queries.ts turns the P1.3 properties into queries over those definitions;
-// run.ts runs them.
+// queries.ts turns the consistency and coverage properties into queries
+// over those definitions; run.ts runs them.
 //
 // Four deliberate choices, each of which changes what an answer means:
 //
 //   1. Numeric axes are Real, not the enumeration's finite grid. An `unsat`
 //      here holds for every real value, where the enumeration's holds for
 //      one representative per threshold interval and leans on the partition
-//      lemma P3.1 has yet to prove. A `sat` model off the grid whose property
+//      lemma T3 has yet to prove. A `sat` model off the grid whose property
 //      fails at the grid point would refute that lemma; run.ts checks each.
 //   2. Every declared axis is total: no "absent" value, matching the
 //      enumerated fact space. The engine does accept an absent fact

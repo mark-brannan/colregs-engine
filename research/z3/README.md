@@ -1,8 +1,8 @@
 # Z3 encoding of the applicability table
 
 ✎ **Pencil.** A proof of concept for
-[issue #1](https://github.com/mark-brannan/colregs-engine/issues/1) item
-P2.1. One query is triaged (`research/z3/expectations.json`); the rest are
+item T1 of the
+[research programme](../../docs/research-programme.md). One query is triaged (`research/z3/expectations.json`); the rest are
 not.
 
 ```
@@ -22,7 +22,7 @@ build; no system z3 needed.
 first-order theory: one SMT constant per fact axis a predicate reads, and per
 entry `|applies:<id>|`, `|shall:<id>|`, and for a conditional entry one
 `|branch:<id>:<i>|` per `modality_by` branch plus `|unresolved:<id>|`.
-`queries.ts` states the P1.3 properties as queries over those definitions.
+`queries.ts` states the P0.3 properties as queries over those definitions.
 
 Only the 40 `category: display` entries are encoded, the scope
 `src/evaluate.ts` and `research/conformance/` already work in. The 30
@@ -65,7 +65,7 @@ file; revising a ruling is a data edit.
 ## Files
 
 - `encode.ts` — the SMT-LIB generator.
-- `queries.ts` — the P1.3 properties as queries; loads `expectations.json`.
+- `queries.ts` — the P0.3 properties as queries; loads `expectations.json`.
 - `expectations.json` — ✎ the recorded expectations.
 - `decode.ts` — Z3 numerals back to fact values; the representative grid.
 - `run.ts` — the run, the two replays, the report.

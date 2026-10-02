@@ -1,5 +1,5 @@
 // Runs the Z3 encoding of the applicability table and cross-checks every
-// answer twice over (issue #1 Phase 2, P2.1).
+// answer twice over (item T1 of docs/research-programme.md).
 //
 //   npm run z3                 # the whole query set
 //   npm run z3 -- --verbose    # plus the decoded model for every sat
@@ -19,7 +19,7 @@
 //   4. Every sat model is also snapped to the enumeration's representative
 //      grid and replayed again. If a property holds at the solver's point
 //      and not at the grid point in the same threshold interval, the
-//      partition lemma that P3.1 is meant to prove is FALSE, and the
+//      partition lemma that item T3 is meant to prove is FALSE, and the
 //      counterexample is right there. That is reported loudest of all.
 //
 // Exits non-zero on any of: a Z3/expectation disagreement, a model the
@@ -148,7 +148,7 @@ async function main(): Promise<void> {
   const smtPath = join(OUT_DIR, 'applicability.smt2');
   writeFileSync(smtPath, encoding.base + queriesToSmtLib(queries));
 
-  console.log(`Z3 encoding of the applicability table (issue #1, P2.1)`);
+  console.log(`Z3 encoding of the applicability table (research programme T1)`);
   console.log(`  entries      ${data.entries.length} total, ${encoding.entries.length} encoded (one-vessel category: display)`);
   if (encoding.excludedScoped.length > 0) {
     const byCategory = new Map<string, number>();
@@ -308,7 +308,7 @@ async function main(): Promise<void> {
     console.log('');
     console.log('=== PARTITION-LEMMA COUNTEREXAMPLE ===');
     console.log("The claim that a predicate over numeric facts is decided by the");
-    console.log('enumeration\'s representatives (P3.1) does not hold here.');
+    console.log('enumeration\'s representatives (T3) does not hold here.');
     for (const r of lemma) {
       console.log('');
       console.log(`  ${r.query.id}: ${r.lemmaCounterexample}`);
