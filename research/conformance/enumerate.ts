@@ -304,6 +304,23 @@ export function subShard(shard: Shard, k: number, parts: number): Shard {
   return { index: shard.index + shard.of * k, of: shard.of * parts };
 }
 
+/** Whether `shards` partition the space, every base index in exactly one;
+ * checked over residues modulo the lcm of their moduli. */
+export function shardCoverage(shards: Shard[]): { complete: boolean; detail: string } {
+  if (shards.length === 0) return { complete: false, detail: 'no shards recorded' };
+  const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+  const of = shards.reduce((l, s) => (l / gcd(l, s.of)) * s.of, 1);
+  if (of > 1 << 20) return { complete: false, detail: `shard moduli too fine to check (lcm ${of})` };
+  const hits = new Uint32Array(of);
+  for (const s of shards) for (let r = s.index; r < of; r += s.of) hits[r]++;
+  const missing = hits.filter((h) => h === 0).length;
+  const repeated = hits.filter((h) => h > 1).length;
+  return {
+    complete: missing === 0 && repeated === 0,
+    detail: `${of - missing}/${of} of the space` + (repeated > 0 ? `, ${repeated}/${of} walked more than once` : ''),
+  };
+}
+
 export interface IndexedRecord {
   facts: FactRecord;
   /** Position of this record in the unsharded stream: base index times

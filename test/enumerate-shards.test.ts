@@ -8,6 +8,7 @@ import {
   enumerateIndexed,
   enumerateRecords,
   extractAxes,
+  shardCoverage,
   subShard,
   totalRecords,
   type Axis,
@@ -135,9 +136,10 @@ describe('--full pieces and the CI legs', () => {
   // data and checks, a space small enough to walk in pieces in a test.
   const realAxes = extractAxes(applicabilityJson as unknown as ApplicabilityData).axes;
   const axes = realAxes.map((a, i) => ({ ...a, values: a.values.slice(0, i < 12 ? 2 : 1) })) as Axis[];
-  // What a tally file holds once wall time, the one nondeterministic field, is set aside.
+  // What the register is built from: the tally less wall time and the shard
+  // list, which differ by construction, with findings in the register's order.
   const canonical = (t: Tally) =>
-    JSON.stringify({ ...t, wallMs: 0, findings: Object.fromEntries(Object.entries(t.findings).sort()) });
+    JSON.stringify({ ...t, wallMs: 0, shards: [], findings: Object.fromEntries(Object.entries(t.findings).sort()) });
   const roundTrip = (t: Tally) => JSON.parse(JSON.stringify(t)) as Tally;
 
   it('merging all 1024 pieces equals the 16-leg CI merge, byte for byte', () => {
@@ -154,5 +156,32 @@ describe('--full pieces and the CI legs', () => {
     expect(Object.keys(ci.findings).length).toBeGreaterThan(0);
     expect(canonical(mergeTallies(pieces))).toBe(canonical(ci));
     expect(canonical(ci)).toBe(canonical(walkShard(axes)));
+    expect(shardCoverage(mergeTallies(pieces).shards).complete).toBe(true);
+    expect(shardCoverage(ci.shards).complete).toBe(true);
+  });
+
+  it('a sample covers no shards, so it is never whole', () => {
+    expect(walkShard(axes, { sample: 10 }).shards).toEqual([]);
+  });
+});
+
+describe('shardCoverage', () => {
+  const legs = (n: number, jobs: number) =>
+    Array.from({ length: n }, (_, i) => Array.from({ length: jobs }, (_, k) => subShard({ index: i, of: n }, k, jobs))).flat();
+
+  it.each([
+    ['the whole space', [{ index: 0, of: 1 }]],
+    ['16 legs on 4 cores', legs(16, 4)],
+    ['legs split over different core counts', [...legs(2, 1).slice(0, 1), subShard({ index: 1, of: 2 }, 0, 3), subShard({ index: 1, of: 2 }, 1, 3), subShard({ index: 1, of: 2 }, 2, 3)]],
+  ])('is complete for %s', (_, shards) => {
+    expect(shardCoverage(shards).complete).toBe(true);
+  });
+
+  it.each([
+    ['nothing', []],
+    ['a missing leg', legs(16, 4).slice(4)],
+    ['a leg merged twice', [...legs(16, 4), ...legs(16, 4).slice(0, 4)]],
+  ])('is incomplete for %s', (_, shards) => {
+    expect(shardCoverage(shards).complete).toBe(false);
   });
 });

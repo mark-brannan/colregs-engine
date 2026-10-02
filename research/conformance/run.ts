@@ -20,7 +20,7 @@ import triageJson from './findings/triage.json' with { type: 'json' };
 
 import type { ApplicabilityData, FactRecord, RulesData } from '../../src/types.js';
 
-import { extractAxes, totalRecords, formatAxisTable, subShard, type Shard } from './enumerate.js';
+import { extractAxes, totalRecords, formatAxisTable, shardCoverage, subShard, type Shard } from './enumerate.js';
 import { referenceAppliedEntries } from './reference.js';
 import { unresolvedCite } from './traceability.js';
 import { describeVessel } from './prose.js';
@@ -83,6 +83,9 @@ const USAGE = `usage: npm run conformance -- [options]
   --shard=i/N --out=f  walk shard i of N into tally f; no register
   --merge f ...        reduce shard tallies: coverage, traceability,
                        fixture replay, register
+
+A stopped --full, or a --merge of tallies short of the whole space, prints
+the counts and findings so far, marked partial, and writes no register.
   --help               this text
 
 CI runs --sample on a pull request and a --shard matrix then one --merge
@@ -277,14 +280,17 @@ async function walkPieces(): Promise<void> {
   process.off('SIGINT', stop);
   process.off('SIGTERM', stop);
 
+  const finished = pieces.filter((p) => existsSync(piecePath(p)));
+  const t = mergeTallies(finished.map((p) => JSON.parse(readFileSync(piecePath(p), 'utf8')) as Tally));
+  t.wallMs = Date.now() - t0;
+
   if (stopping !== undefined || failure !== undefined) {
     if (failure !== undefined) console.error(`\n${failure instanceof Error ? failure.message : String(failure)}`);
-    console.error(`\nstopped at ${done}/${pieces.length} pieces; finished pieces kept. Resume with:\n  ${resumeCommand}`);
+    if (finished.length > 0) reportPartial(t, `${finished.length}/${pieces.length} pieces walked`);
+    console.error(`\nstopped at ${finished.length}/${pieces.length} pieces; finished pieces kept. Resume with:\n  ${resumeCommand}`);
     process.exit(stopping === 'SIGINT' ? 130 : stopping === 'SIGTERM' ? 143 : 1);
   }
 
-  const t = mergeTallies(pieces.map((p) => JSON.parse(readFileSync(piecePath(p), 'utf8')) as Tally));
-  t.wallMs = Date.now() - t0;
   if (outArg !== undefined) writeFileSync(outArg, JSON.stringify(t));
   if (shard.of === 1) return reduce(t);
   printSummary(t);
@@ -507,8 +513,23 @@ function failOnMismatch(t: Tally) {
   }
 }
 
+/** What an incomplete walk can say: its counts and the findings so far.
+ * Coverage and the register need the whole space; neither is touched. */
+function reportPartial(t: Tally, what: string) {
+  console.log(`\nPARTIAL RESULTS: ${what}. Coverage and the register are not written.`);
+  printSummary(t);
+  const findings = Object.values(t.findings).sort((a, b) => findingKey(a).localeCompare(findingKey(b)));
+  console.log(`\n${findings.length} distinct findings so far (partial)`);
+  for (const f of findings) console.log(`  [${f.check}]  n=${f.count}  ${f.description}`);
+}
+
 /** The whole-space epilogue: everything after the walk. */
 function reduce(t: Tally) {
+  const coverage = shardCoverage(t.shards);
+  if (!coverage.complete) {
+    reportPartial(t, `the tallies cover ${coverage.detail}`);
+    process.exit(1);
+  }
   printSummary(t);
   coverageFindings(t);
   traceabilityFindings(t);
