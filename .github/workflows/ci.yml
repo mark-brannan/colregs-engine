@@ -40,8 +40,8 @@ jobs:
       - run: npm run build
 
   # The conformance harness (research/conformance/) on a pull_request: the
-  # first 100k records per jurisdiction of a ~47M-record space, in-process,
-  # about half a minute. The walk is in axis order, so this is one corner of
+  # first 100k records per jurisdiction, in-process, about half a minute;
+  # `npm run conformance -- --help` gives the size of the whole space. The walk is in axis order, so this is one corner of
   # the space, not a spread; it catches an engine regression, not a data
   # finding. The register is not written in --sample mode. The whole space
   # is the weekly job below.

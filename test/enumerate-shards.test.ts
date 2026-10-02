@@ -2,14 +2,20 @@
 // walk.ts): the shards of the fact space partition it, their ordinals order
 // it, and merging shard tallies gives the tally one pass would have.
 
+import applicabilityJson from 'colregs/data/applicability.json' with { type: 'json' };
 import { describe, expect, it } from 'vitest';
 import {
   enumerateIndexed,
   enumerateRecords,
+  extractAxes,
+  shardCoverage,
+  subShard,
+  totalRecords,
   type Axis,
   type BooleanAxis,
 } from '../research/conformance/enumerate';
-import { emptyTally, mergeTallies, recordFinding, type Tally } from '../research/conformance/walk';
+import { emptyTally, mergeTallies, recordFinding, walkShard, type Tally } from '../research/conformance/walk';
+import type { ApplicabilityData } from '../src/types';
 
 const positionAxis: Axis = {
   kind: 'enum',
@@ -122,5 +128,60 @@ describe('mergeTallies', () => {
     const t = tallyWith(2, [['x', 1, 'a']]);
     t.everApplied = ['e'];
     expect(mergeTallies([t])).toEqual(t);
+  });
+});
+
+describe('--full pieces and the CI legs', () => {
+  // The real axes, each cut to its first two representatives: the same
+  // data and checks, a space small enough to walk in pieces in a test.
+  const realAxes = extractAxes(applicabilityJson as unknown as ApplicabilityData).axes;
+  const axes = realAxes.map((a, i) => ({ ...a, values: a.values.slice(0, i < 12 ? 2 : 1) })) as Axis[];
+  // What the register is built from: the tally less wall time and the shard
+  // list, which differ by construction, with findings in the register's order.
+  const canonical = (t: Tally) =>
+    JSON.stringify({ ...t, wallMs: 0, shards: [], findings: Object.fromEntries(Object.entries(t.findings).sort()) });
+  const roundTrip = (t: Tally) => JSON.parse(JSON.stringify(t)) as Tally;
+
+  it('merging all 1024 pieces equals the 16-leg CI merge, byte for byte', () => {
+    expect(totalRecords(axes)).toBeGreaterThan(1024);
+    const whole = { index: 0, of: 1 };
+    const pieces = Array.from({ length: 1024 }, (_, k) => roundTrip(walkShard(axes, { shard: subShard(whole, k, 1024) })));
+    // A leg is --shard=i/16 split over a 4-core runner's processes; the
+    // merge job reads tally-0.json, tally-1.json, tally-10.json, ... in glob order.
+    const legs = Array.from({ length: 16 }, (_, i) =>
+      roundTrip(mergeTallies(Array.from({ length: 4 }, (_, k) => walkShard(axes, { shard: subShard({ index: i, of: 16 }, k, 4) })))),
+    );
+    const globOrder = legs.map((t, i) => [`tally-${i}.json`, t] as const).sort(([a], [b]) => a.localeCompare(b));
+    const ci = mergeTallies(globOrder.map(([, t]) => t));
+    expect(Object.keys(ci.findings).length).toBeGreaterThan(0);
+    expect(canonical(mergeTallies(pieces))).toBe(canonical(ci));
+    expect(canonical(ci)).toBe(canonical(walkShard(axes)));
+    expect(shardCoverage(mergeTallies(pieces).shards).complete).toBe(true);
+    expect(shardCoverage(ci.shards).complete).toBe(true);
+  });
+
+  it('a sample covers no shards, so it is never whole', () => {
+    expect(walkShard(axes, { sample: 10 }).shards).toEqual([]);
+  });
+});
+
+describe('shardCoverage', () => {
+  const legs = (n: number, jobs: number) =>
+    Array.from({ length: n }, (_, i) => Array.from({ length: jobs }, (_, k) => subShard({ index: i, of: n }, k, jobs))).flat();
+
+  it.each([
+    ['the whole space', [{ index: 0, of: 1 }]],
+    ['16 legs on 4 cores', legs(16, 4)],
+    ['legs split over different core counts', [...legs(2, 1).slice(0, 1), subShard({ index: 1, of: 2 }, 0, 3), subShard({ index: 1, of: 2 }, 1, 3), subShard({ index: 1, of: 2 }, 2, 3)]],
+  ])('is complete for %s', (_, shards) => {
+    expect(shardCoverage(shards).complete).toBe(true);
+  });
+
+  it.each([
+    ['nothing', []],
+    ['a missing leg', legs(16, 4).slice(4)],
+    ['a leg merged twice', [...legs(16, 4), ...legs(16, 4).slice(0, 4)]],
+  ])('is incomplete for %s', (_, shards) => {
+    expect(shardCoverage(shards).complete).toBe(false);
   });
 });

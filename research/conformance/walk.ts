@@ -75,6 +75,9 @@ export interface FindingGroup {
 export interface Tally {
   /** Records walked. */
   n: number;
+  /** The shards walked; empty for a sample. A merge knows from these
+   * whether it has the whole space (`shardCoverage`). */
+  shards: Shard[];
   wallMs: number;
   conformanceFailures: number;
   modalityMismatches: number;
@@ -94,6 +97,7 @@ export interface Tally {
 export function emptyTally(): Tally {
   return {
     n: 0,
+    shards: [],
     wallMs: 0,
     conformanceFailures: 0,
     modalityMismatches: 0,
@@ -315,6 +319,7 @@ export function walkShard(axes: Axis[], opts: WalkOptions = {}): Tally {
     }
   }
   t.wallMs = Date.now() - t0;
+  t.shards = opts.sample === undefined ? [shard] : [];
   t.everApplied = [...everApplied].sort();
   t.oneOfEverChosen = [...oneOfChosen].sort();
   t.noObligationPositions = Object.fromEntries(noObligationPositions);
@@ -332,6 +337,7 @@ export function mergeTallies(tallies: Tally[]): Tally {
   const branchTaken = new Map<string, Set<number>>();
   for (const t of tallies) {
     out.n += t.n;
+    out.shards.push(...(t.shards ?? []));
     out.wallMs = Math.max(out.wallMs, t.wallMs);
     out.conformanceFailures += t.conformanceFailures;
     out.modalityMismatches += t.modalityMismatches;

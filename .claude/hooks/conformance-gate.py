@@ -12,7 +12,7 @@ ask.
 
 Commands are read as shell, not as text: only a segment that launches the
 suite is gated, so grep, git commit -m, pkill and pgrep that merely mention it
-pass. If the command can't be parsed, a plain substring match decides, and a
+pass, as does --help, which only prints the usage. If the command can't be parsed, a plain substring match decides, and a
 match is gated. A launch hidden in a script or a variable is not seen.
 
 Fails closed: if the transcript can't be read, the command is denied.
@@ -37,11 +37,23 @@ SHELLS = {"sh", "bash", "zsh", "dash"}
 ASSIGNMENT = re.compile(r"^\w+=")
 WRAPPER_ARG = re.compile(r"^(-.*|\w+=.*|\d+(\.\d+)?[smhd]?)$")  # options, VAR=x, durations
 NPM_RUN = {"run", "run-script", "rum", "urn"}
+HELP = {"--help", "-h"}
+# The local cost has one home, the usage text run.ts prints for --help.
+RUN_TS = Path(__file__).resolve().parents[2] / "research" / "conformance" / "run.ts"
+
+
+def cost_line() -> str:
+    try:
+        m = re.search(r"^\s*(cost: .*)$", RUN_TS.read_text(), re.M)
+    except OSError:
+        m = None
+    return f"--full {m.group(1)}" if m else "the usage text (--help) states what --full costs"
+
 
 DENY_REASON = f"""\
-The conformance suite is gated: the full walk took ~46 min with every core
-pegged (load ~20 on 16 cores) when last measured on the user's machine.
-`--sample=N` and `--jobs=N` are the cheaper forms. Before running it, call
+The conformance suite is gated; {cost_line()}.
+With no flags it runs a sample; --sample=N is cheaper, and --jobs=N lowers
+the load of --full. Before running it, call
 AskUserQuestion with a question that contains the word "conformance", says
 exactly which command you will run, why it is needed now and what it costs,
 and offers an option labelled exactly "{APPROVE}" (plus one to skip). If the
@@ -95,7 +107,7 @@ def launches(command: str) -> bool:
     in_suite_dir = False
     for seg in segments(toks):
         argv = strip_wrappers(seg)
-        if not argv:
+        if not argv or HELP & set(argv):
             continue
         prog = os.path.basename(argv[0])
         args = argv[1:]
