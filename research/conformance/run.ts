@@ -38,7 +38,7 @@ import { extractAxes, totalRecords, formatAxisTable, type Shard } from './enumer
 import { referenceAppliedEntries } from './reference.js';
 import { unresolvedCite } from './traceability.js';
 import { describeVessel } from './prose.js';
-import { allocateIds, serializeIdMap, type Finding, type IdMap } from './ids.js';
+import { allocateIds, parseIdMap, serializeIdMap, type Finding, type IdMap } from './ids.js';
 import {
   byId,
   displayEntries,
@@ -272,7 +272,7 @@ function replayFixtures() {
 }
 
 function readIdMap(): IdMap | null {
-  return existsSync(IDS_PATH) ? (JSON.parse(readFileSync(IDS_PATH, 'utf8')) as IdMap) : null;
+  return existsSync(IDS_PATH) ? parseIdMap(readFileSync(IDS_PATH, 'utf8')) : null;
 }
 
 function sortAndNumber(t: Tally): { findings: Finding[]; map: IdMap } {

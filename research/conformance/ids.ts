@@ -24,6 +24,27 @@ function idNumber(id: string): number {
   return Number(id.slice('FIND-'.length));
 }
 
+/**
+ * Parses findings/ids.json and refuses a map that could hand two findings one
+ * id: a value that is not `FIND-<n>`, a number held by two keys, or a `next`
+ * at or below a number already allocated.
+ */
+export function parseIdMap(text: string): IdMap {
+  const map = JSON.parse(text) as IdMap;
+  if (!Number.isInteger(map.next) || typeof map.ids !== 'object' || map.ids === null) {
+    throw new Error('findings/ids.json: want { next: <integer>, ids: { ... } }');
+  }
+  const seen = new Map<number, string>();
+  for (const [key, id] of Object.entries(map.ids)) {
+    if (!/^FIND-\d+$/.test(id)) throw new Error(`findings/ids.json: '${key}' has id '${id}', not FIND-<n>`);
+    const n = idNumber(id);
+    if (seen.has(n)) throw new Error(`findings/ids.json: ${id} is held by both '${seen.get(n)}' and '${key}'`);
+    if (n >= map.next) throw new Error(`findings/ids.json: next is ${map.next} but ${id} is already allocated`);
+    seen.set(n, key);
+  }
+  return map;
+}
+
 function bySortedKey(a: FindingGroup, b: FindingGroup): number {
   return a.check !== b.check ? a.check.localeCompare(b.check) : a.groupKey.localeCompare(b.groupKey);
 }

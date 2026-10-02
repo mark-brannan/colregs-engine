@@ -2,7 +2,7 @@
 // fixed by its check::groupKey and a retired number is never reused.
 
 import { describe, expect, it } from 'vitest';
-import { allocateIds, serializeIdMap, type IdMap } from '../research/conformance/ids';
+import { allocateIds, parseIdMap, serializeIdMap, type IdMap } from '../research/conformance/ids';
 import { findingKey, type FindingGroup } from '../research/conformance/walk';
 
 const group = (check: string, groupKey: string): FindingGroup => ({
@@ -65,5 +65,26 @@ describe('allocateIds', () => {
     const first = allocateIds([a, b, c], null);
     const second = allocateIds([a, b, c], first.map);
     expect(serializeIdMap(second.map)).toBe(serializeIdMap(first.map));
+  });
+});
+
+describe('parseIdMap', () => {
+  const text = (map: unknown) => JSON.stringify(map);
+
+  it('round-trips a serialized map', () => {
+    const { map } = allocateIds([a, b, c], null);
+    expect(parseIdMap(serializeIdMap(map))).toEqual(map);
+  });
+
+  it('refuses an id that is not FIND-<n>', () => {
+    expect(() => parseIdMap(text({ next: 2, ids: { k: 'F-1' } }))).toThrow(/not FIND-<n>/);
+  });
+
+  it('refuses one number held by two keys', () => {
+    expect(() => parseIdMap(text({ next: 3, ids: { k: 'FIND-01', j: 'FIND-1' } }))).toThrow(/held by both/);
+  });
+
+  it('refuses a next at or below an allocated number', () => {
+    expect(() => parseIdMap(text({ next: 2, ids: { k: 'FIND-02' } }))).toThrow(/already allocated/);
   });
 });
