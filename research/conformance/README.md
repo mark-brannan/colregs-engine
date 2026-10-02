@@ -2,7 +2,6 @@
 
 ```
 npm run conformance                   # a sample: the first 100k records per jurisdiction
-npm run conformance -- --sample=N      # the first N records per jurisdiction
 npm run conformance -- --full          # the whole fact space, then the register
 npm run conformance -- --help          # every option, and what --full costs
 ```
@@ -76,9 +75,11 @@ addressable by its index and the pass holds one record at a time. That index
 is the shard key: `--shard=i/N --out=t.json` walks base records congruent to
 `i` mod `N` into a JSON tally; `--merge *.json` reduces tallies and does what
 only the whole space justifies — coverage, the register. CI runs a shard
-matrix then one merge; `--full` runs the same pipeline locally on half the cores. Shards
-compose (`--shard=1/4 --jobs=4` is 1, 5, 9, 13 of 16), and each finding keeps
-its witness's ordinal, so the merged register equals a single pass, byte for byte.
+matrix then one merge; `--full` runs 1024 shards on a local pool, keeping each
+tally under `.runs/<key>/`, a hash of data, axes and code, so a rerun walks
+only what is missing. Shards compose (`--shard=1/4 --jobs=4` is 1, 5, 9, 13 of
+16), and each finding keeps its witness's ordinal, so the merged register
+equals a single pass, byte for byte.
 
 Partitioning at the thresholds is what makes this a proof rather than a
 large test, and it rests on the partition lemma: a predicate comparing a

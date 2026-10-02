@@ -297,6 +297,13 @@ export interface Shard {
 
 export const WHOLE_SPACE: Shard = { index: 0, of: 1 };
 
+/** Part `k` of `parts` within `shard`: index i+N*k of N*parts. Composes, so
+ * a CI shard split over its cores is still a slice of the one space, and
+ * part k of 1024 within the whole space is the same slice wherever it's cut. */
+export function subShard(shard: Shard, k: number, parts: number): Shard {
+  return { index: shard.index + shard.of * k, of: shard.of * parts };
+}
+
 export interface IndexedRecord {
   facts: FactRecord;
   /** Position of this record in the unsharded stream: base index times

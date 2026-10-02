@@ -2,14 +2,19 @@
 // walk.ts): the shards of the fact space partition it, their ordinals order
 // it, and merging shard tallies gives the tally one pass would have.
 
+import applicabilityJson from 'colregs/data/applicability.json' with { type: 'json' };
 import { describe, expect, it } from 'vitest';
 import {
   enumerateIndexed,
   enumerateRecords,
+  extractAxes,
+  subShard,
+  totalRecords,
   type Axis,
   type BooleanAxis,
 } from '../research/conformance/enumerate';
-import { emptyTally, mergeTallies, recordFinding, type Tally } from '../research/conformance/walk';
+import { emptyTally, mergeTallies, recordFinding, walkShard, type Tally } from '../research/conformance/walk';
+import type { ApplicabilityData } from '../src/types';
 
 const positionAxis: Axis = {
   kind: 'enum',
@@ -122,5 +127,32 @@ describe('mergeTallies', () => {
     const t = tallyWith(2, [['x', 1, 'a']]);
     t.everApplied = ['e'];
     expect(mergeTallies([t])).toEqual(t);
+  });
+});
+
+describe('--full pieces and the CI legs', () => {
+  // The real axes, each cut to its first two representatives: the same
+  // data and checks, a space small enough to walk in pieces in a test.
+  const realAxes = extractAxes(applicabilityJson as unknown as ApplicabilityData).axes;
+  const axes = realAxes.map((a, i) => ({ ...a, values: a.values.slice(0, i < 12 ? 2 : 1) })) as Axis[];
+  // What a tally file holds once wall time, the one nondeterministic field, is set aside.
+  const canonical = (t: Tally) =>
+    JSON.stringify({ ...t, wallMs: 0, findings: Object.fromEntries(Object.entries(t.findings).sort()) });
+  const roundTrip = (t: Tally) => JSON.parse(JSON.stringify(t)) as Tally;
+
+  it('merging all 1024 pieces equals the 16-leg CI merge, byte for byte', () => {
+    expect(totalRecords(axes)).toBeGreaterThan(1024);
+    const whole = { index: 0, of: 1 };
+    const pieces = Array.from({ length: 1024 }, (_, k) => roundTrip(walkShard(axes, { shard: subShard(whole, k, 1024) })));
+    // A leg is --shard=i/16 split over a 4-core runner's processes; the
+    // merge job reads tally-0.json, tally-1.json, tally-10.json, ... in glob order.
+    const legs = Array.from({ length: 16 }, (_, i) =>
+      roundTrip(mergeTallies(Array.from({ length: 4 }, (_, k) => walkShard(axes, { shard: subShard({ index: i, of: 16 }, k, 4) })))),
+    );
+    const globOrder = legs.map((t, i) => [`tally-${i}.json`, t] as const).sort(([a], [b]) => a.localeCompare(b));
+    const ci = mergeTallies(globOrder.map(([, t]) => t));
+    expect(Object.keys(ci.findings).length).toBeGreaterThan(0);
+    expect(canonical(mergeTallies(pieces))).toBe(canonical(ci));
+    expect(canonical(ci)).toBe(canonical(walkShard(axes)));
   });
 });

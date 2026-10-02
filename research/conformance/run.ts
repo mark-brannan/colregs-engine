@@ -5,11 +5,13 @@
 // `USAGE` below is the CLI's one description, and the one home of what a
 // local --full walk costs; `--help` prints it.
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync, mkdtempSync } from 'node:fs';
-import { spawn } from 'node:child_process';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync, mkdtempSync, renameSync } from 'node:fs';
+import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import { availableParallelism, setPriority, tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 
 import applicabilityJson from 'colregs/data/applicability.json' with { type: 'json' };
 import fixturesJson from 'colregs/fixtures/applicability-fixtures.json' with { type: 'json' };
@@ -18,7 +20,7 @@ import triageJson from './findings/triage.json' with { type: 'json' };
 
 import type { ApplicabilityData, FactRecord, RulesData } from '../../src/types.js';
 
-import { extractAxes, totalRecords, formatAxisTable, type Shard } from './enumerate.js';
+import { extractAxes, totalRecords, formatAxisTable, subShard, type Shard } from './enumerate.js';
 import { referenceAppliedEntries } from './reference.js';
 import { unresolvedCite } from './traceability.js';
 import { describeVessel } from './prose.js';
@@ -73,6 +75,9 @@ const USAGE = `usage: npm run conformance -- [options]
   --full               the whole fact space, then coverage and the
                        findings register
                        cost: ~759M records, ~46 min on 16 cores
+                       walked in 1024 pieces, each kept on finishing, so
+                       a rerun after a stop walks only what's missing;
+                       with --shard=i/N (N divides 1024), that slice only
   --jobs=N             worker processes for --full (default: half the
                        cores, at nice 10) or --shard (default: every core)
   --shard=i/N --out=f  walk shard i of N into tally f; no register
@@ -124,10 +129,12 @@ const jobs =
         ? availableParallelism()
         : 1;
 if (!Number.isInteger(jobs) || jobs < 1) throw new Error(`--jobs wants a positive integer, got '${jobsArg}'`);
-if (full && (sampleArg !== undefined || shardArg !== undefined || mergeFiles !== undefined)) {
-  throw new Error('--full walks the whole space; drop --sample, --shard and --merge');
-}
-if (shardArg !== undefined && outArg === undefined) throw new Error('--shard needs --out=<tally.json>');
+// --full walks the space in PIECES parts; with --shard=i/N, only the N-th
+// of them congruent to i, so N must divide PIECES.
+const PIECES = 1024;
+if (full && (sampleArg !== undefined || mergeFiles !== undefined)) throw new Error('--full: drop --sample and --merge');
+if (full && PIECES % shard.of !== 0) throw new Error(`--full --shard=i/N needs N to divide ${PIECES}`);
+if (!full && shardArg !== undefined && outArg === undefined) throw new Error('--shard needs --out=<tally.json>');
 // A sample walks the first N records in order, which only one process can do.
 if (sampleSize !== undefined && jobs > 1) throw new Error('--sample runs in-process; --jobs is for --full or --shard');
 
@@ -151,11 +158,8 @@ if (mergeFiles === undefined) {
   );
 }
 
-/** Sub-shard `k` of `jobs` within `shard`: index i+N*k of N*J. Composes,
- * so a CI shard split over its cores is still a slice of the one space. */
-function subShard(k: number): Shard {
-  return { index: shard.index + shard.of * k, of: shard.of * jobs };
-}
+/** Live child processes, so a signal can stop every one of them. */
+const children = new Set<ChildProcess>();
 
 /** Runs this script again as a child for one sub-shard, returning its tally. */
 function walkInChild(sub: Shard, out: string): Promise<Tally> {
@@ -165,13 +169,15 @@ function walkInChild(sub: Shard, out: string): Promise<Tally> {
       [...process.execArgv, SELF, `--shard=${sub.index}/${sub.of}`, `--out=${out}`, '--jobs=1'],
       { stdio: ['ignore', 'ignore', 'inherit'] },
     );
+    children.add(child);
     // --full shares the machine; a CI leg has it to itself.
     if (full && child.pid !== undefined) setPriority(child.pid, 10);
     child.on('error', reject);
-    child.on('exit', (code) => {
+    child.on('exit', (code, signal) => {
+      children.delete(child);
       // A shard exits 1 on a conformance mismatch but still writes its
       // tally; the reduce below re-raises. Anything else is a crash.
-      if (code !== 0 && code !== 1) return reject(new Error(`shard ${sub.index}/${sub.of} exited ${code}`));
+      if (code !== 0 && code !== 1) return reject(new Error(`shard ${sub.index}/${sub.of} exited ${code ?? signal}`));
       if (!existsSync(out)) return reject(new Error(`shard ${sub.index}/${sub.of} wrote no tally`));
       resolve(JSON.parse(readFileSync(out, 'utf8')) as Tally);
     });
@@ -182,10 +188,107 @@ async function walk(): Promise<Tally> {
   if (jobs === 1) return walkShard(axes, { shard, sample: sampleSize });
   const dir = mkdtempSync(join(tmpdir(), 'conformance-'));
   const tallies = await Promise.all(
-    Array.from({ length: jobs }, (_, k) => walkInChild(subShard(k), join(dir, `shard-${k}.json`))),
+    Array.from({ length: jobs }, (_, k) => walkInChild(subShard(shard, k, jobs), join(dir, `shard-${k}.json`))),
   );
   rmSync(dir, { recursive: true, force: true });
   return mergeTallies(tallies);
+}
+
+// ---------------------------------------------------------------------
+// --full: a pool of --jobs workers over PIECES pieces. Each finished piece
+// keeps its tally under .runs/<key>/, so a rerun walks only what's missing.
+// ---------------------------------------------------------------------
+const RUNS_DIR = join(HERE, '.runs');
+
+/** What a piece's tally depends on: the data, the axes, the code. Any
+ * change gives a fresh key, so stale tallies are never merged. */
+function runKey(): string {
+  const git = (...a: string[]) => execFileSync('git', a, { cwd: HERE, encoding: 'utf8' });
+  const h = createHash('sha256');
+  h.update(readFileSync(createRequire(import.meta.url).resolve('colregs/data/applicability.json')));
+  h.update(JSON.stringify(axes));
+  h.update(git('rev-parse', 'HEAD'));
+  // Uncommitted edits to the engine or the harness change tallies as much as a commit does.
+  h.update(git('diff', 'HEAD', '--', ':(top)src', ':(top)research/conformance/*.ts'));
+  return h.digest('hex').slice(0, 16);
+}
+
+function clock(ms: number): string {
+  const s = Math.round(ms / 1000);
+  const hms = [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60];
+  return (hms[0] ? `${hms[0]}:` : '') + hms.slice(1).map((n) => String(n).padStart(2, '0')).join(':');
+}
+
+const resumeCommand = `npm run conformance -- ${args.join(' ')}`;
+
+async function walkPieces(): Promise<void> {
+  const parts = PIECES / shard.of;
+  const pieces = Array.from({ length: parts }, (_, k) => subShard(shard, k, parts));
+  const key = runKey();
+  const dir = join(RUNS_DIR, key);
+  // A run under any other key is stale by construction.
+  for (const name of existsSync(RUNS_DIR) ? readdirSync(RUNS_DIR) : []) {
+    if (name !== key) rmSync(join(RUNS_DIR, name), { recursive: true, force: true });
+  }
+  mkdirSync(dir, { recursive: true });
+  for (const name of readdirSync(dir)) if (name.endsWith('.tmp')) rmSync(join(dir, name));
+  const piecePath = (p: Shard) => join(dir, `piece-${p.index}.json`);
+  const todo = pieces.filter((p) => !existsSync(piecePath(p)));
+  let done = pieces.length - todo.length;
+  console.log(
+    `\n${pieces.length} pieces of ${PIECES}${shard.of > 1 ? ` (shard ${shard.index}/${shard.of})` : ''}, ` +
+      `${done} already walked, in ${relative(process.cwd(), dir)}; ${todo.length} to walk on ${jobs} workers`,
+  );
+
+  let stopping: NodeJS.Signals | undefined;
+  let failure: unknown;
+  const stop = (signal: NodeJS.Signals) => {
+    stopping ??= signal;
+    for (const c of children) c.kill('SIGTERM');
+  };
+  process.on('SIGINT', stop);
+  process.on('SIGTERM', stop);
+
+  const t0 = Date.now();
+  let walked = 0;
+  let next = 0;
+  async function worker() {
+    while (stopping === undefined && failure === undefined && next < todo.length) {
+      const p = todo[next++];
+      const tmp = `${piecePath(p)}.tmp`;
+      try {
+        await walkInChild(p, tmp);
+      } catch (e) {
+        if (stopping === undefined && failure === undefined) {
+          failure = e;
+          for (const c of children) c.kill('SIGTERM');
+        }
+        return;
+      }
+      renameSync(tmp, piecePath(p));
+      done++;
+      walked++;
+      const elapsed = Date.now() - t0;
+      const eta = (elapsed / walked) * (pieces.length - done);
+      console.log(`pieces ${done}/${pieces.length}  elapsed ${clock(elapsed)}  eta ${clock(eta)}`);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(jobs, todo.length) }, worker));
+  process.off('SIGINT', stop);
+  process.off('SIGTERM', stop);
+
+  if (stopping !== undefined || failure !== undefined) {
+    if (failure !== undefined) console.error(`\n${failure instanceof Error ? failure.message : String(failure)}`);
+    console.error(`\nstopped at ${done}/${pieces.length} pieces; finished pieces kept. Resume with:\n  ${resumeCommand}`);
+    process.exit(stopping === 'SIGINT' ? 130 : stopping === 'SIGTERM' ? 143 : 1);
+  }
+
+  const t = mergeTallies(pieces.map((p) => JSON.parse(readFileSync(piecePath(p), 'utf8')) as Tally));
+  t.wallMs = Date.now() - t0;
+  if (outArg !== undefined) writeFileSync(outArg, JSON.stringify(t));
+  if (shard.of === 1) return reduce(t);
+  printSummary(t);
+  failOnMismatch(t);
 }
 
 function printSummary(t: Tally) {
@@ -433,6 +536,8 @@ if (mergeFiles !== undefined) {
   const tallies = mergeFiles.map((f) => JSON.parse(readFileSync(f, 'utf8')) as Tally);
   console.log(`merging ${tallies.length} shard tallies`);
   reduce(mergeTallies(tallies));
+} else if (full) {
+  await walkPieces();
 } else if (shardArg !== undefined) {
   const t = await walk();
   writeFileSync(outArg!, JSON.stringify(t));
@@ -448,6 +553,4 @@ if (mergeFiles !== undefined) {
   console.log(`\n${findings.length} distinct findings in this sample run (register not written in --sample mode)`);
   failOnMismatch(t);
   console.log('\nconformance run complete.');
-} else {
-  reduce(await walk());
 }
