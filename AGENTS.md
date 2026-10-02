@@ -2,7 +2,7 @@
 
 Evaluates structured COLREGS data against one vessel's facts and returns every lawful lights-and-shapes display.
 
-Checks: `npm run typecheck && npm test`. Regenerate `src/generated` with `npm run generate`; `npm run conformance` rewrites `research/conformance/findings/`.
+Checks: `npm run typecheck && npm test`. Regenerate `src/generated` with `npm run generate`; `npm run conformance -- --full` rewrites `research/conformance/findings/`; bare `npm run conformance` is a sample, and `--help` says what the full walk costs.
 
 ## Prose budget
 

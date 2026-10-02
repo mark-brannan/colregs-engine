@@ -2,25 +2,12 @@
 // ladder step 1-3, issue #1 Phase 0). One streaming pass over the
 // partitioned fact space -- see enumerate.ts for how it's built, walk.ts
 // for the per-record checks -- split across processes, then reduced.
-//
-//   npm run conformance                       whole space, one process per core
-//   npm run conformance -- --jobs=4           whole space, four processes
-//   npm run conformance -- --sample=N         first N records per jurisdiction,
-//                                             in-process; register untouched
-//   npm run conformance -- --shard=i/N --out=f.json
-//                                             walk shard i of N (across --jobs
-//                                             child processes) and write the
-//                                             tally to f; no register
-//   npm run conformance -- --merge a.json b.json ...
-//                                             reduce shard tallies: coverage,
-//                                             traceability, fixtures, register
-//
-// CI runs the last two: a matrix of --shard jobs, then one --merge. The
-// default local run is the same pipeline in one command.
+// `USAGE` below is the CLI's one description, and the one home of what a
+// local --full walk costs; `--help` prints it.
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync, mkdtempSync } from 'node:fs';
 import { spawn } from 'node:child_process';
-import { availableParallelism, tmpdir } from 'node:os';
+import { availableParallelism, setPriority, tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -78,7 +65,30 @@ function triageFor(f: Pick<FindingGroup, 'check' | 'groupKey'>): { status: Triag
 // ---------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------
+const USAGE = `usage: npm run conformance -- [options]
+
+  (none)               same as --sample=100000: ~30 s on one core
+  --sample=N           the first N records per jurisdiction, in-process;
+                       findings printed, register untouched
+  --full               the whole fact space, then coverage and the
+                       findings register
+                       cost: ~759M records, ~46 min on 16 cores
+  --jobs=N             worker processes for --full (default: half the
+                       cores, at nice 10) or --shard (default: every core)
+  --shard=i/N --out=f  walk shard i of N into tally f; no register
+  --merge f ...        reduce shard tallies: coverage, traceability,
+                       fixture replay, register
+  --help               this text
+
+CI runs --sample on a pull request and a --shard matrix then one --merge
+weekly.`;
+
 const args = process.argv.slice(2);
+
+if (args.includes('--help') || args.includes('-h')) {
+  console.log(USAGE);
+  process.exit(0);
+}
 
 function flag(name: string): string | undefined {
   const i = args.findIndex((a) => a === `--${name}` || a.startsWith(`--${name}=`));
@@ -86,13 +96,17 @@ function flag(name: string): string | undefined {
   return args[i].includes('=') ? args[i].split('=').slice(1).join('=') : args[i + 1];
 }
 
-const sampleArg = flag('sample');
-const sampleSize = sampleArg === undefined ? undefined : Number(sampleArg);
+const full = args.includes('--full');
 const shardArg = flag('shard');
 const outArg = flag('out');
 const jobsArg = flag('jobs');
 const mergeIdx = args.indexOf('--merge');
 const mergeFiles = mergeIdx >= 0 ? args.slice(mergeIdx + 1).filter((a) => !a.startsWith('--')) : undefined;
+const DEFAULT_SAMPLE = 100_000;
+const sampleArg = flag('sample');
+// Anything short of an explicit --full, --shard or --merge is a sample.
+const sampleSize =
+  sampleArg !== undefined ? Number(sampleArg) : full || shardArg !== undefined || mergeFiles !== undefined ? undefined : DEFAULT_SAMPLE;
 
 function parseShard(s: string | undefined): Shard {
   if (s === undefined) return { index: 0, of: 1 };
@@ -101,11 +115,21 @@ function parseShard(s: string | undefined): Shard {
   return { index: Number(m[1]), of: Number(m[2]) };
 }
 const shard = parseShard(shardArg);
-const jobs = jobsArg !== undefined ? Number(jobsArg) : sampleSize !== undefined ? 1 : availableParallelism();
+const jobs =
+  jobsArg !== undefined
+    ? Number(jobsArg)
+    : full
+      ? Math.max(1, Math.floor(availableParallelism() / 2))
+      : shardArg !== undefined
+        ? availableParallelism()
+        : 1;
 if (!Number.isInteger(jobs) || jobs < 1) throw new Error(`--jobs wants a positive integer, got '${jobsArg}'`);
+if (full && (sampleArg !== undefined || shardArg !== undefined || mergeFiles !== undefined)) {
+  throw new Error('--full walks the whole space; drop --sample, --shard and --merge');
+}
 if (shardArg !== undefined && outArg === undefined) throw new Error('--shard needs --out=<tally.json>');
 // A sample walks the first N records in order, which only one process can do.
-if (sampleSize !== undefined && jobs > 1) throw new Error('--sample runs in-process; drop --jobs or set it to 1');
+if (sampleSize !== undefined && jobs > 1) throw new Error('--sample runs in-process; --jobs is for --full or --shard');
 
 // ---------------------------------------------------------------------
 // Axis table / enumeration
@@ -141,6 +165,8 @@ function walkInChild(sub: Shard, out: string): Promise<Tally> {
       [...process.execArgv, SELF, `--shard=${sub.index}/${sub.of}`, `--out=${out}`, '--jobs=1'],
       { stdio: ['ignore', 'ignore', 'inherit'] },
     );
+    // --full shares the machine; a CI leg has it to itself.
+    if (full && child.pid !== undefined) setPriority(child.pid, 10);
     child.on('error', reject);
     child.on('exit', (code) => {
       // A shard exits 1 on a conformance mismatch but still writes its
@@ -314,8 +340,8 @@ Every column but the last two is regenerated by the run. **status** and
 sidecar keyed by \`check::groupKey\` (not by \`FIND-nn\`, which is just a
 position in sorted order and shifts as findings appear or disappear) --
 climb a finding up the ladder by editing that file and rerunning
-\`npm run conformance\`, not by hand-editing this table, which the next run
-overwrites.
+\`npm run conformance -- --full\`, not by hand-editing this table, which the
+next run overwrites.
 
 | id | check | records | description | cites | status | triage note |
 |---|---|---|---|---|---|---|
@@ -389,7 +415,7 @@ function reduce(t: Tally) {
   const stale = writeRegister(findings);
   if (stale) {
     console.error(
-      '\nfindings register was stale relative to this run: run `npm run conformance` and commit research/conformance/findings/.',
+      '\nfindings register was stale relative to this run: run `npm run conformance -- --full` and commit research/conformance/findings/.',
     );
   }
   console.log(`\n${findings.length} distinct findings written to research/conformance/findings/`);

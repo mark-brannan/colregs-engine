@@ -1,8 +1,10 @@
 # Exhaustive conformance harness
 
 ```
-npm run conformance                      # the whole fact space, one process per core
-npm run conformance -- --sample=200000   # the first N records per jurisdiction, seconds
+npm run conformance                   # a sample: the first 100k records per jurisdiction
+npm run conformance -- --sample=N      # the first N records per jurisdiction
+npm run conformance -- --full          # the whole fact space, then the register
+npm run conformance -- --help          # every option, and what --full costs
 ```
 
 Step 1 of the [verification ladder](https://github.com/mark-brannan/colregs-engine/issues/6), Phase 0 of [the programme](https://github.com/mark-brannan/colregs-engine/issues/1).
@@ -74,7 +76,7 @@ addressable by its index and the pass holds one record at a time. That index
 is the shard key: `--shard=i/N --out=t.json` walks base records congruent to
 `i` mod `N` into a JSON tally; `--merge *.json` reduces tallies and does what
 only the whole space justifies — coverage, the register. CI runs a shard
-matrix then one merge; the local default spawns one shard per core. Shards
+matrix then one merge; `--full` runs the same pipeline locally on half the cores. Shards
 compose (`--shard=1/4 --jobs=4` is 1, 5, 9, 13 of 16), and each finding keeps
 its witness's ordinal, so the merged register equals a single pass, byte for byte.
 
@@ -154,7 +156,7 @@ showing the same conflict are one row and not 114,048. Each row has a
 as a sentence of prose, so triage doesn't start with decoding axis keys.
 
 The register is checked in, and CI fails if a run would rewrite it — the
-message tells you to run `npm run conformance` and commit the result. Data
+message tells you to run `npm run conformance -- --full` and commit the result. Data
 findings themselves never fail the build; only a conformance mismatch or a
 stale register does.
 
@@ -179,7 +181,7 @@ sidecar keyed by `check::groupKey` rather than `FIND-nn` — the same
 derived/hand-maintained split [#15](https://github.com/mark-brannan/colregs-engine/pull/15)
 used for `AXIS_FACTS`/`REFINEMENTS`, for the same reason: a run owns what it
 can regenerate and nothing else. To climb a finding up the ladder, edit
-`triage.json` and rerun `npm run conformance` — hand-editing the register or
+`triage.json` and rerun `npm run conformance -- --full` — hand-editing the register or
 a `FIND-nn.json` directly is pointless, the next run overwrites it. On a full
 run, a stale ruling (its key no longer matches any finding) prints a warning
 instead of being silently dropped; a `--sample` run skips that check, since a
