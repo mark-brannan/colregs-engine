@@ -34,7 +34,7 @@
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build",
     "prepare": "npm run build",
-    "conformance": "tsx research/conformance/run.ts",
+    "conformance": "tsx research/conformance/guards.ts && tsx research/conformance/run.ts",
     "generate": "tsx scripts/generate-schema-types.ts && tsx scripts/generate-fact-record.ts && tsx scripts/generate-operations-interface.ts",
     "generate:check": "npm run generate && git add --intent-to-add -- src/generated && git diff --exit-code -- src/generated",
     "z3": "tsx research/z3/run.ts"

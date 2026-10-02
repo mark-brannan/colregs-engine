@@ -39,6 +39,7 @@ import { referenceAppliedEntries } from './reference.js';
 import { unresolvedCite } from './traceability.js';
 import { describeVessel } from './prose.js';
 import { allocateIds, parseIdMap, serializeIdMap, type Finding, type IdMap } from './ids.js';
+import { committedFixtureCount, implausibleWalk } from './guards.js';
 import {
   byId,
   displayEntries,
@@ -392,6 +393,11 @@ function reduce(t: Tally) {
   traceabilityFindings(t);
   replayFixtures();
   const { findings, map } = sortAndNumber(t);
+  const implausible = implausibleWalk(t.n, findings.length, committedFixtureCount(FINDINGS_DIR));
+  if (implausible) {
+    console.error(`\nCONFORMANCE ABORTED: ${implausible}; research/conformance/findings/ left untouched.`);
+    process.exit(1);
+  }
   warnStaleTriage(findings);
   const stale = writeRegister(findings, map);
   if (stale) {
