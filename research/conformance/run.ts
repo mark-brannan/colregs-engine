@@ -35,6 +35,7 @@ import { extractAxes, totalRecords, formatAxisTable, type Shard } from './enumer
 import { referenceAppliedEntries } from './reference.js';
 import { unresolvedCite } from './traceability.js';
 import { describeVessel } from './prose.js';
+import { committedFixtureCount, implausibleWalk } from './guards.js';
 import {
   byId,
   displayEntries,
@@ -385,6 +386,11 @@ function reduce(t: Tally) {
   traceabilityFindings(t);
   replayFixtures();
   const findings = sortAndNumber(t);
+  const implausible = implausibleWalk(t.n, findings.length, committedFixtureCount(FINDINGS_DIR));
+  if (implausible) {
+    console.error(`\nCONFORMANCE ABORTED: ${implausible}; research/conformance/findings/ left untouched.`);
+    process.exit(1);
+  }
   warnStaleTriage(findings);
   const stale = writeRegister(findings);
   if (stale) {
