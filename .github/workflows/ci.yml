@@ -139,6 +139,15 @@ jobs:
   nonempty:
     uses: mark-brannan/.github/.github/workflows/nonempty-diff.yml@main
 
+  # ADRs for the whole family live in mark-brannan/colregs. docs/adr/ here
+  # holds only the pointers left when 0001 and 0002 moved there as colregs
+  # 0011 and 0012 (#63). An ADR written here would take a number colregs has
+  # already spent, and the number is cited from commits and other ADRs before
+  # the clash is noticed. Listed in ci-gate's needs, so it needs no ruleset
+  # entry.
+  adr-elsewhere:
+    uses: mark-brannan/.github/.github/workflows/adr-elsewhere.yml@main
+
   # The single required status check, shared across repositories: the
   # `gate` job of mark-brannan/.github's reusable ci-gate workflow, which fails
   # unless every result in `needs` is green. The reported context is
@@ -148,7 +157,7 @@ jobs:
   # evaluate when a dependency failed or was skipped, so it reports an explicit
   # pass or fail of its own rather than inheriting the skip.
   ci-gate:
-    needs: [test, conformance-sample, partition-proof, prose-budget, nonempty]
+    needs: [test, conformance-sample, partition-proof, prose-budget, nonempty, adr-elsewhere]
     if: ${{ always() && github.event_name == 'pull_request' }}
     # It reads nothing and writes nothing; the results go in as an input.
     permissions: {}
