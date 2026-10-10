@@ -102,8 +102,9 @@ describe('the real fact space: no incoherent or duplicate records', () => {
       // gate), one more free boolean axis: 2x exactly.
       expect(n).toBe(189775872);
     },
-    // Part D's three new axes multiplied the walk by 8; it now takes about
-    // two minutes, where 20s covered the 11.9M-record space.
-    240_000,
+    // Part D's three new axes multiplied the walk by 8, to about two minutes,
+    // where 20s covered the 11.9M-record space; the 27(e) axis doubled it
+    // again, to 247s measured on one core. Each further free axis doubles it.
+    300_000,
   );
 });
