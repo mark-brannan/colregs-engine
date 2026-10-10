@@ -1,5 +1,5 @@
 {
-  "about": "✎ PENCIL. Hand-maintained, read by queries.ts. Each query below is what the exhaustive enumeration (research/conformance/) observed on the date given: it names the finding and what would settle it, or, once `triaged` flips to true, the ruling itself, taking no other position on the cause. If findings/triage.json becomes the one home for a finding's status, fold `triaged` and `finding` into it.",
+  "about": "✎ PENCIL. Hand-maintained, read by queries.ts. Each query below is what the exhaustive enumeration (research/conformance/) observed on the date given: it names the finding and what would settle it, or, once `triaged` is true, its class and a one-line note, taking no other position on the cause. If findings/triage.json becomes the one home for a finding's status, fold `triaged` and `finding` into it.",
   "status": "pencil",
   "marker": "✎",
   "defaults": {
@@ -34,9 +34,521 @@
     },
     "NO-OBLIGATION/not-moored": {
       "expect": "unsat",
-      "triaged": false,
+      "triaged": true,
       "observed_on": "2026-09-06",
-      "observed_by": "npm run conformance, check consistency-no-obligation, position breakdown: every zero-obligation record was position:moored"
+      "observed_by": "npm run conformance, check consistency-no-obligation, position breakdown: every zero-obligation record was position:moored",
+      "class": "holds-by-data",
+      "note": "Every record not position:moored satisfies some encoded display entry's `when`; the one empty record is the moored one (Rule 3(i), NO-OBLIGATION/any). A claim about total records only (encode.ts header, point 2)."
+    },
+    "CONFLICT/rule:25b+rule:25c": {
+      "expect": "unsat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:25b and rule:25c are both modality:may, and encode.ts defines |shall:<id>| false for any entry not modality:shall, so they cannot both resolve to shall."
+    },
+    "FIRES/rule:23a_i": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:23a_i's `when` over propulsion, activity, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:23a_ii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:23a_ii's `when` over propulsion, activity, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:23a_iii_iv": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:23a_iii_iv's `when` over propulsion, activity, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:23b": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:23b's `when` over propulsion, activity, position, non_displacement is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:23c": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:23c's `when` over propulsion, activity, position, wig, wig_near_surface is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:23d_i": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:23d_i's `when` over propulsion, activity, position, length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:23d_ii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:23d_ii's `when` over propulsion, activity, position, length_m, max_speed_kn is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:24a_i": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:24a_i's `when` over activity, tow_length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:24a_i:exceeds_200m": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:24a_i:exceeds_200m's `when` over activity, tow_length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:24a_ii_iv": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:24a_ii_iv's `when` over activity is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:24b": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:24b's `when` over activity, composite_unit is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:24c": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:24c's `when` over activity, composite_unit is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:24e": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:24e's `when` over activity is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:25a": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:25a's `when` over propulsion, activity, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:25b": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:25b's `when` over propulsion, activity, position, length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:25c": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:25c's `when` over propulsion, activity, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:25d_i": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:25d_i's `when` over propulsion, activity, position, length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:25d_ii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:25d_ii's `when` over propulsion is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:26b_i": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26b_i's `when` over activity, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:26b_ii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26b_ii's `when` over activity, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:26b_iii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26b_iii's `when` over activity, making_way is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:26c_i": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26c_i's `when` over activity, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:26c_ii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26c_ii's `when` over activity, position, gear_extent_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:26c_iii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26c_iii's `when` over activity, making_way is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27a_i": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27a_i's `when` over activity, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27a_iii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27a_iii's `when` over activity, making_way is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27b_i": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27b_i's `when` over activity is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27b_iii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27b_iii's `when` over activity, making_way is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27b_iv": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27b_iv's `when` over activity, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27d": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27d's `when` over activity, obstruction_exists is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27e_i": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27e_i's `when` over activity is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27f": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27f's `when` over activity is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:28": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:28's `when` over activity, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:29a": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:29a's `when` over activity is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:30a": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:30a's `when` over position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:30b": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:30b's `when` over position, length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:30c": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:30c's `when` over position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:30d": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:30d's `when` over position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:30d_i": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:30d_i's `when` over position, length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:30e": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:30e's `when` over position, length_m, near_channel is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:30a:mooring_buoy": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "harness-false-positive",
+      "note": "Z3's model satisfies rule:30a:mooring_buoy's `when`, but engine and reference both leave it out of the applied set (it holds rule:25d_ii and rule:29a instead). encode.ts translates each `when` alone, so the sat is unconfirmed."
+    },
+    "FIRES/rule:30b:mooring_buoy": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "harness-false-positive",
+      "note": "Z3's model satisfies rule:30b:mooring_buoy's `when`, but engine and reference both leave it out of the applied set (it holds rule:25d_ii and rule:29a instead). encode.ts translates each `when` alone, so the sat is unconfirmed."
+    },
+    "FIRES/rule:23d": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "harness-false-positive",
+      "note": "Z3's model satisfies rule:23d's `when`, but engine and reference both leave it out of the applied set (it holds rule:23d_i and rule:23d_ii instead). encode.ts translates each `when` alone, so the sat is unconfirmed."
+    },
+    "FIRES/rule:24c:towing_lights": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "harness-false-positive",
+      "note": "Z3's model satisfies rule:24c:towing_lights's `when`, but engine and reference both leave it out of the applied set (it holds rule:24c instead). encode.ts translates each `when` alone, so the sat is unconfirmed."
+    },
+    "FIRES/rule:24c:underway_lights": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "harness-false-positive",
+      "note": "Z3's model satisfies rule:24c:underway_lights's `when`, but engine and reference both leave it out of the applied set (it holds rule:24c instead). encode.ts translates each `when` alone, so the sat is unconfirmed."
+    },
+    "FIRES/rule:24a_v": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:24a_v's `when` over activity, tow_length_m, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:24e:exceeds_200m": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:24e:exceeds_200m's `when` over activity, tow_length_m, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:25e": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:25e's `when` over propulsion, position, motorsailing, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:26b_i:two_cones": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26b_i:two_cones's `when` over activity, position, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:26c_i:two_cones": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26c_i:two_cones's `when` over activity, position, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:26c_ii:cone": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26c_ii:cone's `when` over activity, position, gear_extent_m, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27a_ii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27a_ii's `when` over activity, position, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27b_ii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27b_ii's `when` over activity, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27d:shapes": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27d:shapes's `when` over activity, obstruction_exists, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27e_ii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27e_ii's `when` over activity, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27f:three_balls": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27f:three_balls's `when` over activity, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:28:cylinder": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:28:cylinder's `when` over activity, position, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:30a:ball": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:30a:ball's `when` over position, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:30d_ii": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:30d_ii's `when` over position, length_m, time is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:27g": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:27g's `when` over activity, length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35a": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35a's `when` over visibility, propulsion, position, making_way is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35b": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35b's `when` over visibility, propulsion, position, making_way is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35c": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35c's `when` over visibility, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35d": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35d's `when` over visibility, position, activity is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35e": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35e's `when` over visibility, activity, manned is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35f": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35f's `when` over visibility, composite_unit, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35g": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35g's `when` over visibility, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35g:gong": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35g:gong's `when` over visibility, position, length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35g:warning": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35g:warning's `when` over visibility, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35h": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35h's `when` over visibility, position is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35h:gong": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35h:gong's `when` over visibility, position, length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35i": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35i's `when` over visibility, position, length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35j": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35j's `when` over visibility, length_m is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:35k": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:35k's `when` over visibility, activity is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "FIRES/rule:34e": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:34e's `when` over nearing_obscured_bend is satisfiable; Z3's witness is accepted by engine and reference."
+    },
+    "UNRESOLVED/rule:23a_ii": {
+      "expect": "unsat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:23a_ii's modality_by branches (length_m >= 50 | length_m < 50) cover every real value of the axis they read, so an applied record always resolves. Holds for total records only (encode.ts header, point 2)."
+    },
+    "BRANCH/rule:23a_ii:0": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:23a_ii's modality_by[0] (length_m >= 50 -> modality:shall) is reachable as the first match; Z3's witness is accepted by engine and reference."
+    },
+    "BRANCH/rule:23a_ii:1": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:23a_ii's modality_by[1] (length_m < 50 -> modality:may) is reachable as the first match; Z3's witness is accepted by engine and reference."
+    },
+    "UNRESOLVED/rule:26b_ii": {
+      "expect": "unsat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26b_ii's modality_by branches (length_m >= 50 | length_m < 50) cover every real value of the axis they read, so an applied record always resolves. Holds for total records only (encode.ts header, point 2)."
+    },
+    "BRANCH/rule:26b_ii:0": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26b_ii's modality_by[0] (length_m >= 50 -> modality:shall) is reachable as the first match; Z3's witness is accepted by engine and reference."
+    },
+    "BRANCH/rule:26b_ii:1": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:26b_ii's modality_by[1] (length_m < 50 -> modality:may) is reachable as the first match; Z3's witness is accepted by engine and reference."
+    },
+    "UNRESOLVED/rule:30c": {
+      "expect": "unsat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:30c's modality_by branches (length_m >= 100 | length_m < 100) cover every real value of the axis they read, so an applied record always resolves. Holds for total records only (encode.ts header, point 2)."
+    },
+    "BRANCH/rule:30c:0": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:30c's modality_by[0] (length_m >= 100 -> modality:shall) is reachable as the first match; Z3's witness is accepted by engine and reference."
+    },
+    "BRANCH/rule:30c:1": {
+      "expect": "sat",
+      "triaged": true,
+      "class": "holds-by-data",
+      "note": "rule:30c's modality_by[1] (length_m < 100 -> modality:may) is reachable as the first match; Z3's witness is accepted by engine and reference."
     }
   }
 }
