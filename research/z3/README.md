@@ -7,7 +7,7 @@ item T1 of the
 on a model the evaluators reject.
 
 ```
-npm run z3                 # 87 queries, under a second
+npm run z3                 # 87 queries, about a second
 npm run z3 -- --verbose    # plus the decoded witness for every sat
 ```
 
@@ -26,8 +26,9 @@ entry `|applies:<id>|`, `|shall:<id>|`, and for a conditional entry one
 `queries.ts` states the P0.3 properties as queries over those definitions.
 
 Only the 75 one-vessel `category: display` entries are encoded, the scope
-`src/evaluate.ts` and `research/conformance/` already work in. The 40 that read
-self:/other:/pair:-scoped keys are counted and named by the run, not solved. The header of `encode.ts` lists the choices that change what an
+`src/evaluate.ts` and `research/conformance/` already work in. The 40 that
+read self:/other:/pair:-scoped keys are counted and named by the run, not
+solved. The header of `encode.ts` lists the choices that change what an
 answer means: Real axes rather than the enumeration's grid, total records,
 and the engine's own dispatch order.
 
