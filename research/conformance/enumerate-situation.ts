@@ -5,8 +5,9 @@
 // Situation per point of the partition.
 //
 // Which axes exist and what each takes comes from the generated specs
-// (FACT_SPEC plus KIN/HIST/GEO_OWN/GEO_PAIR/ENV_SPEC), so a yielded situation
-// is one validateSituation() accepts. Three things differ from Part A:
+// (FACT_SPEC plus KIN/HIST/GEO_OWN/ACT/GEO_PAIR/ENV_SPEC), so a yielded
+// situation is one validateSituation() accepts. Three things differ from
+// Part A:
 //
 //   - `fact:rule18_class` is derived, not supplied. It is an axis over the
 //     decode table's values plus absent, each realised by a witness record
@@ -23,6 +24,7 @@
 
 import { FACT_SPEC, type FactRecord } from '../../src/generated/fact-record.js';
 import {
+  ACT_SPEC,
   ENV_SPEC,
   GEO_OWN_SPEC,
   GEO_PAIR_SPEC,
@@ -44,6 +46,7 @@ import {
   ENCOUNTER_CATEGORIES,
   RULE18_CLASS_VALUES,
   decodeRowsFor,
+  isSignalEntry,
   referenceRule18Class,
 } from './reference-encounter.js';
 
@@ -104,6 +107,7 @@ function specFor(key: string): Spec | undefined {
           kin: KIN_SPEC as unknown as Record<string, Spec>,
           geo: GEO_OWN_SPEC as unknown as Record<string, Spec>,
           hist: HIST_SPEC as unknown as Record<string, Spec>,
+          act: ACT_SPEC as unknown as Record<string, Spec>,
         };
   const forClass = table[cls];
   if (forClass === undefined) {
@@ -121,6 +125,7 @@ const AXIS_ORDER: readonly string[] = [
   'pair:geo:risk_of_collision',
   'pair:env:narrow_channel',
   'pair:env:traffic_lane',
+  'fact:visibility',
   'fact:propulsion',
   'fact:rule18_class',
   'fact:position',
@@ -196,17 +201,19 @@ function walkStrings(c: unknown, visit: (s: string) => void): void {
 }
 
 /** The entries this partition is for: the three categories the encounter
- * verb reads, not every non-display entry. `category:conduct` reads a trace
- * and `category:departure` a solver, and an axis only they name would widen
- * the space without any encounter entry ever reading it.
+ * verb reads, plus its Part D signal entries, not every non-display entry.
+ * `category:conduct` reads a trace and `category:departure` a solver, and an
+ * axis only they name would widen the space without any encounter entry
+ * ever reading it.
  *
- * Part D signal entries (Rule 34) are deliberately excluded too, despite
- * the encounter verb now reading them (src/encounter.ts's `isSignal`):
- * they gate on `self:act:`/`other:act:` keys this extractor has no spec
- * for, and widening the match here throws (`no class 'act' under subject
- * 'self'`) the moment an entry's `when` names one. Tracked as #143. */
+ * A signal entry is a display entry carrying a `signal`. Rule 34's signals
+ * gate on `self:act:` keys, whose spec is ACT_SPEC; Rule 35's gate on facts
+ * alone. */
 function readsSituation(e: Entry): boolean {
-  return ENCOUNTER_CATEGORIES.includes((e.category ?? 'category:display') as RuleCategory);
+  return (
+    ENCOUNTER_CATEGORIES.includes((e.category ?? 'category:display') as RuleCategory) ||
+    isSignalEntry(e)
+  );
 }
 
 // ---------------------------------------------------------------------
@@ -545,6 +552,7 @@ export function buildSituation(
       ...(classOf[`${slot}:kin`] ? { kin: classOf[`${slot}:kin`] } : {}),
       ...(classOf[`${slot}:geo`] ? { geo: classOf[`${slot}:geo`] } : {}),
       ...(classOf[`${slot}:hist`] ? { hist: classOf[`${slot}:hist`] } : {}),
+      ...(classOf[`${slot}:act`] ? { act: classOf[`${slot}:act`] } : {}),
     } as Subject;
   }
 

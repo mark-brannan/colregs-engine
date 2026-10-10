@@ -9,6 +9,7 @@ import applicabilityJson from 'colregs/data/applicability.json';
 import type { ApplicabilityData, Entry, Predicate, RuleCategory } from '../src/types';
 import { validateSituation } from '../src/facts';
 import { rule18Class } from '../src/situation';
+import { ACT_SPEC } from '../src/generated/situation';
 import {
   countSituations,
   enumerateSituations,
@@ -17,9 +18,12 @@ import {
   situationUpperBound,
   type SituationAxis,
 } from '../research/conformance/enumerate-situation';
+import { ENUM_REFINEMENTS } from '../research/conformance/reference';
 import {
   ENCOUNTER_CATEGORIES,
   RULE18_CLASS_VALUES,
+  referenceEncounterApplied,
+  referenceFlatten,
   referenceRule18Class,
 } from '../research/conformance/reference-encounter';
 
@@ -29,19 +33,25 @@ const axisByKey = new Map(axes.map((a) => [a.key, a]));
 
 /** What the entries the encounter verb reads ask for, walked here a second
  * time so the assertions below are against the data and not against the
- * extractor. */
+ * extractor. A bare key reads self. */
 function walk(when: Predicate, visit: (key: string, constraint: unknown) => void): void {
   for (const [key, constraint] of Object.entries(when)) {
     if (key === 'any_of') {
       for (const sub of (constraint as unknown as Predicate[]) ?? []) walk(sub, visit);
       continue;
     }
-    visit(key, constraint);
+    visit(/^(self|other|pair):/.test(key) ? key : `self:${key}`, constraint);
   }
 }
 
-const twoSubject: Entry[] = data.entries.filter((e) =>
-  ENCOUNTER_CATEGORIES.includes((e.category ?? 'category:display') as RuleCategory),
+const categoryOf = (e: Entry): RuleCategory => (e.category ?? 'category:display') as RuleCategory;
+
+/** A Part D signal: a display entry that emits a `signal` sequence. The
+ * encounter verb reads these and no other display entry. */
+const isSignal = (e: Entry): boolean => categoryOf(e) === 'category:display' && e.signal !== undefined;
+
+const twoSubject: Entry[] = data.entries.filter(
+  (e) => ENCOUNTER_CATEGORIES.includes(categoryOf(e)) || isSignal(e),
 );
 
 const readKeys = new Set<string>();
@@ -93,14 +103,29 @@ describe('the situation axis table', () => {
   it('reads no category the encounter verb does not', () => {
     // A `conduct` or `departure` entry reads a trace or a solver, not a
     // situation; an axis only one of those names would widen the partition
-    // without any encounter entry ever reading it.
-    const categories = new Set(twoSubject.map((e) => e.category));
-    for (const category of categories) {
-      expect(ENCOUNTER_CATEGORIES).toContain(category);
+    // without any encounter entry ever reading it. A display entry is read
+    // only where it carries a signal.
+    for (const e of twoSubject) {
+      expect(ENCOUNTER_CATEGORIES.includes(categoryOf(e)) || isSignal(e), e.id).toBe(true);
     }
-    expect(twoSubject.length).toBe(
-      data.entries.filter((e) => ENCOUNTER_CATEGORIES.includes(e.category as RuleCategory)).length,
-    );
+    const unread = data.entries.filter((e) => !twoSubject.includes(e));
+    expect(unread.some((e) => categoryOf(e) === 'category:display')).toBe(true);
+    for (const e of unread) {
+      expect(ENCOUNTER_CATEGORIES, e.id).not.toContain(categoryOf(e));
+      expect(isSignal(e), e.id).toBe(false);
+    }
+  });
+
+  it('reads the keys of a light or a shape only where a signal also names them', () => {
+    const readByUnread = new Set<string>();
+    for (const e of data.entries.filter((e) => !twoSubject.includes(e))) {
+      for (const when of [e.when, ...(e.modality_by ?? []).map((b) => b.when)]) {
+        walk(when, (key) => readByUnread.add(key));
+      }
+    }
+    const onlyUnread = [...readByUnread].filter((k) => !readKeys.has(k));
+    expect(onlyUnread.length).toBeGreaterThan(0);
+    for (const key of onlyUnread) expect(axisByKey.has(key), key).toBe(false);
   });
 
   it('names no enum value the generated specs do not declare', () => {
@@ -132,8 +157,48 @@ describe('the situation axis table', () => {
       const unprefixed = axis.key.slice(axis.key.indexOf(':') + 1);
       const named = [...(namedValues.get(unprefixed) ?? [])];
       for (const value of named) expect(axis.values).toContain(value);
+      // An axis with a refined value keeps its whole declared range.
+      if (axis.values.some((v) => typeof v === 'string' && v in ENUM_REFINEMENTS)) continue;
       expect(axis.values.length).toBeLessThanOrEqual(named.length + 1);
     }
+  });
+
+  it('has an axis for each act key a signal entry gates on, with the spec its values', () => {
+    const acts = axes.filter((a) => a.key.split(':')[1] === 'act');
+    expect(acts.length).toBeGreaterThan(0);
+    const gated = new Set(
+      [...readKeys].filter((k) => k.split(':')[1] === 'act').map((k) => k.slice(k.indexOf(':') + 1)),
+    );
+    expect([...gated].sort()).toEqual(Object.keys(ACT_SPEC).sort());
+    for (const axis of acts) {
+      const spec = ACT_SPEC[axis.key.slice(axis.key.indexOf(':') + 1) as keyof typeof ACT_SPEC];
+      expect(spec, axis.key).toBeDefined();
+      if (spec.kind === 'enum') {
+        expect(axis.kind).toBe('enum');
+        expect([...axis.values].sort()).toEqual([...spec.values].sort());
+      } else {
+        expect(axis.kind).toBe('boolean');
+        expect(axis.values).toEqual([true, false]);
+      }
+      expect(axis.prunable).toBe(true);
+    }
+  });
+
+  it('reads an act key under either subject', () => {
+    const signal = data.entries.find((e) => e.id === 'rule:34d')!;
+    const entry: Entry = {
+      ...signal,
+      when: { 'pair:geo:in_sight': true, 'other:act:doubt': true } as Predicate,
+    };
+    const { axes: swapped } = extractSituationAxes({ ...data, entries: [entry] });
+    expect(swapped.map((a) => a.key).sort()).toEqual(['other:act:doubt', 'pair:geo:in_sight']);
+    expect(swapped.find((a) => a.key === 'other:act:doubt')?.kind).toBe('boolean');
+  });
+
+  it('refuses an act key on the pair', () => {
+    const signal = data.entries.find((e) => e.id === 'rule:34d')!;
+    const entry: Entry = { ...signal, when: { 'pair:act:doubt': true } as unknown as Predicate };
+    expect(() => extractSituationAxes({ ...data, entries: [entry] })).toThrow(/no class 'act'/);
   });
 
   it('makes the derived Rule 18 class an axis over the decode table plus absent', () => {
@@ -190,12 +255,14 @@ describe('the rank witness', () => {
 
 /** The full partition is far too large for a test; these narrow every axis to
  * its first two representatives, which keeps the shape and the pinning
- * behaviour and loses only the breadth. */
-const narrowed: SituationAxis[] = axes.map((a) => ({
-  ...a,
-  values: a.values.slice(0, 2),
-  pinned: a.values[0],
-}));
+ * behaviour and loses only the breadth. Activity is the exception: the first
+ * two Rule 18 ranks are the ones that activity alone decides, so a vessel of
+ * either rank exists only under the activity that decodes to it. */
+const narrowed: SituationAxis[] = axes.map((a) =>
+  a.key.endsWith(':fact:activity')
+    ? a
+    : { ...a, values: a.values.slice(0, 2), pinned: a.values[0] },
+);
 
 describe('the enumeration', () => {
   it('yields situations the engine door accepts', () => {
@@ -205,6 +272,44 @@ describe('the enumeration', () => {
       if (++n >= 2000) break;
     }
     expect(n).toBe(2000);
+  });
+
+  it('yields situations that state the acts a signal entry gates on', () => {
+    let withActs = 0;
+    let n = 0;
+    for (const situation of enumerateSituations(data, narrowed)) {
+      expect(() => validateSituation(situation)).not.toThrow();
+      const act = situation.self.act;
+      if (act !== undefined) {
+        expect(Object.keys(act).sort()).toEqual(Object.keys(ACT_SPEC).sort());
+        withActs++;
+      }
+      if (++n >= 2000) break;
+    }
+    expect(withActs).toBe(n);
+  });
+
+  it('reaches every Rule 34 signal entry', () => {
+    // The act axes with just the gates the Rule 34 entries name, so the
+    // walk is small enough to run whole.
+    const keep = new Set([
+      'pair:geo:in_sight',
+      'pair:env:narrow_channel',
+      'self:fact:propulsion',
+      'self:fact:position',
+      'self:fact:nearing_obscured_bend',
+    ]);
+    const subset = axes.filter((a) => keep.has(a.key) || a.key.split(':')[1] === 'act');
+    expect(subset.length).toBe(keep.size + Object.keys(ACT_SPEC).length);
+
+    const rule34 = data.entries.filter((e) => isSignal(e) && /^rule:34/.test(e.id)).map((e) => e.id);
+    expect(rule34.length).toBeGreaterThan(0);
+    const fired = new Set<string>();
+    for (const situation of enumerateSituations(data, subset)) {
+      expect(() => validateSituation(situation)).not.toThrow();
+      for (const id of referenceEncounterApplied(data, referenceFlatten(situation))) fired.add(id);
+    }
+    expect(rule34.filter((id) => !fired.has(id))).toEqual([]);
   });
 
   it('gives both vessels a fact record and the pair its own facts', () => {
