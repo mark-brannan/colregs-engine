@@ -77,4 +77,34 @@ describe('round-trip conformance against colregs result schemas (ADR 0014)', () 
       expect(valid, JSON.stringify(validateEncounter.errors)).toBe(true);
     });
   }
+
+  describe('provenance.known_omissions', () => {
+    // Validation above passes whether the field is present or absent, so
+    // these pin that it is present and that the schema, not just this
+    // package's own types, constrains it.
+    const display = evaluateDisplay(displayFixtures.cases[0].facts);
+    const encounter = evaluateEncounter(situationFixtures.cases[0].situation);
+
+    it('is carried non-empty by both verbs, and the shared provenance schema accepts it', () => {
+      for (const [result, validate] of [
+        [display, validateDisplay],
+        [encounter, validateEncounter],
+      ] as const) {
+        expect(result.provenance.known_omissions.length).toBeGreaterThan(0);
+        expect(validate(result), JSON.stringify(validate.errors)).toBe(true);
+      }
+    });
+
+    it('is rejected by the schema when an entry loses a key or gains one', () => {
+      const [first, ...rest] = display.provenance.known_omissions;
+      const { why: _why, ...withoutWhy } = first;
+      for (const bad of [
+        [withoutWhy, ...rest],
+        [{ ...first, id: 'rule:2b' }, ...rest],
+      ]) {
+        const result = { ...display, provenance: { ...display.provenance, known_omissions: bad } };
+        expect(validateDisplay(result)).toBe(false);
+      }
+    });
+  });
 });

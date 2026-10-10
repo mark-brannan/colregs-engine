@@ -115,7 +115,7 @@ own vocabulary and do not move when colregs releases data.
 | --- | --- |
 | [`evaluateDisplay(facts, opts?)`](src/evaluate.ts) | every complete lawful display for one vessel, plus which entries applied and which were excluded and by whom |
 | [`DisplayEvaluation`](src/types.ts) | the result: `applied`, `excluded`, `displays`, the per-entry `categories`, the `provenance` block and the `colregs` version stamp |
-| [`EvaluationProvenance`](src/types.ts), [`RuleCategory`](src/schema.ts), [`RepresentedParagraph`](src/schema.ts) | what the evaluation read: the categories it matched, the jurisdictions it offered, and Rule 2(a)/2(b) as represented but never computed |
+| [`EvaluationProvenance`](src/types.ts), [`RuleCategory`](src/schema.ts), [`RepresentedParagraph`](src/schema.ts), [`KnownOmission`](src/schema.ts) | what the evaluation read: the categories it matched, the jurisdictions it offered, Rule 2(a)/2(b) as represented but never computed, and the circumstance classes the fact model does not carry |
 | [`DepartureStatus`](src/types.ts) | the closed status alphabet colregs' ADR 0005 §5 fixes, for `evaluateDeparture`; no field of `DisplayEvaluation` carries one |
 | [`Display`](src/types.ts), [`DisplayLight`](src/types.ts), [`DisplayShape`](src/types.ts) | one lawful display and one light or day shape in it, each citing `source_entry`, `via` and `modality` |
 | [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
