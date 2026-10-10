@@ -9,6 +9,11 @@
 
 export type RuleIds = string[];
 export type ByEntryList = ByEntry[];
+export type KnownOmissions = {
+  cite: string;
+  what: string;
+  why: string;
+}[];
 
 /**
  * The result of evaluateDisplay: every complete lawful display for one vessel, alternatives unresolved (REQ-MODEL-8), with the data it was read against (ADR 0011 §1, ADR 0014). Structure only; the $defs shared with the other envelopes live in schema/evaluation.schema.json.
@@ -18,6 +23,9 @@ export interface DisplayEvaluationSchema {
   applied: RuleIds;
   exempted: ByEntryList;
   overridden: ByEntryList;
+  /**
+   * Every complete lawful display. The order is significant: a display whose chosen entry carries the narrower gate comes before the display it stands in lieu of, the base display last (30(b) before 30(a); 23(d)(i) before 23(a)). Derived at evaluation time from `modality`, `when` and `rel:in_lieu_of`; the corpus still picks no option (REQ-MODEL-8).
+   */
   displays: Display[];
   optional_additions: Items[];
   /**
@@ -230,6 +238,7 @@ export interface Provenance {
   )[];
   jurisdictions: string[];
   represented: RepresentedParagraph[];
+  known_omissions?: KnownOmissions;
 }
 export interface RepresentedParagraph {
   id: string;

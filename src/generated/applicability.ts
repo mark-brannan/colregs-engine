@@ -53,6 +53,11 @@ export type Modality =
   | 'modality:exempt'
   | 'modality:shall-not'
   | 'modality:shall-not-impede';
+export type KnownOmissions = {
+  cite: string;
+  what: string;
+  why: string;
+}[];
 export type RepresentedCategory =
   | 'category:care'
   | 'category:meta'
@@ -169,11 +174,7 @@ export interface ApplicabilityData {
     };
     note?: string;
   }[];
-  known_omissions?: {
-    cite: string;
-    what: string;
-    why: string;
-  }[];
+  known_omissions?: KnownOmissions;
   represented_paragraphs?: {
     id: RuleId;
     jurisdiction: string;

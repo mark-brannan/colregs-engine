@@ -32,6 +32,7 @@ export const FACT_SPEC = {
   'fact:inconspicuous_partly_submerged_tow': { kind: 'boolean' },
   'fact:towed_alongside': { kind: 'boolean' },
   'fact:obstruction_exists': { kind: 'boolean' },
+  'fact:full_display_impracticable': { kind: 'boolean' },
   'fact:tow_restricts_deviation': { kind: 'boolean' },
   'fact:confined_to_channel': { kind: 'boolean' },
   'fact:following_traffic_lane': { kind: 'boolean' },

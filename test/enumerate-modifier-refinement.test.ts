@@ -68,7 +68,7 @@ describe('the real fact space: no incoherent or duplicate records', () => {
   it(
     'no record carries fact:making_way off position:underway, across the whole space',
     () => {
-      // A plain loop, one expect at the end: this walks the full ~95M-record
+      // A plain loop, one expect at the end: this walks the full ~190M-record
       // space, and a per-record `expect` there is what makes that slow.
       let n = 0;
       let incoherent = 0;
@@ -97,8 +97,10 @@ describe('the real fact space: no incoherent or duplicate records', () => {
       // fact:nearing_obscured_bend (booleans) — for 2^3 exactly. Rule 34's
       // other new keys (self:act:*, pair:geo:in_sight) are subject-scoped,
       // and extractAxes reads bare fact: keys only, so they widen the
-      // situation partition rather than this one.
-      expect(n).toBe(94887936);
+      // situation partition rather than this one. Was 94,887,936 before
+      // colregs@main added fact:full_display_impracticable (Rule 27(e)'s
+      // gate), one more free boolean axis: 2x exactly.
+      expect(n).toBe(189775872);
     },
     // Part D's three new axes multiplied the walk by 8; it now takes about
     // two minutes, where 20s covered the 11.9M-record space.

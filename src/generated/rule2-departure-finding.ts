@@ -10,6 +10,11 @@
 export type RuleIds = string[];
 export type SubjectRoles = SubjectRole[];
 export type ByEntryList = ByEntry[];
+export type KnownOmissions = {
+  cite: string;
+  what: string;
+  why: string;
+}[];
 
 /**
  * The result of evaluateRule2Departure: what a named grid found for a situation, with the rule-derived obligations unchanged beside it and the model that made the claim (ADR 0012 §4, ADR 0014). Advisories are ranked best margin first and are empty under no-robust-policy-in-model. Structure only.
@@ -107,6 +112,7 @@ export interface Provenance {
   )[];
   jurisdictions: string[];
   represented: RepresentedParagraph[];
+  known_omissions?: KnownOmissions;
 }
 export interface RepresentedParagraph {
   id: string;
