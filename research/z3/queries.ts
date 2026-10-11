@@ -95,9 +95,7 @@ export function buildQueries(data: ApplicabilityData, expectations: Expectations
     if (recorded) return { expect: recorded.expect, recorded };
     const fallback = expectations.defaults[property];
     if (fallback !== 'sat' && fallback !== 'unsat') {
-      throw new Error(
-        `expectations.json has no default for property "${property}" (query ${id})`,
-      );
+      throw new Error(`expectations.json has no default for property "${property}" (query ${id})`);
     }
     return { expect: fallback };
   };

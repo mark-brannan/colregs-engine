@@ -44,9 +44,7 @@ describe('validateSituation', () => {
         kin: { 'kin:dynamics': 'yacht' } as never,
       },
     };
-    expect(() => validateSituation(situation)).toThrow(
-      /did you mean 'dynamics:yacht'\?/,
-    );
+    expect(() => validateSituation(situation)).toThrow(/did you mean 'dynamics:yacht'\?/);
   });
 
   it('hist:latched_at_s accepts null', () => {
@@ -73,9 +71,7 @@ describe('validateSituation', () => {
       self: { fact: { ...baseFacts } },
       other: { fact: { ...baseFacts }, geo: { rel_bearing_deg: 10 } },
     } as unknown as Situation;
-    expect(() => validateSituation(situation)).toThrow(
-      /unknown geo key 'rel_bearing_deg'/,
-    );
+    expect(() => validateSituation(situation)).toThrow(/unknown geo key 'rel_bearing_deg'/);
   });
 
   it('an unknown pair.env key throws', () => {
@@ -127,9 +123,7 @@ describe('validateSituation', () => {
       self: { fact: { ...baseFacts } },
       pair: { geo: null },
     } as unknown as Situation;
-    expect(() => validateSituation(situation)).toThrow(
-      /Geo record must be an object, got null/,
-    );
+    expect(() => validateSituation(situation)).toThrow(/Geo record must be an object, got null/);
   });
 
   it('an array kin container is rejected, not iterated as if it were a record', () => {

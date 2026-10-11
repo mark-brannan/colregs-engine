@@ -165,9 +165,7 @@ describe('ADR 0010 (engine half): nothing in colregs-engine reads rule text', ()
       const idOf = (e: SituationFixtureCase['expect'][number]) =>
         typeof e === 'string' ? e : e.entry;
       for (const c of bindingCases) {
-        expect([...appliedEncounterEntries(c.situation)].sort()).toEqual(
-          c.expect.map(idOf).sort(),
-        );
+        expect([...appliedEncounterEntries(c.situation)].sort()).toEqual(c.expect.map(idOf).sort());
       }
     } finally {
       unpoison();

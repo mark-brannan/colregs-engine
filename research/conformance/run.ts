@@ -8,7 +8,16 @@
 // findings/ids.json is machine-written by this file and committed; nothing
 // hand-edits it. See ids.ts for the allocation rules.
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync, mkdtempSync, renameSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  existsSync,
+  readdirSync,
+  rmSync,
+  mkdtempSync,
+  renameSync,
+} from 'node:fs';
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
@@ -23,7 +32,14 @@ import triageJson from './findings/triage.json' with { type: 'json' };
 
 import type { ApplicabilityData, FactRecord, RulesData } from '../../src/types.js';
 
-import { extractAxes, totalRecords, formatAxisTable, shardCoverage, subShard, type Shard } from './enumerate.js';
+import {
+  extractAxes,
+  totalRecords,
+  formatAxisTable,
+  shardCoverage,
+  subShard,
+  type Shard,
+} from './enumerate.js';
 import { referenceAppliedEntries } from './reference.js';
 import { unresolvedCite } from './traceability.js';
 import { describeVessel } from './prose.js';
@@ -65,7 +81,10 @@ interface TriageEntry {
 }
 const TRIAGE = triageJson as unknown as Record<string, TriageEntry>;
 
-function triageFor(f: Pick<FindingGroup, 'check' | 'groupKey'>): { status: TriageStatus; note: string } {
+function triageFor(f: Pick<FindingGroup, 'check' | 'groupKey'>): {
+  status: TriageStatus;
+  note: string;
+} {
   const entry = TRIAGE[findingKey(f)];
   return { status: entry?.status ?? 'candidate', note: entry?.note ?? '' };
 }
@@ -115,12 +134,17 @@ const shardArg = flag('shard');
 const outArg = flag('out');
 const jobsArg = flag('jobs');
 const mergeIdx = args.indexOf('--merge');
-const mergeFiles = mergeIdx >= 0 ? args.slice(mergeIdx + 1).filter((a) => !a.startsWith('--')) : undefined;
+const mergeFiles =
+  mergeIdx >= 0 ? args.slice(mergeIdx + 1).filter((a) => !a.startsWith('--')) : undefined;
 const DEFAULT_SAMPLE = 100_000;
 const sampleArg = flag('sample');
 // Anything short of an explicit --full, --shard or --merge is a sample.
 const sampleSize =
-  sampleArg !== undefined ? Number(sampleArg) : full || shardArg !== undefined || mergeFiles !== undefined ? undefined : DEFAULT_SAMPLE;
+  sampleArg !== undefined
+    ? Number(sampleArg)
+    : full || shardArg !== undefined || mergeFiles !== undefined
+      ? undefined
+      : DEFAULT_SAMPLE;
 
 function parseShard(s: string | undefined): Shard {
   if (s === undefined) return { index: 0, of: 1 };
@@ -137,22 +161,30 @@ const jobs =
       : shardArg !== undefined
         ? availableParallelism()
         : 1;
-if (!Number.isInteger(jobs) || jobs < 1) throw new Error(`--jobs wants a positive integer, got '${jobsArg}'`);
+if (!Number.isInteger(jobs) || jobs < 1)
+  throw new Error(`--jobs wants a positive integer, got '${jobsArg}'`);
 // --full walks the space in PIECES parts; with --shard=i/N, only the N-th
 // of them congruent to i, so N must divide PIECES.
 const PIECES = 1024;
-if (full && (sampleArg !== undefined || mergeFiles !== undefined)) throw new Error('--full: drop --sample and --merge');
-if (full && PIECES % shard.of !== 0) throw new Error(`--full --shard=i/N needs N to divide ${PIECES}`);
-if (!full && shardArg !== undefined && outArg === undefined) throw new Error('--shard needs --out=<tally.json>');
+if (full && (sampleArg !== undefined || mergeFiles !== undefined))
+  throw new Error('--full: drop --sample and --merge');
+if (full && PIECES % shard.of !== 0)
+  throw new Error(`--full --shard=i/N needs N to divide ${PIECES}`);
+if (!full && shardArg !== undefined && outArg === undefined)
+  throw new Error('--shard needs --out=<tally.json>');
 // A sample walks the first N records in order, which only one process can do.
-if (sampleSize !== undefined && jobs > 1) throw new Error('--sample runs in-process; --jobs is for --full or --shard');
+if (sampleSize !== undefined && jobs > 1)
+  throw new Error('--sample runs in-process; --jobs is for --full or --shard');
 
 // ---------------------------------------------------------------------
 // Axis table / enumeration
 // ---------------------------------------------------------------------
 const { axes, undeclaredEnumValues } = extractAxes(data);
 if (undeclaredEnumValues.length > 0) {
-  console.error('Predicates reference enum values not declared in facts.json:', undeclaredEnumValues);
+  console.error(
+    'Predicates reference enum values not declared in facts.json:',
+    undeclaredEnumValues,
+  );
   process.exitCode = 1;
 }
 
@@ -186,7 +218,8 @@ function walkInChild(sub: Shard, out: string): Promise<Tally> {
       children.delete(child);
       // A shard exits 1 on a conformance mismatch but still writes its
       // tally; the reduce below re-raises. Anything else is a crash.
-      if (code !== 0 && code !== 1) return reject(new Error(`shard ${sub.index}/${sub.of} exited ${code ?? signal}`));
+      if (code !== 0 && code !== 1)
+        return reject(new Error(`shard ${sub.index}/${sub.of} exited ${code ?? signal}`));
       if (!existsSync(out)) return reject(new Error(`shard ${sub.index}/${sub.of} wrote no tally`));
       resolve(JSON.parse(readFileSync(out, 'utf8')) as Tally);
     });
@@ -197,7 +230,9 @@ async function walk(): Promise<Tally> {
   if (jobs === 1) return walkShard(axes, { shard, sample: sampleSize });
   const dir = mkdtempSync(join(tmpdir(), 'conformance-'));
   const tallies = await Promise.all(
-    Array.from({ length: jobs }, (_, k) => walkInChild(subShard(shard, k, jobs), join(dir, `shard-${k}.json`))),
+    Array.from({ length: jobs }, (_, k) =>
+      walkInChild(subShard(shard, k, jobs), join(dir, `shard-${k}.json`)),
+    ),
   );
   rmSync(dir, { recursive: true, force: true });
   return mergeTallies(tallies);
@@ -225,7 +260,13 @@ function runKey(): string {
 function clock(ms: number): string {
   const s = Math.round(ms / 1000);
   const hms = [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60];
-  return (hms[0] ? `${hms[0]}:` : '') + hms.slice(1).map((n) => String(n).padStart(2, '0')).join(':');
+  return (
+    (hms[0] ? `${hms[0]}:` : '') +
+    hms
+      .slice(1)
+      .map((n) => String(n).padStart(2, '0'))
+      .join(':')
+  );
 }
 
 const resumeCommand = `npm run conformance -- ${args.join(' ')}`;
@@ -287,13 +328,18 @@ async function walkPieces(): Promise<void> {
   process.off('SIGTERM', stop);
 
   const finished = pieces.filter((p) => existsSync(piecePath(p)));
-  const t = mergeTallies(finished.map((p) => JSON.parse(readFileSync(piecePath(p), 'utf8')) as Tally));
+  const t = mergeTallies(
+    finished.map((p) => JSON.parse(readFileSync(piecePath(p), 'utf8')) as Tally),
+  );
   t.wallMs = Date.now() - t0;
 
   if (stopping !== undefined || failure !== undefined) {
-    if (failure !== undefined) console.error(`\n${failure instanceof Error ? failure.message : String(failure)}`);
+    if (failure !== undefined)
+      console.error(`\n${failure instanceof Error ? failure.message : String(failure)}`);
     if (finished.length > 0) reportPartial(t, `${finished.length}/${pieces.length} pieces walked`);
-    console.error(`\nstopped at ${finished.length}/${pieces.length} pieces; finished pieces kept. Resume with:\n  ${resumeCommand}`);
+    console.error(
+      `\nstopped at ${finished.length}/${pieces.length} pieces; finished pieces kept. Resume with:\n  ${resumeCommand}`,
+    );
     process.exit(stopping === 'SIGINT' ? 130 : stopping === 'SIGTERM' ? 143 : 1);
   }
 
@@ -305,9 +351,13 @@ async function walkPieces(): Promise<void> {
 
 function printSummary(t: Tally) {
   const recordsPerSec = t.n / (t.wallMs / 1000);
-  console.log(`\nprocessed ${t.n} records in ${(t.wallMs / 1000).toFixed(1)}s wall (${recordsPerSec.toFixed(0)} rec/s)`);
+  console.log(
+    `\nprocessed ${t.n} records in ${(t.wallMs / 1000).toFixed(1)}s wall (${recordsPerSec.toFixed(0)} rec/s)`,
+  );
   console.log(`conformance failures (applied-set mismatch): ${t.conformanceFailures}`);
-  console.log(`modality mismatches (same applied set, different modality): ${t.modalityMismatches}`);
+  console.log(
+    `modality mismatches (same applied set, different modality): ${t.modalityMismatches}`,
+  );
   console.log(`no-obligation records: ${t.noObligationCount}`);
   console.log(`  by fact:position: ${JSON.stringify(Object.entries(t.noObligationPositions))}`);
   console.log(`conflicting-shall records: ${t.conflictingObligationCount}`);
@@ -324,7 +374,15 @@ function coverageFindings(t: Tally) {
   const everApplied = new Set(t.everApplied);
   const neverFired = displayEntries.filter((e) => !everApplied.has(e.id));
   for (const e of neverFired) {
-    recordFinding(t, 'coverage-entry-never-fires', e.id, `entry ${e.id} never applies across the enumerated fact space`, [e.cite], {}, -1);
+    recordFinding(
+      t,
+      'coverage-entry-never-fires',
+      e.id,
+      `entry ${e.id} never applies across the enumerated fact space`,
+      [e.cite],
+      {},
+      -1,
+    );
   }
   for (const e of displayEntries) {
     if (e.modality !== 'modality:conditional' || !e.modality_by) continue;
@@ -383,7 +441,9 @@ function traceabilityFindings(t: Tally) {
       );
     }
   }
-  console.log(`unresolved cites: ${unresolvedCites.length === 0 ? '(none)' : JSON.stringify(unresolvedCites)}`);
+  console.log(
+    `unresolved cites: ${unresolvedCites.length === 0 ? '(none)' : JSON.stringify(unresolvedCites)}`,
+  );
 }
 
 interface FixtureCase {
@@ -401,10 +461,14 @@ function replayFixtures() {
     const want = [...c.expect].sort();
     if (got.join(',') !== want.join(',')) {
       fixtureFailures++;
-      console.error(`reference evaluator fixture mismatch: ${c.name}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
+      console.error(
+        `reference evaluator fixture mismatch: ${c.name}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`,
+      );
     }
   }
-  console.log(`fixture replay through reference.ts: ${fixtures.cases.length - fixtureFailures}/${fixtures.cases.length} pass`);
+  console.log(
+    `fixture replay through reference.ts: ${fixtures.cases.length - fixtureFailures}/${fixtures.cases.length} pass`,
+  );
 }
 
 function readIdMap(): IdMap | null {
@@ -464,7 +528,10 @@ next run overwrites.
     .map((f) => {
       const t = triageFor(f);
       const escape = (s: string) =>
-        s.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\r\n?|\n/g, '<br>');
+        s
+          .replace(/\\/g, '\\\\')
+          .replace(/\|/g, '\\|')
+          .replace(/\r\n?|\n/g, '<br>');
       return `| ${f.id} | ${f.check} | ${f.count} | ${escape(f.description)} | ${f.cites.join('; ') || '-'} | ${t.status} | ${t.note ? escape(t.note) : '-'} |`;
     })
     .join('\n');
@@ -479,7 +546,8 @@ function writeRegister(findings: Finding[], map: IdMap): boolean {
   if (!existsSync(IDS_PATH) || readFileSync(IDS_PATH, 'utf8') !== newIds) stale = true;
   writeFileSync(IDS_PATH, newIds);
   const newRegister = buildRegister(findings);
-  if (!existsSync(REGISTER_PATH) || readFileSync(REGISTER_PATH, 'utf8') !== newRegister) stale = true;
+  if (!existsSync(REGISTER_PATH) || readFileSync(REGISTER_PATH, 'utf8') !== newRegister)
+    stale = true;
   writeFileSync(REGISTER_PATH, newRegister);
   for (const f of findings) {
     const fixturePath = join(FINDINGS_DIR, `${f.id}.json`);
@@ -500,7 +568,8 @@ function writeRegister(findings: Finding[], map: IdMap): boolean {
         null,
         2,
       ) + '\n';
-    if (!existsSync(fixturePath) || readFileSync(fixturePath, 'utf8') !== fixtureContent) stale = true;
+    if (!existsSync(fixturePath) || readFileSync(fixturePath, 'utf8') !== fixtureContent)
+      stale = true;
     writeFileSync(fixturePath, fixtureContent);
   }
   // A finding that has gone away leaves its fixture behind; remove it, and
@@ -516,7 +585,9 @@ function writeRegister(findings: Finding[], map: IdMap): boolean {
 
 function failOnMismatch(t: Tally) {
   if (t.conformanceFailures > 0) {
-    console.error(`\nCONFORMANCE FAILED: ${t.conformanceFailures} records where engine != reference.`);
+    console.error(
+      `\nCONFORMANCE FAILED: ${t.conformanceFailures} records where engine != reference.`,
+    );
     process.exit(1);
   }
 }
@@ -526,7 +597,9 @@ function failOnMismatch(t: Tally) {
 function reportPartial(t: Tally, what: string) {
   console.log(`\nPARTIAL RESULTS: ${what}. Coverage and the register are not written.`);
   printSummary(t);
-  const findings = Object.values(t.findings).sort((a, b) => findingKey(a).localeCompare(findingKey(b)));
+  const findings = Object.values(t.findings).sort((a, b) =>
+    findingKey(a).localeCompare(findingKey(b)),
+  );
   console.log(`\n${findings.length} distinct findings so far (partial)`);
   for (const f of findings) console.log(`  [${f.check}]  n=${f.count}  ${f.description}`);
 }
@@ -545,7 +618,9 @@ function reduce(t: Tally) {
   const { findings, map } = sortAndNumber(t);
   const implausible = implausibleWalk(t.n, findings.length, committedFixtureCount(FINDINGS_DIR));
   if (implausible) {
-    console.error(`\nCONFORMANCE ABORTED: ${implausible}; research/conformance/findings/ left untouched.`);
+    console.error(
+      `\nCONFORMANCE ABORTED: ${implausible}; research/conformance/findings/ left untouched.`,
+    );
     process.exit(1);
   }
   warnStaleTriage(findings);
@@ -584,7 +659,9 @@ if (mergeFiles !== undefined) {
   traceabilityFindings(t);
   replayFixtures();
   const { findings } = sortAndNumber(t);
-  console.log(`\n${findings.length} distinct findings in this sample run (register not written in --sample mode)`);
+  console.log(
+    `\n${findings.length} distinct findings in this sample run (register not written in --sample mode)`,
+  );
   failOnMismatch(t);
   console.log('\nconformance run complete.');
 }

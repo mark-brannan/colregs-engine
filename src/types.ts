@@ -81,7 +81,8 @@ export interface Entry
   'rel:conditional_includes'?: ConditionalInclude[];
 }
 
-export interface ApplicabilityData extends Omit<SchemaApplicabilityData, 'entries' | 'modality_shifts'> {
+export interface ApplicabilityData
+  extends Omit<SchemaApplicabilityData, 'entries' | 'modality_shifts'> {
   entries: Entry[];
   modality_shifts?: ModalityShift[];
 }

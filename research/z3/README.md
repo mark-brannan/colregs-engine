@@ -31,13 +31,13 @@ solved. The header of `encode.ts` lists the choices that change what an
 answer means: Real axes rather than the enumeration's grid, total records,
 and the engine's own dispatch order.
 
-| property | queries | asks |
-|---|---|---|
-| `conflicting-shall` | 5 | two entries, one `rel:excludes` the other, both resolving to `shall` |
-| `no-obligation` | 2 | a record where no entry applies at all |
-| `entry-fires` | 40 | this entry applies to something |
-| `unresolved-conditional` | 3 | this conditional entry applies and no branch matches |
-| `branch-reachable` | 6 | this `modality_by` branch can be the first match |
+| property                 | queries | asks                                                                 |
+| ------------------------ | ------- | -------------------------------------------------------------------- |
+| `conflicting-shall`      | 5       | two entries, one `rel:excludes` the other, both resolving to `shall` |
+| `no-obligation`          | 2       | a record where no entry applies at all                               |
+| `entry-fires`            | 40      | this entry applies to something                                      |
+| `unresolved-conditional` | 3       | this conditional entry applies and no branch matches                 |
+| `branch-reachable`       | 6       | this `modality_by` branch can be the first match                     |
 
 ## What a counterexample looks like
 

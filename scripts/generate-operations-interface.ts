@@ -30,9 +30,7 @@ interface OperationsJson {
 }
 
 const operations = (
-  JSON.parse(
-    readFileSync('node_modules/colregs/data/operations.json', 'utf8'),
-  ) as OperationsJson
+  JSON.parse(readFileSync('node_modules/colregs/data/operations.json', 'utf8')) as OperationsJson
 ).operations;
 const colregsVersion: string = JSON.parse(
   readFileSync('node_modules/colregs/package.json', 'utf8'),
@@ -93,7 +91,10 @@ for (const [verb, op] of Object.entries(operations)) {
     lines.push(`  ${op.companion.verb}(${params}): ${use(op.companion.output)};`);
   }
 }
-const imports = [...used].sort().map((t) => `  ${t},`).join('\n');
+const imports = [...used]
+  .sort()
+  .map((t) => `  ${t},`)
+  .join('\n');
 
 const out = `/**
  * GENERATED FILE — DO NOT EDIT.

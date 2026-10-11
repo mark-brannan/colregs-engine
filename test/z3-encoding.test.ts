@@ -14,7 +14,14 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { appliedDisplayEntries, predicateMatches, resolveModality } from '../src/evaluate.js';
-import type { ApplicabilityData, Constraint, Entry, FactRecord, FactValue, Predicate } from '../src/types.js';
+import type {
+  ApplicabilityData,
+  Constraint,
+  Entry,
+  FactRecord,
+  FactValue,
+  Predicate,
+} from '../src/types.js';
 
 function appliedEntries(data: ApplicabilityData, facts: FactRecord): string[] {
   return appliedDisplayEntries(facts, { data });
@@ -134,9 +141,7 @@ describe('encodeConstraint', () => {
 describe('encodePredicate', () => {
   it('conjoins the constraints of a `when`', () => {
     const when = { 'fact:making_way': true, 'fact:length_m': { gte: 12 } } as unknown as Predicate;
-    expect(encodePredicate(axes, when)).toBe(
-      '(and |fact:making_way| (>= |fact:length_m| 12.0))',
-    );
+    expect(encodePredicate(axes, when)).toBe('(and |fact:making_way| (>= |fact:length_m| 12.0))');
   });
 
   it('encodes an empty `when` as true -- it applies to everything', () => {
@@ -260,7 +265,7 @@ describe('the encoding against Z3', () => {
   it('matches predicateMatches for every entry on 500 random records', async () => {
     // A deterministic PRNG, so a failure is reproducible from the seed.
     let seed = 20260906;
-    const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+    const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
 
     await withSolver(async (check) => {
       for (let n = 0; n < 500; n++) {
@@ -389,26 +394,31 @@ describe('the encoding against Z3', () => {
   // record but no longer points them at a `finding`, so `pointed` is
   // empty until a new one is recorded. Skipped rather than deleted so it
   // comes back the moment expectations.json names one again.
-  it.skipIf(
-    Object.values(loadExpectations().queries).every((r) => !r.finding),
-  )('is satisfied by the representative record of every finding it expects', async () => {
-    const expectations = loadExpectations();
-    const queries = buildQueries(data, expectations);
-    const pointed = Object.entries(expectations.queries).filter(([, r]) => r.finding);
-    expect(pointed.length).toBeGreaterThan(0);
+  it.skipIf(Object.values(loadExpectations().queries).every((r) => !r.finding))(
+    'is satisfied by the representative record of every finding it expects',
+    async () => {
+      const expectations = loadExpectations();
+      const queries = buildQueries(data, expectations);
+      const pointed = Object.entries(expectations.queries).filter(([, r]) => r.finding);
+      expect(pointed.length).toBeGreaterThan(0);
 
-    await withSolver(async (check) => {
-      for (const [id, recorded] of pointed) {
-        const q = queries.find((x) => x.id === id);
-        expect(q, `expectations.json names ${id}; buildQueries did not produce it`).toBeDefined();
-        expect(recorded.expect, `${id}: a finding is a witness, so it can only back a sat`).toBe('sat');
-        const record = JSON.parse(readFileSync(finding(recorded.finding!), 'utf8')).facts as FactRecord;
-        const answer = await check([
-          ...pinRecord(realAxes, record),
-          ...q!.asserts.map((a) => `(assert ${a})`),
-        ]);
-        expect(answer, `${id}: ${recorded.finding}'s record is not a witness`).toBe('sat');
-      }
-    });
-  }, 60_000);
+      await withSolver(async (check) => {
+        for (const [id, recorded] of pointed) {
+          const q = queries.find((x) => x.id === id);
+          expect(q, `expectations.json names ${id}; buildQueries did not produce it`).toBeDefined();
+          expect(recorded.expect, `${id}: a finding is a witness, so it can only back a sat`).toBe(
+            'sat',
+          );
+          const record = JSON.parse(readFileSync(finding(recorded.finding!), 'utf8'))
+            .facts as FactRecord;
+          const answer = await check([
+            ...pinRecord(realAxes, record),
+            ...q!.asserts.map((a) => `(assert ${a})`),
+          ]);
+          expect(answer, `${id}: ${recorded.finding}'s record is not a witness`).toBe('sat');
+        }
+      });
+    },
+    60_000,
+  );
 });

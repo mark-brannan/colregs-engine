@@ -24,24 +24,10 @@
     "docs/research-programme.md": 120
   },
   "json_prose": {
-    "targets": [
-      "research/**/*.json",
-      "docs/**/*.json"
-    ],
-    "keys": [
-      "note",
-      "$note",
-      "notes",
-      "about",
-      "narrative",
-      "rationale",
-      "why",
-      "would_settle"
-    ],
+    "targets": ["research/**/*.json", "docs/**/*.json"],
+    "keys": ["note", "$note", "notes", "about", "narrative", "rationale", "why", "would_settle"],
     "max_chars": 300,
-    "grandfathered": [
-      "research/z3/expectations.json#/about"
-    ]
+    "grandfathered": ["research/z3/expectations.json#/about"]
   },
   "narration": {
     "targets": [
@@ -55,13 +41,9 @@
       "research/**/*.ts"
     ],
     "grandfathered": [],
-    "disable": [
-      "issue"
-    ],
+    "disable": ["issue"],
     "scope": {
-      "phase": [
-        "research/**/*.ts"
-      ]
+      "phase": ["research/**/*.ts"]
     }
   },
   "voice": {
@@ -75,16 +57,10 @@
       "research/**/*.json",
       "docs/**/*.json"
     ],
-    "allow": [
-      "Foster/Gleirscher",
-      "Foster, Gleirscher"
-    ]
+    "allow": ["Foster/Gleirscher", "Foster, Gleirscher"]
   },
   "headers": {
-    "targets": [
-      "research/**/*.ts",
-      "src/**/*.ts"
-    ],
+    "targets": ["research/**/*.ts", "src/**/*.ts"],
     "max_lines": 25,
     "grandfathered": {
       "research/z3/encode.ts": 48,
