@@ -2,11 +2,12 @@
 
 ✎ **Pencil.** A proof of concept for
 item T1 of the
-[research programme](../../docs/research-programme.md). One query is triaged (`research/z3/expectations.json`); the rest are
-not.
+[research programme](../../docs/research-programme.md). Every query is triaged
+(`research/z3/expectations.json`): none needs a ruling, and five answers rest
+on a model the evaluators reject.
 
 ```
-npm run z3                 # 56 queries, under a second
+npm run z3                 # 87 queries, about a second
 npm run z3 -- --verbose    # plus the decoded witness for every sat
 ```
 
@@ -24,18 +25,18 @@ entry `|applies:<id>|`, `|shall:<id>|`, and for a conditional entry one
 `|branch:<id>:<i>|` per `modality_by` branch plus `|unresolved:<id>|`.
 `queries.ts` states the P0.3 properties as queries over those definitions.
 
-Only the 40 `category: display` entries are encoded, the scope
-`src/evaluate.ts` and `research/conformance/` already work in. The 30
-two-vessel entries colregs 0.2.0 added are counted and named by the run, not
+Only the 75 one-vessel `category: display` entries are encoded, the scope
+`src/evaluate.ts` and `research/conformance/` already work in. The 40 that
+read self:/other:/pair:-scoped keys are counted and named by the run, not
 solved. The header of `encode.ts` lists the choices that change what an
 answer means: Real axes rather than the enumeration's grid, total records,
 and the engine's own dispatch order.
 
 | property | queries | asks |
 |---|---|---|
-| `conflicting-shall` | 5 | two entries, one `rel:excludes` the other, both resolving to `shall` |
+| `conflicting-shall` | 1 | two entries, one `rel:excludes` the other, both resolving to `shall` |
 | `no-obligation` | 2 | a record where no entry applies at all |
-| `entry-fires` | 40 | this entry applies to something |
+| `entry-fires` | 75 | this entry applies to something |
 | `unresolved-conditional` | 3 | this conditional entry applies and no branch matches |
 | `branch-reachable` | 6 | this `modality_by` branch can be the first match |
 
@@ -56,11 +57,13 @@ the pinned colregs. Plain SMT-LIB 2; any other solver takes it unchanged.
 
 ## expectations.json
 
-Pencil. Query id → the answer the enumeration observed, the date, the run,
-whether a maintainer has ruled (`triaged`), an optional `finding` pointer
-into `research/conformance/findings/`, and `would_settle` — what remains to
-decide, or the ruling itself once `triaged` flips to `true`. Code reads the
-file; revising a ruling is a data edit.
+Pencil. Query id → the expected answer and `triaged`. A triaged entry carries
+its `class` (`holds-by-data`, `holds-by-construction`, `harness-false-positive`
+or `needs-ruling`) and a one-line `note` citing entries or `encode.ts`. A
+`needs-ruling` entry stays pencil and says which ruling it waits on. An
+entry may also point at a `finding` in `research/conformance/findings/`. The
+two recorded by the enumeration keep the run and date they were observed on.
+Code reads the file; revising a classification is a data edit.
 
 ## Files
 
