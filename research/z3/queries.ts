@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { ApplicabilityData, Entry } from '../../src/types.js';
-import { APPLIES, BRANCH, SHALL, UNRESOLVED, isDisplay, sym } from './encode.js';
+import { APPLIES, BRANCH, SHALL, UNRESOLVED, isDisplay, isSingleSubject, sym } from './encode.js';
 
 export type Expectation = 'sat' | 'unsat';
 
@@ -21,10 +21,13 @@ export type Property =
 export interface RecordedExpectation {
   expect: Expectation;
   triaged: boolean;
-  observed_on: string;
-  observed_by: string;
+  /** Set once triaged: which of the four classes the expectation falls in. */
+  class?: 'holds-by-data' | 'holds-by-construction' | 'harness-false-positive' | 'needs-ruling';
+  observed_on?: string;
+  observed_by?: string;
   finding?: string;
-  would_settle: string;
+  note?: string;
+  would_settle?: string;
 }
 
 export interface Expectations {
@@ -88,7 +91,9 @@ export function excludingPairs(entries: Entry[]): [string, string][] {
 
 export function buildQueries(data: ApplicabilityData, expectations: Expectations): Query[] {
   const queries: Query[] = [];
-  const displayEntries = data.entries.filter(isDisplay);
+  // The entries encode.ts defines; a query over any other id has no
+  // `|applies:<id>|` to reference.
+  const displayEntries = data.entries.filter((e) => isDisplay(e) && isSingleSubject(e));
 
   const resolve = (id: string, property: Property): Pick<Query, 'expect' | 'recorded'> => {
     const recorded = expectations.queries[id];
