@@ -42,9 +42,7 @@ describe('lawful display composition', () => {
 
   it('tricolor and red-over-green never co-occur (rel:excludes)', () => {
     for (const d of evaluate(applicability, sloop12).displays) {
-      expect(d.entries.includes('rule:25b') && d.entries.includes('rule:25c')).toBe(
-        false,
-      );
+      expect(d.entries.includes('rule:25b') && d.entries.includes('rule:25c')).toBe(false);
     }
   });
 
@@ -132,9 +130,7 @@ describe('lawful display composition', () => {
     expect(e.displays).toHaveLength(2);
     for (const d of e.displays) {
       expect(d.entries).toContain('rule:30d_i');
-      expect(
-        d.entries.includes('rule:30a') !== d.entries.includes('rule:30b'),
-      ).toBe(true);
+      expect(d.entries.includes('rule:30a') !== d.entries.includes('rule:30b')).toBe(true);
     }
   });
 
@@ -168,9 +164,7 @@ describe('lawful display composition', () => {
     for (const d of e.displays) {
       expect(d.entries).toContain('rule:30d_i');
       expect(d.entries.some((id) => id.startsWith('26'))).toBe(false);
-      expect(
-        d.entries.includes('rule:30a') !== d.entries.includes('rule:30b'),
-      ).toBe(true);
+      expect(d.entries.includes('rule:30a') !== d.entries.includes('rule:30b')).toBe(true);
     }
   });
 
@@ -287,11 +281,7 @@ describe('lawful display composition', () => {
     // sweep the axis product at representative lengths
     // `as const`: FactRecord's value types are unions of colregs' own
     // values now, so a widened string[] no longer satisfies them.
-    const propulsions = [
-      'propulsion:power',
-      'propulsion:sail',
-      'propulsion:oars',
-    ] as const;
+    const propulsions = ['propulsion:power', 'propulsion:sail', 'propulsion:oars'] as const;
     const activities = [
       'activity:none',
       'activity:fishing',
@@ -472,7 +462,7 @@ describe('relation reach and import reads (colregs ADR 0019)', () => {
     return data;
   }
 
-  it("an import whose source carries a scalar gate the vessel fails imports nothing", () => {
+  it('an import whose source carries a scalar gate the vessel fails imports nothing', () => {
     const result = evaluateDisplay(mineClearanceUnderway(60), { data: with27fIncluding30b() });
     expect(result.applied).toContain('rule:27f');
     expect(result.modalities).not.toHaveProperty('rule:30b');
@@ -507,16 +497,12 @@ describe('fact-record validation', () => {
   // now, and `as unknown as FactRecord` is how it reaches the runtime check.
   it('an un-namespaced key throws, naming the key', () => {
     const bad = { propulsion: 'sail' } as unknown as FactRecord;
-    expect(() => evaluate(applicability, bad)).toThrow(
-      /unknown fact key 'propulsion'/,
-    );
+    expect(() => evaluate(applicability, bad)).toThrow(/unknown fact key 'propulsion'/);
   });
 
   it('suggests the namespaced key it meant', () => {
     const bad = { propulsion: 'sail' } as unknown as FactRecord;
-    expect(() => evaluate(applicability, bad)).toThrow(
-      /did you mean 'fact:propulsion'/,
-    );
+    expect(() => evaluate(applicability, bad)).toThrow(/did you mean 'fact:propulsion'/);
   });
 
   it('a value outside an axis throws, naming key and value', () => {
@@ -530,9 +516,7 @@ describe('fact-record validation', () => {
 
   it('an un-namespaced axis value suggests the namespaced one', () => {
     const bad = { 'fact:propulsion': 'sail' } as unknown as FactRecord;
-    expect(() => evaluate(applicability, bad)).toThrow(
-      /did you mean 'propulsion:sail'/,
-    );
+    expect(() => evaluate(applicability, bad)).toThrow(/did you mean 'propulsion:sail'/);
   });
 
   it('a scalar given the wrong type throws, naming the expected type', () => {
@@ -544,9 +528,7 @@ describe('fact-record validation', () => {
 
   it('appliedEntries validates on the same terms', () => {
     const bad = { propulsion: 'sail' } as unknown as FactRecord;
-    expect(() => appliedEntries(applicability, bad)).toThrow(
-      /unknown fact key 'propulsion'/,
-    );
+    expect(() => appliedEntries(applicability, bad)).toThrow(/unknown fact key 'propulsion'/);
   });
 
   it('a valid record still evaluates', () => {

@@ -288,7 +288,8 @@ export function referencePooledRoles(
       frames[e.id] === 'self' ? [onFrameSelf, onFrameOther] : [onFrameOther, onFrameSelf];
     // A `none` effect confers no role (engine-notes item 11).
     if (toSelf !== undefined && toSelf !== 'role:none') roles.self.push({ role: toSelf, by: e.id });
-    if (toOther !== undefined && toOther !== 'role:none') roles.other.push({ role: toOther, by: e.id });
+    if (toOther !== undefined && toOther !== 'role:none')
+      roles.other.push({ role: toOther, by: e.id });
   }
   return { roles, overridden, frames };
 }

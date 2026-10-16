@@ -4,10 +4,7 @@ import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json';
 import colregsPackage from 'colregs/package.json';
 import versionJson from 'colregs/data/version.json';
-import {
-  appliedDisplayEntries,
-  evaluateDisplay,
-} from '../src/evaluate';
+import { appliedDisplayEntries, evaluateDisplay } from '../src/evaluate';
 import { DataVersionMismatchError } from '../src/errors';
 import type { ApplicabilityData, FactRecord } from '../src/types';
 
@@ -55,12 +52,12 @@ describe('data version check (ADR 0009)', () => {
   });
 
   it('throws DataVersionMismatchError when the stamp disagrees with the resolved release', () => {
-    expect(() =>
-      evaluateDisplay(sloop12, { data: applicability, dataVersion: '0.0.1' }),
-    ).toThrow(DataVersionMismatchError);
-    expect(() => appliedDisplayEntries(sloop12, { data: applicability, dataVersion: '0.0.1' })).toThrow(
+    expect(() => evaluateDisplay(sloop12, { data: applicability, dataVersion: '0.0.1' })).toThrow(
       DataVersionMismatchError,
     );
+    expect(() =>
+      appliedDisplayEntries(sloop12, { data: applicability, dataVersion: '0.0.1' }),
+    ).toThrow(DataVersionMismatchError);
   });
 
   it('never checks when the caller passes no data at all', () => {

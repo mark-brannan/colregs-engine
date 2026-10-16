@@ -55,7 +55,11 @@ function strongestRole(roles: { role: string }[]): string | undefined {
 /** A stand-on vessel that is turning or has changed heading since the last
  * sample has moved from 17(a)(i) (keep course and speed) to 17(a)(ii) (may
  * take action). Only what the samples state is read. */
-function isManoeuvring(prev: TraceSample | undefined, cur: TraceSample, subject: SubjectKey): boolean {
+function isManoeuvring(
+  prev: TraceSample | undefined,
+  cur: TraceSample,
+  subject: SubjectKey,
+): boolean {
   const kin = cur.situation[subject]?.kin;
   const rot = kin?.['kin:rot_deg_min'];
   if (typeof rot === 'number' && rot !== 0) return true;
@@ -150,7 +154,10 @@ export function evaluateConduct(trace: Trace, opts: EvaluateOptions = {}): Condu
   }
 
   const phases: ConductPhaseChange[] = [];
-  const current: Record<SubjectKey, ParagraphCite | undefined> = { self: undefined, other: undefined };
+  const current: Record<SubjectKey, ParagraphCite | undefined> = {
+    self: undefined,
+    other: undefined,
+  };
   samples.forEach((sample, i) => {
     for (const subject of SUBJECTS) {
       if (subject === 'other' && sample.situation.other === undefined) continue;
@@ -164,7 +171,11 @@ export function evaluateConduct(trace: Trace, opts: EvaluateOptions = {}): Condu
 
   return {
     colregs: { version: COLREGS_VERSION, source },
-    window: { from_s: samples[0].t_s, to_s: samples[samples.length - 1].t_s, samples: samples.length },
+    window: {
+      from_s: samples[0].t_s,
+      to_s: samples[samples.length - 1].t_s,
+      samples: samples.length,
+    },
     applied,
     verdicts,
     phases,

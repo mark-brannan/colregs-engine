@@ -36,17 +36,22 @@ export function parseIdMap(text: string): IdMap {
   }
   const seen = new Map<number, string>();
   for (const [key, id] of Object.entries(map.ids)) {
-    if (!/^FIND-\d+$/.test(id)) throw new Error(`findings/ids.json: '${key}' has id '${id}', not FIND-<n>`);
+    if (!/^FIND-\d+$/.test(id))
+      throw new Error(`findings/ids.json: '${key}' has id '${id}', not FIND-<n>`);
     const n = idNumber(id);
-    if (seen.has(n)) throw new Error(`findings/ids.json: ${id} is held by both '${seen.get(n)}' and '${key}'`);
-    if (n >= map.next) throw new Error(`findings/ids.json: next is ${map.next} but ${id} is already allocated`);
+    if (seen.has(n))
+      throw new Error(`findings/ids.json: ${id} is held by both '${seen.get(n)}' and '${key}'`);
+    if (n >= map.next)
+      throw new Error(`findings/ids.json: next is ${map.next} but ${id} is already allocated`);
     seen.set(n, key);
   }
   return map;
 }
 
 function bySortedKey(a: FindingGroup, b: FindingGroup): number {
-  return a.check !== b.check ? a.check.localeCompare(b.check) : a.groupKey.localeCompare(b.groupKey);
+  return a.check !== b.check
+    ? a.check.localeCompare(b.check)
+    : a.groupKey.localeCompare(b.groupKey);
 }
 
 /**
@@ -54,7 +59,10 @@ function bySortedKey(a: FindingGroup, b: FindingGroup): number {
  * yet: numbering then follows sorted order from 1). New keys take `next` in
  * sorted order. Returns the findings sorted by id and the updated map.
  */
-export function allocateIds(groups: FindingGroup[], prev: IdMap | null): { findings: Finding[]; map: IdMap } {
+export function allocateIds(
+  groups: FindingGroup[],
+  prev: IdMap | null,
+): { findings: Finding[]; map: IdMap } {
   const ids = { ...(prev?.ids ?? {}) };
   let next = prev?.next ?? 1;
   for (const g of [...groups].sort(bySortedKey)) {
@@ -69,6 +77,8 @@ export function allocateIds(groups: FindingGroup[], prev: IdMap | null): { findi
 
 /** The map as committed: keys in id order, so a diff reads as allocations. */
 export function serializeIdMap(map: IdMap): string {
-  const ids = Object.fromEntries(Object.entries(map.ids).sort(([, a], [, b]) => idNumber(a) - idNumber(b)));
+  const ids = Object.fromEntries(
+    Object.entries(map.ids).sort(([, a], [, b]) => idNumber(a) - idNumber(b)),
+  );
   return JSON.stringify({ next: map.next, ids }, null, 2) + '\n';
 }

@@ -69,12 +69,12 @@ function byIdOf(...entries: Entry[]): Map<string, Entry> {
 }
 
 describe('entrySignalKinds', () => {
-  it('is the entry\'s own kind when it carries lights directly', () => {
+  it("is the entry's own kind when it carries lights directly", () => {
     const byId = byIdOf(lightsOnlyEntry());
     expect(entrySignalKinds('rule:lights_entry', dayGoodVis, byId)).toEqual(new Set(['lights']));
   });
 
-  it('is the entry\'s own kind when it carries shapes directly', () => {
+  it("is the entry's own kind when it carries shapes directly", () => {
     const byId = byIdOf(shapesOnlyEntry());
     expect(entrySignalKinds('rule:shapes_entry', dayGoodVis, byId)).toEqual(new Set(['shapes']));
   });
@@ -118,7 +118,7 @@ describe('entrySignalKinds', () => {
   });
 });
 
-describe('a light\'s own modality override', () => {
+describe("a light's own modality override", () => {
   // claude-review, PR #128: displayLights builds a light's displayed
   // modality as `spec.modality ?? node.modality` -- a LightRef that carries
   // its own `modality` bypasses the (already-shifted) node.modality
@@ -160,8 +160,6 @@ describe('a light\'s own modality override', () => {
     // "second masthead is an optional addition").
     const lights = result.optional_additions[0].lights;
     expect(lights.find((l) => l.spec.light === 'light:masthead')?.modality).toBe('modality:may');
-    expect(lights.find((l) => l.spec.light === 'light:sternlight')?.modality).toBe(
-      'modality:may',
-    );
+    expect(lights.find((l) => l.spec.light === 'light:sternlight')?.modality).toBe('modality:may');
   });
 });

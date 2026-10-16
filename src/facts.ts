@@ -44,20 +44,13 @@ const ENV: Record<string, Spec | undefined> = ENV_SPEC;
 const ENV_KEYS = Object.keys(ENV_SPEC);
 
 /** `'propulsion'` -> `'fact:propulsion'`: the mistake worth naming. */
-function suggestKey(
-  key: string,
-  prefix: string,
-  keys: readonly string[],
-): string | undefined {
+function suggestKey(key: string, prefix: string, keys: readonly string[]): string | undefined {
   const namespaced = `${prefix}:${key}`;
   return keys.includes(namespaced) ? namespaced : undefined;
 }
 
 /** `'sail'` -> `'propulsion:sail'`, for an enumerated key's values. */
-function suggestValue(
-  values: readonly string[],
-  value: unknown,
-): string | undefined {
+function suggestValue(values: readonly string[], value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   return values.find((v) => v.slice(v.indexOf(':') + 1) === value);
 }
@@ -77,9 +70,7 @@ function checkRecord(
 ): void {
   const nounCap = noun[0].toUpperCase() + noun.slice(1);
   if (typeof record !== 'object' || record === null || Array.isArray(record)) {
-    throw new Error(
-      `${nounCap} record must be an object, got ${JSON.stringify(record)}.`,
-    );
+    throw new Error(`${nounCap} record must be an object, got ${JSON.stringify(record)}.`);
   }
   for (const [key, value] of Object.entries(record) as [string, unknown][]) {
     const s = spec[key];
@@ -179,9 +170,7 @@ export function validateSituation(situation: Situation): void {
   if (situation.other !== undefined) validateSubject('other', situation.other);
   if (situation.pair !== undefined) {
     if (typeof situation.pair !== 'object' || situation.pair === null) {
-      throw new Error(
-        `situation.pair must be an object, got ${JSON.stringify(situation.pair)}.`,
-      );
+      throw new Error(`situation.pair must be an object, got ${JSON.stringify(situation.pair)}.`);
     }
     if (situation.pair.geo !== undefined) {
       checkRecord(situation.pair.geo, GEO_PAIR, GEO_PAIR_KEYS, 'geo');
@@ -209,7 +198,9 @@ export function validateTrace(trace: Trace): void {
       throw new Error(`trace.samples[${i}] must be an object, got ${JSON.stringify(sample)}.`);
     }
     if (typeof sample.t_s !== 'number' || !Number.isFinite(sample.t_s)) {
-      throw new Error(`trace.samples[${i}].t_s must be a finite number, got ${JSON.stringify(sample.t_s)}.`);
+      throw new Error(
+        `trace.samples[${i}].t_s must be a finite number, got ${JSON.stringify(sample.t_s)}.`,
+      );
     }
     if (i > 0 && !(sample.t_s > trace.samples[i - 1].t_s)) {
       throw new Error(
@@ -223,7 +214,9 @@ export function validateTrace(trace: Trace): void {
     const other = sample.situation.other !== undefined;
     if (hasOther === undefined) hasOther = other;
     else if (hasOther !== other) {
-      throw new Error(`trace.samples[${i}] ${other ? 'has' : 'lacks'} \`other\` while earlier samples do not; the same two vessels must run through the window.`);
+      throw new Error(
+        `trace.samples[${i}] ${other ? 'has' : 'lacks'} \`other\` while earlier samples do not; the same two vessels must run through the window.`,
+      );
     }
   });
 }

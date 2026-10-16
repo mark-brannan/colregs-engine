@@ -17,7 +17,10 @@ export const REQUIRED_MODULES = [
 ];
 
 /** The modules in `required` that `resolve` cannot find. */
-export function missingModules(resolve: (id: string) => unknown, required: string[] = REQUIRED_MODULES): string[] {
+export function missingModules(
+  resolve: (id: string) => unknown,
+  required: string[] = REQUIRED_MODULES,
+): string[] {
   return required.filter((id) => {
     try {
       resolve(id);
@@ -29,7 +32,11 @@ export function missingModules(resolve: (id: string) => unknown, required: strin
 }
 
 /** Why a finished walk cannot be trusted to rewrite the register, or undefined. */
-export function implausibleWalk(walked: number, findings: number, committedFixtures: number): string | undefined {
+export function implausibleWalk(
+  walked: number,
+  findings: number,
+  committedFixtures: number,
+): string | undefined {
   if (walked === 0) return 'the walk processed 0 records';
   if (findings === 0 && committedFixtures > 0) {
     return `the walk produced 0 findings but ${committedFixtures} are committed`;
@@ -56,7 +63,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (!found.startsWith(own)) throw new Error(`${found} is outside ${own}`);
   });
   if (missing.length > 0) {
-    console.error(`conformance: cannot resolve ${missing.join(', ')} -- run \`npm ci\` first. Nothing was walked or written.`);
+    console.error(
+      `conformance: cannot resolve ${missing.join(', ')} -- run \`npm ci\` first. Nothing was walked or written.`,
+    );
     process.exit(1);
   }
 }

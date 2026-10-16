@@ -8,27 +8,27 @@ forensics live in colregs'
 
 ## COLREGS formalisation
 
-- Krasowski, Althoff — *Temporal Logic Formalization of Marine Traffic Rules* (IEEE IV 2021). Power-driven two-vessel rules in temporal logic, evaluated on 1,200 real vessels. Predicates to borrow.
+- Krasowski, Althoff — _Temporal Logic Formalization of Marine Traffic Rules_ (IEEE IV 2021). Power-driven two-vessel rules in temporal logic, evaluated on 1,200 real vessels. Predicates to borrow.
   <https://mediatum.ub.tum.de/doc/1613345/1es8mip5k7waoasv97t18tlvc.IV_final_submission.pdf> · <https://hanna.krasowski.io/publications/>
-- Woerner, Benjamin, Novitzky, Leonard — *Quantifying protocol evaluation for autonomous collision avoidance: toward establishing COLREGS compliance metrics* (Autonomous Robots 43(4), 2019). Scoring algorithms for overtaking, head-on, crossing, give-way, stand-on, plus entry criteria. MIT Marine Autonomy Lab.
+- Woerner, Benjamin, Novitzky, Leonard — _Quantifying protocol evaluation for autonomous collision avoidance: toward establishing COLREGS compliance metrics_ (Autonomous Robots 43(4), 2019). Scoring algorithms for overtaking, head-on, crossing, give-way, stand-on, plus entry criteria. MIT Marine Autonomy Lab.
   <https://link.springer.com/article/10.1007/s10514-018-9765-y> · open access <https://dspace.mit.edu/bitstream/handle/1721.1/116295/springer_submit.pdf>
-- Foster, Gleirscher, Calinescu — *Towards Deductive Verification of Control Algorithms for Autonomous Marine Vehicles* (ICECCS 2020). Isabelle/HOL side.
+- Foster, Gleirscher, Calinescu — _Towards Deductive Verification of Control Algorithms for Autonomous Marine Vehicles_ (ICECCS 2020). Isabelle/HOL side.
   <https://arxiv.org/pdf/2006.09233>
-- Shokri-Manninen, Vain, Walden — *Formal Verification of COLREG-Based Navigation of Maritime Autonomous Systems* (SEFM 2020). UPPAAL STRATEGO, give-way/stand-on as a correct-by-construction refinement.
+- Shokri-Manninen, Vain, Walden — _Formal Verification of COLREG-Based Navigation of Maritime Autonomous Systems_ (SEFM 2020). UPPAAL STRATEGO, give-way/stand-on as a correct-by-construction refinement.
   <https://link.springer.com/chapter/10.1007/978-3-030-58768-0_3>
-- *Stochastic COLREGs Evaluation for Safe Navigation under Uncertainty* (arXiv 2024).
+- _Stochastic COLREGs Evaluation for Safe Navigation under Uncertainty_ (arXiv 2024).
   <https://arxiv.org/pdf/2402.05662>
-- Sreedharan, Ramachandran, Røsæg, Rokseth — *Safety Assurances in Autonomous Vessels* (ER 2024). Digital-twin virtual testing against COLREG, not model checking — different tradeoff worth contrasting with the above.
+- Sreedharan, Ramachandran, Røsæg, Rokseth — _Safety Assurances in Autonomous Vessels_ (ER 2024). Digital-twin virtual testing against COLREG, not model checking — different tradeoff worth contrasting with the above.
   <https://link.springer.com/chapter/10.1007/978-3-031-75599-6_22>
 
 ## Tools
 
-- Lamport — *Specifying Systems* and the TLA+ video course. <https://lamport.azurewebsites.net/tla/tla.html>
-- Wayne — *Learn TLA+*. The practical on-ramp. <https://learntla.com>
-- Newcombe et al. — *How Amazon Web Services Uses Formal Methods* (CACM 2015). The talk you saw at Amazon, in paper form.
-- Pierce et al. — *Software Foundations*, vol. 1 *Logical Foundations*. The canonical Rocq tutorial. <https://softwarefoundations.cis.upenn.edu>
-- Fulton, Mitsch, Quesel, Völp, Platzer — *KeYmaera X: An Axiomatic Tactical Theorem Prover for Hybrid Systems* (CADE 2015). <https://keymaerax.org/> · <https://www.cs.cmu.edu/~smitsch/pdf/keymaerax.pdf>
-- Platzer — *Logical Foundations of Cyber-Physical Systems* (book behind KeYmaera X).
-- Jackson — *Software Abstractions* (Alloy).
-- Avižienis, Laprie, Randell, Landwehr — *Basic Concepts and Taxonomy of Dependable and Secure Computing* (IEEE TDSC 1(1), 2004). The fault/error/failure vocabulary; see glossary entry.
+- Lamport — _Specifying Systems_ and the TLA+ video course. <https://lamport.azurewebsites.net/tla/tla.html>
+- Wayne — _Learn TLA+_. The practical on-ramp. <https://learntla.com>
+- Newcombe et al. — _How Amazon Web Services Uses Formal Methods_ (CACM 2015). The talk you saw at Amazon, in paper form.
+- Pierce et al. — _Software Foundations_, vol. 1 _Logical Foundations_. The canonical Rocq tutorial. <https://softwarefoundations.cis.upenn.edu>
+- Fulton, Mitsch, Quesel, Völp, Platzer — _KeYmaera X: An Axiomatic Tactical Theorem Prover for Hybrid Systems_ (CADE 2015). <https://keymaerax.org/> · <https://www.cs.cmu.edu/~smitsch/pdf/keymaerax.pdf>
+- Platzer — _Logical Foundations of Cyber-Physical Systems_ (book behind KeYmaera X).
+- Jackson — _Software Abstractions_ (Alloy).
+- Avižienis, Laprie, Randell, Landwehr — _Basic Concepts and Taxonomy of Dependable and Secure Computing_ (IEEE TDSC 1(1), 2004). The fault/error/failure vocabulary; see glossary entry.
   <https://doi.org/10.1109/TDSC.2004.2>

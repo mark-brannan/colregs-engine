@@ -49,9 +49,7 @@ describe('evaluateDeparture', () => {
       information: 'full',
       adversary: 'compliant',
     });
-    expect(f.model.assumptions_violated).toEqual([
-      expect.stringMatching(/carries no regions/),
-    ]);
+    expect(f.model.assumptions_violated).toEqual([expect.stringMatching(/carries no regions/)]);
     expect(f.rules.applied).toContain('rule:8f_iii');
   });
 
@@ -64,8 +62,18 @@ describe('evaluateDeparture', () => {
           when: { 'pair:geo:cpa_m': { lt: 50 } },
           status: 'model-rule-conflict',
           advisories: [
-            { action: { alter_deg: 30 }, margin_m: 80, breaches: ['17(a)(i)'], envelope: { holds_until_s: 120 } },
-            { action: { sog_kn: 0 }, margin_m: 150, breaches: ['17(a)(i)'], envelope: { holds_until_s: 90 } },
+            {
+              action: { alter_deg: 30 },
+              margin_m: 80,
+              breaches: ['17(a)(i)'],
+              envelope: { holds_until_s: 120 },
+            },
+            {
+              action: { sog_kn: 0 },
+              margin_m: 150,
+              breaches: ['17(a)(i)'],
+              envelope: { holds_until_s: 90 },
+            },
           ],
         },
       ],
@@ -96,7 +104,9 @@ describe('evaluateDeparture', () => {
       regions: [{ when: { 'pair:geo:cpa_m': { gt: 500 } }, status: 'not-flagged' }],
     });
     expect(f.status).toBe('inconclusive-in-model');
-    expect(f.model.assumptions_violated).toEqual([expect.stringMatching(/no region of grid test-grid/)]);
+    expect(f.model.assumptions_violated).toEqual([
+      expect.stringMatching(/no region of grid test-grid/),
+    ]);
   });
 
   it('a colregs release mismatch is reported, not refused', () => {
@@ -105,8 +115,8 @@ describe('evaluateDeparture', () => {
   });
 
   it('rejects a model with no version', () => {
-    expect(() =>
-      evaluateDeparture(situation, { ...model, version: '' }),
-    ).toThrow(/version must be a non-empty string/);
+    expect(() => evaluateDeparture(situation, { ...model, version: '' })).toThrow(
+      /version must be a non-empty string/,
+    );
   });
 });

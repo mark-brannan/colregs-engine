@@ -47,9 +47,7 @@ describe('colregs situation fixtures (verbatim replay)', () => {
     if (c.status !== 'binding') continue;
 
     it(`${c.name}: applied entries match`, () => {
-      expect([...evaluateEncounter(c.situation).applied].sort()).toEqual(
-        c.expect.map(idOf).sort(),
-      );
+      expect([...evaluateEncounter(c.situation).applied].sort()).toEqual(c.expect.map(idOf).sort());
     });
 
     const withModality = c.expect.filter((e) => typeof e !== 'string');
