@@ -102,10 +102,13 @@ describe('the real fact space: no incoherent or duplicate records', () => {
     // and extractAxes reads bare fact: keys only, so they widen the
     // situation partition rather than this one. Was 94,887,936 before
     // colregs@main added fact:full_display_impracticable (Rule 27(e)'s
-    // gate), one more free boolean axis: 2x exactly.
+    // gate), one more free boolean axis: 2x exactly. Was 189,775,872
+    // before colregs@0.3.4 added Rule 31 (fact:seaplane) and 27(c) (first
+    // reader of fact:tow_restricts_deviation): two free booleans, 4x exactly.
     // Timeout: 20s covered the 11.9M-record space. Part D's three new axes
     // multiplied the walk by 8, to about two minutes; the 27(e) axis doubled
-    // it again, to 247s measured on one core. Each further free axis doubles it.
-    expect(n).toBe(189775872);
+    // it again, to 247s measured on one core; the two 0.3.4 axes quadrupled it, to 949s
+    // measured in CI. Each further free axis doubles it.
+    expect(n).toBe(759103488);
   }, 300_000);
 });
