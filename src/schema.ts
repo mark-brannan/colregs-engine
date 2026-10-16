@@ -13,17 +13,8 @@
 // `ApplicabilityData['entries'][number]`; each one resolves to a generated
 // type, so a schema change still lands as a compile error.
 
-import type {
-  ApplicabilityData,
-  LightsData,
-  RulesData,
-} from './generated/index.js';
-import type {
-  LightRef,
-  ShapeRef,
-  PredicateValue,
-  When,
-} from './generated/applicability.js';
+import type { ApplicabilityData, LightsData, RulesData } from './generated/index.js';
+import type { LightRef, ShapeRef, PredicateValue, When } from './generated/applicability.js';
 import type { FactRecord as FixtureFactRecord } from './generated/applicability-fixtures.js';
 
 /** Root type of each colregs data and fixture file. */
@@ -62,11 +53,7 @@ export type {
 } from './generated/applicability.js';
 
 /** colregs' fact vocabulary, as types. */
-export type {
-  FactKey,
-  FactRecord,
-  FactValues,
-} from './generated/fact-record.js';
+export type { FactKey, FactRecord, FactValues } from './generated/fact-record.js';
 
 /** A value a fact record may carry — including a derived key outside
  * `data/facts.json`'s own vocabulary, such as `fact:rule18_class`. */
@@ -108,10 +95,7 @@ export type Predicate = When;
 export type Constraint = PredicateValue;
 
 /** The numeric-gate arm of a constraint (`{ gte: 50 }`, `{ lt: 7 }`, …). */
-export type NumericConstraint = Exclude<
-  PredicateValue,
-  string | boolean | string[]
->;
+export type NumericConstraint = Exclude<PredicateValue, string | boolean | string[]>;
 
 /** One light as an entry's `lights` clause references it. */
 export type LightSpec = LightRef;

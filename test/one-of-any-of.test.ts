@@ -33,7 +33,9 @@ const powerOrSailOpt: Entry = {
   id: 'powerOrSailOpt',
   jurisdiction: 'intl',
   cite: 'test power-or-sail',
-  when: { any_of: [{ 'fact:propulsion': 'propulsion:power' }, { 'fact:propulsion': 'propulsion:sail' }] },
+  when: {
+    any_of: [{ 'fact:propulsion': 'propulsion:power' }, { 'fact:propulsion': 'propulsion:sail' }],
+  },
   lights: [{ light: 'test-light-power-or-sail' }],
   modality: 'modality:shall',
 };

@@ -55,7 +55,9 @@ describe('the reference encounter read against the engine', () => {
   for (const c of fixtures.cases) {
     it(`${c.name}: applied entries agree`, () => {
       const reference = referenceEncounter(data, c.situation);
-      expect([...reference.applied].sort()).toEqual([...appliedEncounterEntries(c.situation)].sort());
+      expect([...reference.applied].sort()).toEqual(
+        [...appliedEncounterEntries(c.situation)].sort(),
+      );
     });
 
     it(`${c.name}: the whole envelope agrees`, () => {

@@ -93,9 +93,7 @@ const files = readdirSync(SCHEMA_DIR)
 // an exact mirror only if nothing is left behind. fact-record.ts is a
 // separate generator's output (generate-fact-record.ts, from facts.json,
 // not schema/) and index.ts is rewritten below either way.
-const currentStems = new Set(
-  files.map((f) => basename(f, '.schema.json')),
-);
+const currentStems = new Set(files.map((f) => basename(f, '.schema.json')));
 const KEEP = new Set([
   'fact-record.ts',
   'situation.ts',
@@ -123,9 +121,7 @@ for (const file of files) {
     );
   }
 
-  const schema = JSON.parse(
-    readFileSync(join(SCHEMA_DIR, file), 'utf8'),
-  ) as JSONSchema;
+  const schema = JSON.parse(readFileSync(join(SCHEMA_DIR, file), 'utf8')) as JSONSchema;
   // The root interface is named from `title`, which upstream sets to the data
   // file's path. Everything else about the schema is compiled untouched.
   schema.title = root;
@@ -153,14 +149,9 @@ for (const file of files) {
 const barrel = [
   BANNER.replace('schema/%FILE%', 'schema/*.schema.json'),
   '',
-  ...modules.map(
-    ({ module }) =>
-      `export type * as ${camel(module)} from './${module}.js';`,
-  ),
+  ...modules.map(({ module }) => `export type * as ${camel(module)} from './${module}.js';`),
   '',
-  ...modules.map(
-    ({ module, root }) => `export type { ${root} } from './${module}.js';`,
-  ),
+  ...modules.map(({ module, root }) => `export type { ${root} } from './${module}.js';`),
   '',
 ].join('\n');
 writeFileSync(join(OUT_DIR, 'index.ts'), barrel);
@@ -169,6 +160,4 @@ function camel(s: string): string {
   return s.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 }
 
-console.log(
-  `generated ${modules.length} schema modules from colregs@${colregsVersion}`,
-);
+console.log(`generated ${modules.length} schema modules from colregs@${colregsVersion}`);

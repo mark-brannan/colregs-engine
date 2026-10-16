@@ -49,40 +49,40 @@ not a get-out-of-jail card. 2(a) removes the compliance defence.
 An item id is `P<phase>.<n>`; tooling-track items are `T<n>`. An id, once
 published, never names different work.
 
-| id | item | where |
-|---|---|---|
-| | **Phase 0: exhaustive conformance.** Data bugs, dead entries, confidence in each colregs release. | |
-| P0.1 | Threshold extractor and partitioned enumerator | `research/conformance` |
-| P0.2 | Conformance: engine output equals the reference for every record | `research/conformance` |
-| P0.3 | Consistency and coverage, each failure rendered as a vessel in prose | `research/conformance` |
-| P0.4 | Traceability: every entry cites a paragraph; every switchable paragraph has an entry or an exclusion | `research/conformance` |
-| P0.5 | Triage: a person rules each finding a data, engine or harness bug, or a genuine ambiguity | findings register |
-| | **Phase 1: Part B data model.** The engine's classification and obligation verbs; Searoom teaching scenarios. | |
-| P1.1 | Encounter classification by relative-bearing sector and visibility | colregs data, `src/` |
-| P1.2 | The Rule 18 hierarchy as a partial order, checked acyclic | colregs tests |
-| P1.3 | The modalities keep clear, stand on and not impede (Rule 8(f)) | `src/` |
-| P1.4 | Pairwise ambiguity zones: the exhaustive harness over the two-subject entries ([#104](https://github.com/mark-brannan/colregs-engine/issues/104)) | `research/conformance` |
-| | **Phase 2: multi-vessel incompleteness.** A scenario catalogue; a candidate publishable finding. | |
-| P2.1 | Scene evaluation over reduced traffic ([#105](https://github.com/mark-brannan/colregs-engine/issues/105)) | `src/` |
-| P2.2 | Three-vessel enumeration and the give-way cycle catalogue ([#106](https://github.com/mark-brannan/colregs-engine/issues/106)) | `research/multivessel` |
-| | **Phase 3: kinematics.** | |
-| P3.1 | Simple vessel dynamics, with the vague quantities as named parameters | `research/kinematics` |
-| P3.2 | The Rule 17(b) envelope by numeric reachability ([#107](https://github.com/mark-brannan/colregs-engine/issues/107)) | `research/kinematics` |
-| P3.3 | KeYmaera X proofs, only for specific claims worth proving | `research/kinematics` |
-| | **Phase 4: temporal and regime models,** shared with the plugin's timing model ([searoom#8](https://github.com/mark-brannan/searoom/issues/8)). | |
-| P4.1 | Part B invariants with stable ids | colregs `docs/part-b-invariants.md` |
-| P4.2 | TLA+ two-vessel protocol: Rule 13(d) history, Rule 17 phases, the Rule 19 switch | searoom#8 |
-| P4.3 | Three vessels; TLC finds the cyclic-obligation trace | searoom#8 |
-| P4.4 | Timed variant (UPPAAL, or TLA+ with a clock): "ample time" against stopping distance | searoom#8 |
-| | **Phase 5: simulator.** Seeing is believing; this is the skeptic's deliverable. | |
-| P5.1 | Browser encounter simulator, kinematics only, fed a scripted or checker trace | searoom |
-| P5.2 | Signal temporal logic monitors on the Krasowski and Althoff predicates | searoom |
-| P5.3 | Replay of a checker-found breakdown, each monitor going false at the instant its rule breaks | searoom |
-| | **Tooling track, never blocking.** For people who reasonably distrust "we ran a lot of tests". | |
-| T1 | Z3 restatement of P0.3 over real-valued axes | `research/z3` |
-| T2 | Alloy model of the P1.1 sector partition: no bearing in two sectors, or none | `research/alloy` |
-| T3 | Rocq lemma that threshold-partitioned enumeration is complete, which turns Phase 0 from a test into a proof | `research/rocq` |
-| T4 | Optional: the evaluator in Gallina, extracted and run as a second implementation against P0.2 | `research/rocq` |
+| id   | item                                                                                                                                              | where                               |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+|      | **Phase 0: exhaustive conformance.** Data bugs, dead entries, confidence in each colregs release.                                                 |                                     |
+| P0.1 | Threshold extractor and partitioned enumerator                                                                                                    | `research/conformance`              |
+| P0.2 | Conformance: engine output equals the reference for every record                                                                                  | `research/conformance`              |
+| P0.3 | Consistency and coverage, each failure rendered as a vessel in prose                                                                              | `research/conformance`              |
+| P0.4 | Traceability: every entry cites a paragraph; every switchable paragraph has an entry or an exclusion                                              | `research/conformance`              |
+| P0.5 | Triage: a person rules each finding a data, engine or harness bug, or a genuine ambiguity                                                         | findings register                   |
+|      | **Phase 1: Part B data model.** The engine's classification and obligation verbs; Searoom teaching scenarios.                                     |                                     |
+| P1.1 | Encounter classification by relative-bearing sector and visibility                                                                                | colregs data, `src/`                |
+| P1.2 | The Rule 18 hierarchy as a partial order, checked acyclic                                                                                         | colregs tests                       |
+| P1.3 | The modalities keep clear, stand on and not impede (Rule 8(f))                                                                                    | `src/`                              |
+| P1.4 | Pairwise ambiguity zones: the exhaustive harness over the two-subject entries ([#104](https://github.com/mark-brannan/colregs-engine/issues/104)) | `research/conformance`              |
+|      | **Phase 2: multi-vessel incompleteness.** A scenario catalogue; a candidate publishable finding.                                                  |                                     |
+| P2.1 | Scene evaluation over reduced traffic ([#105](https://github.com/mark-brannan/colregs-engine/issues/105))                                         | `src/`                              |
+| P2.2 | Three-vessel enumeration and the give-way cycle catalogue ([#106](https://github.com/mark-brannan/colregs-engine/issues/106))                     | `research/multivessel`              |
+|      | **Phase 3: kinematics.**                                                                                                                          |                                     |
+| P3.1 | Simple vessel dynamics, with the vague quantities as named parameters                                                                             | `research/kinematics`               |
+| P3.2 | The Rule 17(b) envelope by numeric reachability ([#107](https://github.com/mark-brannan/colregs-engine/issues/107))                               | `research/kinematics`               |
+| P3.3 | KeYmaera X proofs, only for specific claims worth proving                                                                                         | `research/kinematics`               |
+|      | **Phase 4: temporal and regime models,** shared with the plugin's timing model ([searoom#8](https://github.com/mark-brannan/searoom/issues/8)).   |                                     |
+| P4.1 | Part B invariants with stable ids                                                                                                                 | colregs `docs/part-b-invariants.md` |
+| P4.2 | TLA+ two-vessel protocol: Rule 13(d) history, Rule 17 phases, the Rule 19 switch                                                                  | searoom#8                           |
+| P4.3 | Three vessels; TLC finds the cyclic-obligation trace                                                                                              | searoom#8                           |
+| P4.4 | Timed variant (UPPAAL, or TLA+ with a clock): "ample time" against stopping distance                                                              | searoom#8                           |
+|      | **Phase 5: simulator.** Seeing is believing; this is the skeptic's deliverable.                                                                   |                                     |
+| P5.1 | Browser encounter simulator, kinematics only, fed a scripted or checker trace                                                                     | searoom                             |
+| P5.2 | Signal temporal logic monitors on the Krasowski and Althoff predicates                                                                            | searoom                             |
+| P5.3 | Replay of a checker-found breakdown, each monitor going false at the instant its rule breaks                                                      | searoom                             |
+|      | **Tooling track, never blocking.** For people who reasonably distrust "we ran a lot of tests".                                                    |                                     |
+| T1   | Z3 restatement of P0.3 over real-valued axes                                                                                                      | `research/z3`                       |
+| T2   | Alloy model of the P1.1 sector partition: no bearing in two sectors, or none                                                                      | `research/alloy`                    |
+| T3   | Rocq lemma that threshold-partitioned enumeration is complete, which turns Phase 0 from a test into a proof                                       | `research/rocq`                     |
+| T4   | Optional: the evaluator in Gallina, extracted and run as a second implementation against P0.2                                                     | `research/rocq`                     |
 
 ## Findings register
 

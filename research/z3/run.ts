@@ -69,7 +69,9 @@ type Evaluator = 'engine' | 'reference';
 function appliedBy(which: Evaluator, facts: FactRecord): Set<string> {
   // Both evaluators filter to category: 'display', as the theory does.
   return new Set(
-    which === 'engine' ? appliedDisplayEntries(facts, { data }) : referenceAppliedEntries(data, facts),
+    which === 'engine'
+      ? appliedDisplayEntries(facts, { data })
+      : referenceAppliedEntries(data, facts),
   );
 }
 
@@ -105,7 +107,9 @@ function replay(which: Evaluator, check: ModelCheck, facts: FactRecord): string 
       return null;
     }
     case 'no-entries-apply':
-      return applied.size === 0 ? null : `${applied.size} entries apply: ${[...applied].join(', ')}`;
+      return applied.size === 0
+        ? null
+        : `${applied.size} entries apply: ${[...applied].join(', ')}`;
     case 'entry-applies':
       return applied.has(check.id) ? null : `${check.id} does not apply`;
     case 'entry-unresolved': {
@@ -149,7 +153,9 @@ async function main(): Promise<void> {
   writeFileSync(smtPath, encoding.base + queriesToSmtLib(queries));
 
   console.log(`Z3 encoding of the applicability table (research programme T1)`);
-  console.log(`  entries      ${data.entries.length} total, ${encoding.entries.length} encoded (one-vessel category: display)`);
+  console.log(
+    `  entries      ${data.entries.length} total, ${encoding.entries.length} encoded (one-vessel category: display)`,
+  );
   if (encoding.excludedScoped.length > 0) {
     const byCategory = new Map<string, number>();
     for (const { category } of encoding.excludedScoped) {
@@ -295,7 +301,9 @@ async function main(): Promise<void> {
       console.log(`    ${r.query.title}`);
       if (r.query.recorded) {
         const rec = r.query.recorded;
-        const seen = rec.observed_on ? `recorded ${rec.observed_on} by ${rec.observed_by}` : `triaged as ${rec.class}`;
+        const seen = rec.observed_on
+          ? `recorded ${rec.observed_on} by ${rec.observed_by}`
+          : `triaged as ${rec.class}`;
         console.log(`    ${seen}${rec.finding ? ` (${rec.finding})` : ''}`);
       }
       if (r.facts) console.log(`    witness: ${describeVessel(r.facts)}`);
@@ -306,8 +314,8 @@ async function main(): Promise<void> {
   if (lemma.length > 0) {
     console.log('');
     console.log('=== PARTITION-LEMMA COUNTEREXAMPLE ===');
-    console.log("The claim that a predicate over numeric facts is decided by the");
-    console.log('enumeration\'s representatives (T3) does not hold here.');
+    console.log('The claim that a predicate over numeric facts is decided by the');
+    console.log("enumeration's representatives (T3) does not hold here.");
     for (const r of lemma) {
       console.log('');
       console.log(`  ${r.query.id}: ${r.lemmaCounterexample}`);
@@ -330,7 +338,9 @@ async function main(): Promise<void> {
 
   const wall = Date.now() - wall0;
   console.log('');
-  console.log(`wall clock: ${(wall / 1000).toFixed(1)}s (solver: ${(results.reduce((a, r) => a + r.ms, 0) / 1000).toFixed(1)}s)`);
+  console.log(
+    `wall clock: ${(wall / 1000).toFixed(1)}s (solver: ${(results.reduce((a, r) => a + r.ms, 0) / 1000).toFixed(1)}s)`,
+  );
 
   em.PThread.terminateAllThreads();
 

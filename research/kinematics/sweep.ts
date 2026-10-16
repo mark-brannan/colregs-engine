@@ -49,8 +49,16 @@ export interface Grid {
   speed_ratios: number[];
 }
 
-export const FULL_GRID: Grid = { bearings_per_sector: 12, range_count: 32, speed_ratios: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] };
-export const COARSE_GRID: Grid = { bearings_per_sector: 3, range_count: 12, speed_ratios: [1, 1.5, 2] };
+export const FULL_GRID: Grid = {
+  bearings_per_sector: 12,
+  range_count: 32,
+  speed_ratios: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+};
+export const COARSE_GRID: Grid = {
+  bearings_per_sector: 3,
+  range_count: 12,
+  speed_ratios: [1, 1.5, 2],
+};
 
 export interface Setup {
   solver: KinematicSolverParameters;
@@ -61,18 +69,31 @@ export interface Setup {
 }
 
 export function buildSetup(solver: KinematicSolverParameters, grid: Grid): Setup {
-  const limits: Limits = { max_turn_rate_deg_s: PENCIL.max_turn_rate_deg_s, max_decel_mps2: PENCIL.max_decel_mps2 };
+  const limits: Limits = {
+    max_turn_rate_deg_s: PENCIL.max_turn_rate_deg_s,
+    max_decel_mps2: PENCIL.max_decel_mps2,
+  };
   const manoeuvres: Manoeuvre[] = [];
   for (const alter_deg of PENCIL.alterations_deg) {
     for (const fraction of PENCIL.decel_fractions) {
-      manoeuvres.push({ alter_deg, decel_mps2: fraction * limits.max_decel_mps2, onset_s: PENCIL.onset_s });
+      manoeuvres.push({
+        alter_deg,
+        decel_mps2: fraction * limits.max_decel_mps2,
+        onset_s: PENCIL.onset_s,
+      });
     }
   }
   const lo = Math.ceil(PENCIL.min_range_factor * solver.separation_m);
   const ranges_m = Array.from({ length: grid.range_count }, (_, i) =>
     Math.round(lo * (PENCIL.max_range_m / lo) ** (i / (grid.range_count - 1))),
   );
-  return { solver, limits, manoeuvres, ranges_m, stand_on_speed_mps: PENCIL.stand_on_sog_kn * KN_TO_MPS };
+  return {
+    solver,
+    limits,
+    manoeuvres,
+    ranges_m,
+    stand_on_speed_mps: PENCIL.stand_on_sog_kn * KN_TO_MPS,
+  };
 }
 
 // --- The Part B sector partition ------------------------------------------
@@ -89,7 +110,10 @@ export interface Sector {
 
 interface FactsData {
   situation: {
-    constants: Record<'head_on_half_angle_deg' | 'overtaking_sector_from_deg' | 'overtaking_sector_to_deg', { value: number }>;
+    constants: Record<
+      'head_on_half_angle_deg' | 'overtaking_sector_from_deg' | 'overtaking_sector_to_deg',
+      { value: number }
+    >;
   };
 }
 
@@ -130,7 +154,10 @@ export interface Encounter {
  * heading does. When two do, the one with the higher closing speed, the
  * shorter time to go. `closing` is the closing speed in units of the
  * stand-on speed. */
-export function collisionCourse(rel_bearing_deg: number, speed_ratio: number): { heading_deg: number; closing: number } | null {
+export function collisionCourse(
+  rel_bearing_deg: number,
+  speed_ratio: number,
+): { heading_deg: number; closing: number } | null {
   const b = Math.cos(rel_bearing_deg * RAD);
   const disc = b * b - (1 - speed_ratio * speed_ratio);
   if (disc < 0) return null;
@@ -190,7 +217,12 @@ export interface Ray {
   monotone: boolean;
 }
 
-export function encounterOn(ray: Pick<Ray, 'rel_bearing_deg' | 'give_way_heading_deg'>, speed_ratio: number, range_m: number, setup: Setup): Encounter {
+export function encounterOn(
+  ray: Pick<Ray, 'rel_bearing_deg' | 'give_way_heading_deg'>,
+  speed_ratio: number,
+  range_m: number,
+  setup: Setup,
+): Encounter {
   return {
     rel_bearing_deg: ray.rel_bearing_deg,
     range_m,
@@ -218,7 +250,12 @@ export function fixtureEncounter(p: FixturePoint): Encounter {
   };
 }
 
-export function sweepRay(sector: Sector['name'], rel_bearing_deg: number, speed_ratio: number, setup: Setup): Ray {
+export function sweepRay(
+  sector: Sector['name'],
+  rel_bearing_deg: number,
+  speed_ratio: number,
+  setup: Setup,
+): Ray {
   const course = collisionCourse(rel_bearing_deg, speed_ratio);
   const ray: Ray = {
     sector,
@@ -290,7 +327,8 @@ export function sweep(setup: Setup, grid: Grid): Ray[] {
   const rays: Ray[] = [];
   for (const sector of partBSectors().filter((s) => s.stand_on)) {
     for (const bearing of sectorBearings(sector, grid.bearings_per_sector)) {
-      for (const ratio of grid.speed_ratios) rays.push(sweepRay(sector.name, bearing, ratio, setup));
+      for (const ratio of grid.speed_ratios)
+        rays.push(sweepRay(sector.name, bearing, ratio, setup));
     }
   }
   return rays;

@@ -24,7 +24,14 @@
 // `not` and both `any_of` forms are in colregs' schema since 0.2.0 and
 // exercised by real entries in data/applicability.json.
 
-import type { ApplicabilityData, Entry, FactRecord, FactValue, Modality, Predicate } from '../../src/types.js';
+import type {
+  ApplicabilityData,
+  Entry,
+  FactRecord,
+  FactValue,
+  Modality,
+  Predicate,
+} from '../../src/types.js';
 
 /**
  * Refinements: a fact value that also satisfies a constraint naming its
@@ -155,9 +162,7 @@ function jurisdictionEntries(data: ApplicabilityData, jurisdiction: string): Ent
       .map((s) => s.suppresses),
   );
   return data.entries.filter(
-    (e) =>
-      (e.jurisdiction === 'intl' && !suppressed.has(e.id)) ||
-      e.jurisdiction === jurisdiction,
+    (e) => (e.jurisdiction === 'intl' && !suppressed.has(e.id)) || e.jurisdiction === jurisdiction,
   );
 }
 

@@ -37,10 +37,14 @@ describe('evaluateEncounter', () => {
     expect(r.applied).toContain('rule:8f_iii');
     expect(r.categories['rule:15a:keep_out_of_the_way']).toBe('category:precedence');
     expect(r.categories['rule:11']).toBe('category:scope');
-    expect(r.provenance.evaluated_categories).toEqual(['category:scope', 'category:classification', 'category:precedence']);
+    expect(r.provenance.evaluated_categories).toEqual([
+      'category:scope',
+      'category:classification',
+      'category:precedence',
+    ]);
   });
 
-  it('18(f)(i) displaces 18(a)(iv) and takes the sailing vessel\'s stand-on with it', () => {
+  it("18(f)(i) displaces 18(a)(iv) and takes the sailing vessel's stand-on with it", () => {
     const r = evaluateEncounter(fixture('18(f)(i) overrides 18(a)(iv)'));
     expect(r.applied).toContain('rule:18a_iv');
     expect(r.overridden).toEqual([{ id: 'rule:18a_iv', by: 'rule:18f_i' }]);
@@ -54,7 +58,7 @@ describe('evaluateEncounter', () => {
     expect(r.roles.self).toEqual([{ role: 'role:give-way', by: 'rule:13a' }]);
   });
 
-  it("18(a)(i) over 15(a) across frames: the public `overridden` names the cross-frame override too", () => {
+  it('18(a)(i) over 15(a) across frames: the public `overridden` names the cross-frame override too', () => {
     // rule:18a_i fires only in the swapped frame (ADR 0016) and overrides
     // rule:15a:keep_out_of_the_way, which fires only in the self frame --
     // self-frame-only override resolution could never see this pair.
@@ -79,7 +83,11 @@ describe('evaluateEncounter', () => {
     const r = evaluateEncounter({
       self: { fact: { ...power } },
       other: {
-        fact: { ...power, 'fact:activity': 'activity:towing', 'fact:tow_restricts_deviation': true },
+        fact: {
+          ...power,
+          'fact:activity': 'activity:towing',
+          'fact:tow_restricts_deviation': true,
+        },
         // Q-58: rule:18a_ii now reads `other:hist:was_overtaking: false`, and an
         // absent fact fails every constraint, so the history has to be stated.
         hist: { 'hist:was_overtaking': false },
@@ -100,7 +108,7 @@ describe('evaluateEncounter', () => {
     expect(r.roles).toEqual({ self: [], other: [] });
   });
 
-  it('stamps caller data as the caller\'s', () => {
+  it("stamps caller data as the caller's", () => {
     const r = evaluateEncounter({ self: { fact: { ...power } } }, { data: applicability });
     expect(r.colregs.source).toBe('caller');
     expect(evaluateEncounter({ self: { fact: { ...power } } }).colregs.source).toBe('resolved');
@@ -117,15 +125,24 @@ describe('evaluateEncounter', () => {
       effect: { encounter: 'overtaking-in-narrow-channel' },
     } as unknown as ApplicabilityData['entries'][number];
     const overtaking = fixture('13(d) latch');
-    const first: ApplicabilityData = { ...applicability, entries: [novel, ...applicability.entries] };
-    const last: ApplicabilityData = { ...applicability, entries: [...applicability.entries, novel] };
+    const first: ApplicabilityData = {
+      ...applicability,
+      entries: [novel, ...applicability.entries],
+    };
+    const last: ApplicabilityData = {
+      ...applicability,
+      entries: [...applicability.entries, novel],
+    };
     // The known classification wins from either position in the data.
     expect(evaluateEncounter(overtaking, { data: first }).encounter).toBe('encounter:overtaking');
     expect(evaluateEncounter(overtaking, { data: last }).encounter).toBe('encounter:overtaking');
     // With nothing known applying, the new value is still reported, not dropped.
     const onlyNovel: ApplicabilityData = {
       ...applicability,
-      entries: [novel, ...applicability.entries.filter((e) => e.category !== 'category:classification')],
+      entries: [
+        novel,
+        ...applicability.entries.filter((e) => e.category !== 'category:classification'),
+      ],
     };
     expect(evaluateEncounter(overtaking, { data: onlyNovel }).encounter).toBe(
       'overtaking-in-narrow-channel',

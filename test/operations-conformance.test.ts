@@ -28,17 +28,16 @@ for (const file of readdirSync(SCHEMA_DIR)) {
 interface Operation {
   output: string;
 }
-const operations = (operationsJson as { operations: Record<string, Operation> })
-  .operations;
+const operations = (operationsJson as { operations: Record<string, Operation> }).operations;
 
 /** `"schema/display-evaluation.schema.json"` -> the Ajv-compiled validator
  * for that schema's `$id`, resolved the same way operations.json's own
  * `schema/...` paths resolve: relative to the package's schema/ directory. */
 function validatorFor(schemaRef: string) {
   const stem = schemaRef.replace(/^schema\//, '').replace(/\.schema\.json$/, '');
-  const schema = JSON.parse(
-    readFileSync(join(SCHEMA_DIR, `${stem}.schema.json`), 'utf8'),
-  ) as { $id: string };
+  const schema = JSON.parse(readFileSync(join(SCHEMA_DIR, `${stem}.schema.json`), 'utf8')) as {
+    $id: string;
+  };
   const validate = ajv.getSchema(schema.$id);
   if (!validate) {
     throw new Error(`no compiled schema for ${schemaRef} ($id ${schema.$id})`);

@@ -1,20 +1,21 @@
 # colregs-engine
 
-Two vessels are closing.   *What must they do?  Who gives way?  What must they display?*
+Two vessels are closing. _What must they do? Who gives way? What must they display?_
 
-The COLREGS, the International Regulations for Preventing Collisions at Sea, answer all three.  This project
-transforms the colregs so that a machine can evaluate and reason about them *deterministically*:
+The COLREGS, the International Regulations for Preventing Collisions at Sea, answer all three. This project
+transforms the colregs so that a machine can evaluate and reason about them _deterministically_:
 the whole of the rules as structured data, so the same situation always yields the same result,
-and every result can be traced back to the rule that produced it.  Going further, the engine
-and the rules are then *checked with formal methods*, which means mathematically proving the rule set
+and every result can be traced back to the rule that produced it. Going further, the engine
+and the rules are then _checked with formal methods_, which means mathematically proving the rule set
 is consistent and complete rather than just testing it a bunch and hoping it all works out.
 
 Related packages:
-* [colregs](https://github.com/mark-brannan/colregs) - the data and JSON Schema
-* [colregs-engine](https://github.com/mark-brannan/colregs-engine) - the engine that evaluates rules
-* [colregs-mcp](https://github.com/mark-brannan/colregs-mcp) - an MCP server so AI can use the engine
-* [nav-wright](https://github.com/mark-brannan/nav-wright) - draws vessels and displays (stub)
-* [searoom](https://github.com/mark-brannan/searoom) - a study tool demo
+
+- [colregs](https://github.com/mark-brannan/colregs) - the data and JSON Schema
+- [colregs-engine](https://github.com/mark-brannan/colregs-engine) - the engine that evaluates rules
+- [colregs-mcp](https://github.com/mark-brannan/colregs-mcp) - an MCP server so AI can use the engine
+- [nav-wright](https://github.com/mark-brannan/nav-wright) - draws vessels and displays (stub)
+- [searoom](https://github.com/mark-brannan/searoom) - a study tool demo
 
 See a [live demo](https://mark-brannan.github.io/searoom/) of searoom and the colregs data/engine.
 
@@ -28,9 +29,9 @@ import { evaluateDisplay } from 'colregs-engine';
 
 const result = evaluateDisplay({
   'fact:propulsion': 'propulsion:sail',
-  'fact:activity':   'activity:none',
-  'fact:position':   'position:underway',
-  'fact:length_m':   11.6,
+  'fact:activity': 'activity:none',
+  'fact:position': 'position:underway',
+  'fact:length_m': 11.6,
 });
 ```
 
@@ -60,11 +61,12 @@ aground:
 ```ts
 evaluateDisplay({
   'fact:propulsion': 'propulsion:power',
-  'fact:activity':   'activity:fishing',
-  'fact:position':   'position:aground',
-  'fact:length_m':   30,
+  'fact:activity': 'activity:fishing',
+  'fact:position': 'position:aground',
+  'fact:length_m': 30,
 });
 ```
+
 ```
 applied:  26c-id, 30d-anchor, 30d-red
 excluded: [{ id: "30a", by: "26c-id" }, { id: "30b", by: "26c-id" }]
@@ -111,17 +113,17 @@ it could not decide: nothing throws for want of data, though a malformed situati
 From `colregs-engine` ([src/index.ts](src/index.ts)). These are the engine's
 own vocabulary and do not move when colregs releases data.
 
-| Export | What you get |
-| --- | --- |
-| [`evaluateDisplay(facts, opts?)`](src/evaluate.ts) | every complete lawful display for one vessel, plus which entries applied and which were excluded and by whom |
-| [`DisplayEvaluation`](src/types.ts) | the result: `applied`, `excluded`, `displays`, the per-entry `categories`, the `provenance` block and the `colregs` version stamp |
-| [`EvaluationProvenance`](src/types.ts), [`RuleCategory`](src/schema.ts), [`RepresentedParagraph`](src/schema.ts), [`KnownOmission`](src/schema.ts) | what the evaluation read: categories, jurisdictions, Rule 2(a)/2(b) as represented but never computed, and known omissions |
-| [`DepartureStatus`](src/types.ts) | the closed status alphabet colregs' ADR 0005 §5 fixes, for `evaluateDeparture`; no field of `DisplayEvaluation` carries one |
-| [`Display`](src/types.ts), [`DisplayLight`](src/types.ts), [`DisplayShape`](src/types.ts) | one lawful display and one light or day shape in it, each citing `source_entry`, `via` and `modality` |
-| [`FactRecord`](src/generated/fact-record.ts) | the input, generated from colregs' `facts.json` |
-| [`Modality`](src/generated/applicability.ts) | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them |
-| [`evaluateEncounter(situation, opts?)`](src/encounter.ts), [`evaluateConduct(trace, opts?)`](src/conduct.ts), [`evaluateDeparture(situation, model, opts?)`](src/departure.ts) | scope, encounter type, risk grounds, roles and overrides for two vessels; the trace and departure verbs, partial as above |
-| [`evaluateScene(scene, opts?)`](src/scene.ts), [`reduceTraffic(self, others, opts?)`](src/traffic.ts) | every pair of an n-vessel scene, the traffic reduced per sector, and where pairwise duties conflict |
+| Export                                                                                                                                                                         | What you get                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| [`evaluateDisplay(facts, opts?)`](src/evaluate.ts)                                                                                                                             | every complete lawful display for one vessel, plus which entries applied and which were excluded and by whom                      |
+| [`DisplayEvaluation`](src/types.ts)                                                                                                                                            | the result: `applied`, `excluded`, `displays`, the per-entry `categories`, the `provenance` block and the `colregs` version stamp |
+| [`EvaluationProvenance`](src/types.ts), [`RuleCategory`](src/schema.ts), [`RepresentedParagraph`](src/schema.ts), [`KnownOmission`](src/schema.ts)                             | what the evaluation read: categories, jurisdictions, Rule 2(a)/2(b) as represented but never computed, and known omissions        |
+| [`DepartureStatus`](src/types.ts)                                                                                                                                              | the closed status alphabet colregs' ADR 0005 §5 fixes, for `evaluateDeparture`; no field of `DisplayEvaluation` carries one       |
+| [`Display`](src/types.ts), [`DisplayLight`](src/types.ts), [`DisplayShape`](src/types.ts)                                                                                      | one lawful display and one light or day shape in it, each citing `source_entry`, `via` and `modality`                             |
+| [`FactRecord`](src/generated/fact-record.ts)                                                                                                                                   | the input, generated from colregs' `facts.json`                                                                                   |
+| [`Modality`](src/generated/applicability.ts)                                                                                                                                   | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them                    |
+| [`evaluateEncounter(situation, opts?)`](src/encounter.ts), [`evaluateConduct(trace, opts?)`](src/conduct.ts), [`evaluateDeparture(situation, model, opts?)`](src/departure.ts) | scope, encounter type, risk grounds, roles and overrides for two vessels; the trace and departure verbs, partial as above         |
+| [`evaluateScene(scene, opts?)`](src/scene.ts), [`reduceTraffic(self, others, opts?)`](src/traffic.ts)                                                                          | every pair of an n-vessel scene, the traffic reduced per sector, and where pairwise duties conflict                               |
 
 `colregs-engine/schema` ([src/schema.ts](src/schema.ts)) is the colregs data
 shapes generated from that package's JSON Schema: `Entry`, `Predicate`,

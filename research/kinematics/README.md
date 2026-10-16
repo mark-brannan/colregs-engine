@@ -38,20 +38,20 @@ give-way or neither, so 17(b) does not name her.
 One table; `PENCIL` and `PENCIL_SOLVER` in `sweep.ts` hold the same values.
 The first four are the departure model's `SolverParameters`.
 
-| name | value | meaning |
-|---|---|---|
-| `dynamics` | `['unicycle']` | the only model implemented |
-| `horizon_s` | 600 | how long the pair is watched; "ample time" |
-| `cadence_s` | 1 | the tick at which separation is checked |
-| `separation_m` | 100 | the distance that counts as collision |
-| `stand_on_sog_kn` | 10 | the stand-on speed; give-way speed is a ratio of it |
-| `max_turn_rate_deg_s` | 1 | the bound on rate of turn |
-| `max_decel_mps2` | 0.05 | the bound on deceleration |
-| `alterations_deg` | -180 to 180, 17 values | course changes tried; "substantial" |
-| `decel_fractions` | 0, 0.5, 1 | shares of `max_decel_mps2` tried |
-| `onset_s` | 0 | delay before the give-way vessel acts |
-| `min_range_factor` | 1.2 | nearest range on the grid, times `separation_m` |
-| `max_range_m` | 5000 | farthest range on the grid |
+| name                  | value                  | meaning                                             |
+| --------------------- | ---------------------- | --------------------------------------------------- |
+| `dynamics`            | `['unicycle']`         | the only model implemented                          |
+| `horizon_s`           | 600                    | how long the pair is watched; "ample time"          |
+| `cadence_s`           | 1                      | the tick at which separation is checked             |
+| `separation_m`        | 100                    | the distance that counts as collision               |
+| `stand_on_sog_kn`     | 10                     | the stand-on speed; give-way speed is a ratio of it |
+| `max_turn_rate_deg_s` | 1                      | the bound on rate of turn                           |
+| `max_decel_mps2`      | 0.05                   | the bound on deceleration                           |
+| `alterations_deg`     | -180 to 180, 17 values | course changes tried; "substantial"                 |
+| `decel_fractions`     | 0, 0.5, 1              | shares of `max_decel_mps2` tried                    |
+| `onset_s`             | 0                      | delay before the give-way vessel acts               |
+| `min_range_factor`    | 1.2                    | nearest range on the grid, times `separation_m`     |
+| `max_range_m`         | 5000                   | farthest range on the grid                          |
 
 Pencil throughout: no data carries a canonical value for any row. Horizon,
 cadence and separation match `test/departure.test.ts`; `--model` replaces them.

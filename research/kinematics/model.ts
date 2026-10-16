@@ -48,15 +48,25 @@ export interface Manoeuvre {
 
 /** Accepts a record that asks for the unicycle and names a positive horizon,
  * cadence and separation; anything else is a model this sweep cannot read. */
-export function checkSolverParameters(p: Partial<KinematicSolverParameters>): KinematicSolverParameters {
+export function checkSolverParameters(
+  p: Partial<KinematicSolverParameters>,
+): KinematicSolverParameters {
   if (!p.dynamics?.includes('unicycle')) {
-    throw new Error(`dynamics ${JSON.stringify(p.dynamics)} does not include 'unicycle', the only model implemented`);
+    throw new Error(
+      `dynamics ${JSON.stringify(p.dynamics)} does not include 'unicycle', the only model implemented`,
+    );
   }
   for (const key of ['horizon_s', 'cadence_s', 'separation_m'] as const) {
     const value = p[key];
-    if (typeof value !== 'number' || !(value > 0)) throw new Error(`${key} must be a positive number, got ${value}`);
+    if (typeof value !== 'number' || !(value > 0))
+      throw new Error(`${key} must be a positive number, got ${value}`);
   }
-  return { dynamics: p.dynamics, horizon_s: p.horizon_s!, cadence_s: p.cadence_s!, separation_m: p.separation_m! };
+  return {
+    dynamics: p.dynamics,
+    horizon_s: p.horizon_s!,
+    cadence_s: p.cadence_s!,
+    separation_m: p.separation_m!,
+  };
 }
 
 const RAD = Math.PI / 180;
@@ -65,7 +75,10 @@ const RAD = Math.PI / 180;
  * (a circular arc); second-order accurate while the speed ramps down. A
  * vessel that stops mid-step travels only to where it stopped. */
 export function advance(v: Vessel, command: Command, dt: number, limits: Limits): Vessel {
-  const rate = Math.max(-limits.max_turn_rate_deg_s, Math.min(limits.max_turn_rate_deg_s, command.turn_rate_deg_s));
+  const rate = Math.max(
+    -limits.max_turn_rate_deg_s,
+    Math.min(limits.max_turn_rate_deg_s, command.turn_rate_deg_s),
+  );
   const decel = Math.max(0, Math.min(limits.max_decel_mps2, command.decel_mps2));
 
   let moving_s = dt;
@@ -113,7 +126,12 @@ export function execute(
       turn_rate = Math.min(limits.max_turn_rate_deg_s, remaining_deg / dt);
       remaining_deg = Math.max(0, remaining_deg - turn_rate * dt);
     }
-    v = advance(v, { turn_rate_deg_s: sign * turn_rate, decel_mps2: live ? m.decel_mps2 : 0 }, dt, limits);
+    v = advance(
+      v,
+      { turn_rate_deg_s: sign * turn_rate, decel_mps2: live ? m.decel_mps2 : 0 },
+      dt,
+      limits,
+    );
     if (!visit(k * dt, v)) return;
   }
 }

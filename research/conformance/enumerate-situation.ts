@@ -397,9 +397,12 @@ type Assignment = Map<string, AxisValue>;
 
 function satisfiesOne(key: string, value: AxisValue, constraint: unknown): boolean {
   if (value === undefined) return false; // an absent fact satisfies nothing
-  return referenceWhenMatches({ [key]: constraint } as unknown as Predicate, {
-    [key]: value,
-  } as unknown as FactRecord);
+  return referenceWhenMatches(
+    { [key]: constraint } as unknown as Predicate,
+    {
+      [key]: value,
+    } as unknown as FactRecord,
+  );
 }
 
 /**
