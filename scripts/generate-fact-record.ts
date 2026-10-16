@@ -54,9 +54,7 @@ interface FactsJson {
   };
 }
 
-const facts = JSON.parse(
-  readFileSync('node_modules/colregs/data/facts.json', 'utf8'),
-) as FactsJson;
+const facts = JSON.parse(readFileSync('node_modules/colregs/data/facts.json', 'utf8')) as FactsJson;
 const colregsVersion: string = JSON.parse(
   readFileSync('node_modules/colregs/package.json', 'utf8'),
 ).version;
@@ -98,9 +96,7 @@ for (const [key, f] of Object.entries(facts.enums ?? {})) {
   entries.push({ key, body: enumBody(f) });
 }
 
-const duplicates = entries
-  .map((e) => e.key)
-  .filter((k, i, all) => all.indexOf(k) !== i);
+const duplicates = entries.map((e) => e.key).filter((k, i, all) => all.indexOf(k) !== i);
 if (duplicates.length > 0) {
   throw new Error(
     `facts.json declares these keys in more than one section: ${duplicates.join(', ')}`,
@@ -154,9 +150,7 @@ export type FactRecord = {
 `;
 
 writeFileSync('src/generated/fact-record.ts', out);
-console.log(
-  `generated ${entries.length} fact keys from colregs@${colregsVersion}`,
-);
+console.log(`generated ${entries.length} fact keys from colregs@${colregsVersion}`);
 
 // §situation's six classes. Same source, same key/value-union derivation as
 // FACT_SPEC above; the one addition is `nullable`, because hist:latched_at_s
@@ -173,9 +167,7 @@ const fieldBody = (f: SituationField): string => {
   return `{ kind: '${f.type}'${suffix} }`;
 };
 
-const sectionEntries = (
-  section: Record<string, SituationField | string>,
-): Entry[] =>
+const sectionEntries = (section: Record<string, SituationField | string>): Entry[] =>
   Object.entries(section)
     .filter((pair): pair is [string, SituationField] => pair[0] !== 'note')
     .map(([key, f]) => ({ key, body: fieldBody(f) }));

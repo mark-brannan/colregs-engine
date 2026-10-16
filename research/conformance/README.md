@@ -28,34 +28,34 @@ generator noticing.
 
 Each axis gets representatives:
 
-| kind | representatives |
-|---|---|
-| enum | every value `FACT_SPEC` declares |
-| boolean | `true`, `false` |
+| kind    | representatives                                                                                                   |
+| ------- | ----------------------------------------------------------------------------------------------------------------- |
+| enum    | every value `FACT_SPEC` declares                                                                                  |
+| boolean | `true`, `false`                                                                                                   |
 | numeric | every constant a predicate compares against, plus one interior point per open interval — `2k+1` for `k` constants |
 
 The product of these representative counts is an upper bound of 47,443,968
 records:
 
-| axis | kind | representatives |
-|---|---|---|
-| `fact:activity` | enum | 13 |
-| `fact:composite_unit` | boolean | 2 |
-| `fact:gear_extent_m` | numeric | 3 |
-| `fact:length_m` | numeric | 11 |
-| `fact:making_way` | boolean | 2 |
-| `fact:max_speed_kn` | numeric | 3 |
-| `fact:motorsailing` | boolean | 2 |
-| `fact:near_channel` | boolean | 2 |
-| `fact:non_displacement` | boolean | 2 |
-| `fact:obstruction_exists` | boolean | 2 |
-| `fact:on_mooring_buoy` | boolean | 2 |
-| `fact:position` | enum | 4 |
-| `fact:propulsion` | enum | 3 |
-| `fact:time` | enum | 2 |
-| `fact:tow_length_m` | numeric | 3 |
-| `fact:wig` | boolean | 2 |
-| `fact:wig_near_surface` | boolean | 2 |
+| axis                      | kind    | representatives |
+| ------------------------- | ------- | --------------- |
+| `fact:activity`           | enum    | 13              |
+| `fact:composite_unit`     | boolean | 2               |
+| `fact:gear_extent_m`      | numeric | 3               |
+| `fact:length_m`           | numeric | 11              |
+| `fact:making_way`         | boolean | 2               |
+| `fact:max_speed_kn`       | numeric | 3               |
+| `fact:motorsailing`       | boolean | 2               |
+| `fact:near_channel`       | boolean | 2               |
+| `fact:non_displacement`   | boolean | 2               |
+| `fact:obstruction_exists` | boolean | 2               |
+| `fact:on_mooring_buoy`    | boolean | 2               |
+| `fact:position`           | enum    | 4               |
+| `fact:propulsion`         | enum    | 3               |
+| `fact:time`               | enum    | 2               |
+| `fact:tow_length_m`       | numeric | 3               |
+| `fact:wig`                | boolean | 2               |
+| `fact:wig_near_surface`   | boolean | 2               |
 
 `fact:length_m` has eleven representatives because the entries compare
 against five constants — 7, 12, 20, 50 and 100 m; the last is Rule 30(c),

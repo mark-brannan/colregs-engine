@@ -54,7 +54,9 @@ for (const e of twoSubject) {
       const unprefixed = key.slice(key.indexOf(':') + 1);
       const strings = (s: unknown): void => {
         if (typeof s === 'string') {
-          (namedValues.get(unprefixed) ?? namedValues.set(unprefixed, new Set()).get(unprefixed)!).add(s);
+          (
+            namedValues.get(unprefixed) ?? namedValues.set(unprefixed, new Set()).get(unprefixed)!
+          ).add(s);
         } else if (Array.isArray(s)) {
           for (const v of s) strings(v);
         } else if (s !== null && typeof s === 'object') {
@@ -70,9 +72,9 @@ for (const e of twoSubject) {
         for (const k of ['gte', 'gt', 'lte', 'lt']) {
           if (typeof o[k] === 'number') {
             hit = true;
-            (comparedTo.get(unprefixed) ?? comparedTo.set(unprefixed, new Set()).get(unprefixed)!).add(
-              o[k] as number,
-            );
+            (
+              comparedTo.get(unprefixed) ?? comparedTo.set(unprefixed, new Set()).get(unprefixed)!
+            ).add(o[k] as number);
           }
         }
         if (hit) return;
@@ -156,7 +158,11 @@ describe('the situation axis table', () => {
 describe('the rank witness', () => {
   it('realises a rank or says it cannot', () => {
     for (const rank of RULE18_CLASS_VALUES) {
-      for (const propulsion of ['propulsion:power', 'propulsion:sail', 'propulsion:oars'] as const) {
+      for (const propulsion of [
+        'propulsion:power',
+        'propulsion:sail',
+        'propulsion:oars',
+      ] as const) {
         const witness = rankWitness(rank, { 'fact:propulsion': propulsion });
         if (witness === undefined) continue;
         expect(witness['fact:propulsion']).toBe(propulsion);
@@ -176,8 +182,12 @@ describe('the rank witness', () => {
   });
 
   it('refuses a rank the chosen facts contradict', () => {
-    expect(rankWitness('rule18_class:power', { 'fact:propulsion': 'propulsion:sail' })).toBeUndefined();
-    expect(rankWitness('rule18_class:sail', { 'fact:propulsion': 'propulsion:power' })).toBeUndefined();
+    expect(
+      rankWitness('rule18_class:power', { 'fact:propulsion': 'propulsion:sail' }),
+    ).toBeUndefined();
+    expect(
+      rankWitness('rule18_class:sail', { 'fact:propulsion': 'propulsion:power' }),
+    ).toBeUndefined();
   });
 
   it('realises an absent rank only where no decode row fires', () => {
@@ -242,7 +252,10 @@ describe('the enumeration', () => {
     expect(bearing.prunable).toBe(true);
     const withoutPins = axes.map((a) => ({ ...a, prunable: false }));
     expect(countSituations(data, narrowed.slice(0, 16))).toBeLessThan(
-      countSituations(data, withoutPins.map((a) => ({ ...a, values: a.values.slice(0, 2) })).slice(0, 16)),
+      countSituations(
+        data,
+        withoutPins.map((a) => ({ ...a, values: a.values.slice(0, 2) })).slice(0, 16),
+      ),
     );
   });
 });

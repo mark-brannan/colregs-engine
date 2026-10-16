@@ -1,9 +1,7 @@
 {
   "note": "Illustrative parameters, labelled pencil in the README. Each pair straddles the envelope on one bearing, one metre apart.",
   "solver": {
-    "dynamics": [
-      "unicycle"
-    ],
+    "dynamics": ["unicycle"],
     "horizon_s": 600,
     "cadence_s": 1,
     "separation_m": 100
@@ -12,10 +10,7 @@
     {
       "id": "crossing-port-315-x1-inside",
       "expect": "inside",
-      "cites": [
-        "17(a)(ii)",
-        "17(b)"
-      ],
+      "cites": ["17(a)(ii)", "17(b)"],
       "stand_on": {
         "heading_deg": 0,
         "sog_kn": 10
@@ -31,10 +26,7 @@
     {
       "id": "crossing-port-315-x1-outside",
       "expect": "outside",
-      "cites": [
-        "17(a)(ii)",
-        "17(b)"
-      ],
+      "cites": ["17(a)(ii)", "17(b)"],
       "stand_on": {
         "heading_deg": 0,
         "sog_kn": 10
@@ -50,10 +42,7 @@
     {
       "id": "crossing-port-300-x1.5-inside",
       "expect": "inside",
-      "cites": [
-        "17(a)(ii)",
-        "17(b)"
-      ],
+      "cites": ["17(a)(ii)", "17(b)"],
       "stand_on": {
         "heading_deg": 0,
         "sog_kn": 10
@@ -69,10 +58,7 @@
     {
       "id": "crossing-port-300-x1.5-outside",
       "expect": "outside",
-      "cites": [
-        "17(a)(ii)",
-        "17(b)"
-      ],
+      "cites": ["17(a)(ii)", "17(b)"],
       "stand_on": {
         "heading_deg": 0,
         "sog_kn": 10
@@ -88,10 +74,7 @@
     {
       "id": "overtaking-180-x2-inside",
       "expect": "inside",
-      "cites": [
-        "17(a)(ii)",
-        "17(b)"
-      ],
+      "cites": ["17(a)(ii)", "17(b)"],
       "stand_on": {
         "heading_deg": 0,
         "sog_kn": 10
@@ -107,10 +90,7 @@
     {
       "id": "overtaking-180-x2-outside",
       "expect": "outside",
-      "cites": [
-        "17(a)(ii)",
-        "17(b)"
-      ],
+      "cites": ["17(a)(ii)", "17(b)"],
       "stand_on": {
         "heading_deg": 0,
         "sog_kn": 10

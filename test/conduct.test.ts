@@ -13,8 +13,9 @@ const applicability = applicabilityJson as unknown as ApplicabilityData;
 const fixtures = situationFixturesJson as unknown as {
   cases: { name: string; situation: Situation }[];
 };
-const crossing = fixtures.cases.find((c) => c.name.startsWith('crossing: self power-driven'))!
-  .situation;
+const crossing = fixtures.cases.find((c) =>
+  c.name.startsWith('crossing: self power-driven'),
+)!.situation;
 
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x));
 
@@ -77,7 +78,10 @@ describe('evaluateConduct', () => {
         geo: { 'geo:rel_bearing_deg': 200 },
         hist: { 'hist:was_overtaking': false },
       },
-      pair: { geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300 }, env: { 'env:narrow_channel': true } },
+      pair: {
+        geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300 },
+        env: { 'env:narrow_channel': true },
+      },
     };
     const r = evaluateConduct({ samples: [{ t_s: 0, situation }] });
     expect(r.phases).toContainEqual({ subject: 'self', phase: '16', at_s: 0 });
@@ -182,11 +186,18 @@ describe('evaluateConduct', () => {
     } as unknown as Entry;
     const data = { ...applicability, entries: [...applicability.entries, rule16] };
     const r = evaluateConduct(
-      { samples: [{ t_s: 5, situation: crossing }, { t_s: 8, situation: crossing }] },
+      {
+        samples: [
+          { t_s: 5, situation: crossing },
+          { t_s: 8, situation: crossing },
+        ],
+      },
       { data },
     );
     expect(r.applied).toEqual(['16']);
-    expect(r.verdicts).toEqual([{ id: '16', subject: 'self', verdict: 'pending', attached_at_s: 5 }]);
+    expect(r.verdicts).toEqual([
+      { id: '16', subject: 'self', verdict: 'pending', attached_at_s: 5 },
+    ]);
     expect(r.colregs.source).toBe('caller');
   });
 
@@ -195,13 +206,23 @@ describe('evaluateConduct', () => {
   });
 
   it('rejects a non-increasing clock', () => {
-    const trace: Trace = { samples: [{ t_s: 1, situation: crossing }, { t_s: 1, situation: crossing }] };
+    const trace: Trace = {
+      samples: [
+        { t_s: 1, situation: crossing },
+        { t_s: 1, situation: crossing },
+      ],
+    };
     expect(() => evaluateConduct(trace)).toThrow(/must be greater than/);
   });
 
   it('rejects `other` appearing and vanishing across the window', () => {
     const self = { self: crossing.self };
-    const trace: Trace = { samples: [{ t_s: 0, situation: crossing }, { t_s: 1, situation: self }] };
+    const trace: Trace = {
+      samples: [
+        { t_s: 0, situation: crossing },
+        { t_s: 1, situation: self },
+      ],
+    };
     expect(() => evaluateConduct(trace)).toThrow(/same two vessels/);
   });
 

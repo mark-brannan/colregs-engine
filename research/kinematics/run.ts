@@ -118,9 +118,20 @@ function boundaryTable(all: Ray[]): string {
     'clear_from_m',
     'monotone',
   ];
-  const cell = (x: number | string | boolean | null) => (x === null ? '' : typeof x === 'number' ? String(Math.round(x * 100) / 100) : String(x));
+  const cell = (x: number | string | boolean | null) =>
+    x === null ? '' : typeof x === 'number' ? String(Math.round(x * 100) / 100) : String(x);
   const rows = all.map((r) =>
-    [r.sector, r.rel_bearing_deg, r.speed_ratio, r.status, r.give_way_heading_deg, r.closing_mps, r.inside_up_to_m, r.clear_from_m, r.monotone]
+    [
+      r.sector,
+      r.rel_bearing_deg,
+      r.speed_ratio,
+      r.status,
+      r.give_way_heading_deg,
+      r.closing_mps,
+      r.inside_up_to_m,
+      r.clear_from_m,
+      r.monotone,
+    ]
       .map(cell)
       .join('\t'),
   );
@@ -132,17 +143,27 @@ function writeFixtures(full: Setup): void {
   for (const pick of FIXTURE_RAYS) {
     const ray = sweepRay(pick.sector, pick.rel_bearing_deg, pick.speed_ratio, full);
     if (ray.status !== 'closing' || ray.inside_up_to_m === null || ray.clear_from_m === null) {
-      throw new Error(`${pick.sector} ${pick.rel_bearing_deg} x${pick.speed_ratio} has no boundary to fixture`);
+      throw new Error(
+        `${pick.sector} ${pick.rel_bearing_deg} x${pick.speed_ratio} has no boundary to fixture`,
+      );
     }
     const heading = Math.round(ray.give_way_heading_deg! * 100) / 100;
     const sog = Math.round(pick.speed_ratio * PENCIL.stand_on_sog_kn * 100) / 100;
-    for (const [expect, range] of [['inside', ray.inside_up_to_m], ['outside', ray.clear_from_m]] as const) {
+    for (const [expect, range] of [
+      ['inside', ray.inside_up_to_m],
+      ['outside', ray.clear_from_m],
+    ] as const) {
       const point: FixturePoint = {
         id: `${pick.sector}-${pick.rel_bearing_deg}-x${pick.speed_ratio}-${expect}`,
         expect,
         cites: ['17(a)(ii)', '17(b)'],
         stand_on: { heading_deg: 0, sog_kn: PENCIL.stand_on_sog_kn },
-        give_way: { rel_bearing_deg: pick.rel_bearing_deg, range_m: range, heading_deg: heading, sog_kn: sog },
+        give_way: {
+          rel_bearing_deg: pick.rel_bearing_deg,
+          range_m: range,
+          heading_deg: heading,
+          sog_kn: sog,
+        },
         reading: reading(expect, range, heading, sog, pick.rel_bearing_deg, full),
       };
       if (inEnvelope(fixtureEncounter(point), full) !== (expect === 'inside')) {
@@ -160,7 +181,14 @@ function writeFixtures(full: Setup): void {
   console.log(`wrote ${FIXTURES}`);
 }
 
-function reading(expect: 'inside' | 'outside', range: number, heading: number, sog: number, bearing: number, s: Setup): string {
+function reading(
+  expect: 'inside' | 'outside',
+  range: number,
+  heading: number,
+  sog: number,
+  bearing: number,
+  s: Setup,
+): string {
   const head = `Stand-on vessel making ${PENCIL.stand_on_sog_kn} kn on 000. The give-way vessel bears ${bearing} at ${range} m, ${sog} kn on ${heading.toFixed(2).padStart(6, '0')}: a collision course.`;
   const n = s.manoeuvres.length;
   return expect === 'inside'

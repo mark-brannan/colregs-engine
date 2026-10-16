@@ -1,0 +1,14 @@
+node_modules
+dist
+coverage
+package-lock.json
+CHANGELOG.md
+.release-please-manifest.json
+# CI workflows are not reformatted by this tool
+.github
+# Written by `npm run generate`, checked by generate:check
+src/generated
+# Written by the conformance harness
+research/conformance/findings
+research/conformance/.runs
+research/z3/out

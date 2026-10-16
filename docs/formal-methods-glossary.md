@@ -23,8 +23,8 @@ meet them. Companion: [formal-methods-reading-list.md](formal-methods-reading-li
 - **Dependability taxonomy.** Fault → error → failure is the standard chain:
   a fault is the underlying defect, an error is the incorrect state it
   causes, a failure is the externally visible deviation from spec.
-  Avižienis, Laprie, Randell and Landwehr's *Basic Concepts and Taxonomy of
-  Dependable and Secure Computing* (IEEE TDSC 1(1), 2004) is the reference
+  Avižienis, Laprie, Randell and Landwehr's _Basic Concepts and Taxonomy of
+  Dependable and Secure Computing_ (IEEE TDSC 1(1), 2004) is the reference
   for this vocabulary and for attributes like safety, reliability and
   availability — useful for naming what a counterexample or a real
   collision actually is. <https://doi.org/10.1109/TDSC.2004.2>
@@ -107,8 +107,8 @@ meet them. Companion: [formal-methods-reading-list.md](formal-methods-reading-li
   friendlier algorithm-shaped syntax that compiles to TLA+. Amazon Web
   Services (AWS) used it on S3 and DynamoDB. Right for protocols and phase
   machines: who is give-way, what Rule 17 phase we're in.
-- **Temporal logic.** Logic with time operators: *always*, *eventually*,
-  *until*. **LTL (Linear Temporal Logic)** is over discrete steps; **STL
+- **Temporal logic.** Logic with time operators: _always_, _eventually_,
+  _until_. **LTL (Linear Temporal Logic)** is over discrete steps; **STL
   (Signal Temporal Logic)** adds real-valued time and signals, so "within
   60 s the range must exceed 0.5 nm" is expressible. STL is what the
   maritime literature uses.

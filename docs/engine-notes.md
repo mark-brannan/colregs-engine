@@ -71,7 +71,7 @@ each line below names the point that owns it.
 
 9. **Bare keys mean `own:`; `fact:rule18_class` is decoded per subject first.**
 10. **Any obligation overrides, `shall-not-impede` included** (9(b) is
-   written with it and overrides 18(a)(iv)); only a `may` overrider is inert.
+    written with it and overrides 18(a)(iv)); only a `may` overrider is inert.
 11. **A `none` effect confers no role.** 8(f)(iii) still appears in `applied`.
 12. **Competing classifications resolve overtaking, head-on, crossing, in
     that order:** 13(d) forbids reclassifying a latch, 14(c) errs head-on.

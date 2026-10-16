@@ -174,9 +174,7 @@ function valueMatches(value: unknown, constraint: Constraint): boolean {
   }
   if (value === constraint) return true;
   // refinement: a value matches a constraint naming its parent
-  return (
-    typeof value === 'string' && REFINEMENTS[value] === constraint
-  );
+  return typeof value === 'string' && REFINEMENTS[value] === constraint;
 }
 
 /** A predicate names its keys as data, so they are read as data too. */
@@ -561,9 +559,7 @@ function jurisdictionEntries(data: ApplicabilityData, jurisdiction: string): Ent
       .map((s) => s.suppresses),
   );
   return data.entries.filter(
-    (e) =>
-      (e.jurisdiction === 'intl' && !suppressed.has(e.id)) ||
-      e.jurisdiction === jurisdiction,
+    (e) => (e.jurisdiction === 'intl' && !suppressed.has(e.id)) || e.jurisdiction === jurisdiction,
   );
 }
 
@@ -583,10 +579,7 @@ function appliedEntryList(
 /** Ids of the entries whose predicate matches `facts` — the same set
  * `evaluateDisplay(...).applied` returns, without running display
  * composition. Validates `facts` on the same terms evaluateDisplay() does. */
-export function appliedDisplayEntries(
-  facts: FactRecord,
-  opts: EvaluateOptions = {},
-): string[] {
+export function appliedDisplayEntries(facts: FactRecord, opts: EvaluateOptions = {}): string[] {
   checkDataVersion(opts);
   validateFacts(facts);
   return appliedEntryList(
@@ -639,10 +632,7 @@ function scalarGates(when: Predicate): Record<string, ScalarGate> {
 
 /** -1 when `a` is the tighter bound on some shared key and `b` on none;
  * 1 for the reverse; 0 when neither or both. */
-function compareTightness(
-  a: Record<string, ScalarGate>,
-  b: Record<string, ScalarGate>,
-): number {
+function compareTightness(a: Record<string, ScalarGate>, b: Record<string, ScalarGate>): number {
   let aTighter = false;
   let bTighter = false;
   for (const key of Object.keys(a)) {
@@ -724,10 +714,7 @@ function rankDisplays(
  * vocabulary: an empty result must mean "this vessel shows nothing", never
  * "you misspelt something".
  */
-export function evaluateDisplay(
-  facts: FactRecord,
-  opts: EvaluateOptions = {},
-): DisplayEvaluation {
+export function evaluateDisplay(facts: FactRecord, opts: EvaluateOptions = {}): DisplayEvaluation {
   checkDataVersion(opts);
   const data = opts.data ?? RESOLVED_DATA;
   const source: 'resolved' | 'caller' = opts.data ? 'caller' : 'resolved';
@@ -768,9 +755,7 @@ export function evaluateDisplay(
     resolveOverrides(applied, modalities, DISPLAY_OBLIGATIONS, exemptedIds);
 
   const preliminaryOverridden = computeOverridden(new Set());
-  const { exempted, exemptedIds } = computeExempted(
-    preliminaryOverridden.overriddenIds,
-  );
+  const { exempted, exemptedIds } = computeExempted(preliminaryOverridden.overriddenIds);
   const { overridden, overriddenIds } = computeOverridden(exemptedIds);
 
   // Build the component node set: applied entries, minus exempted and
@@ -780,9 +765,7 @@ export function evaluateDisplay(
 
   const active = applied.filter(
     (e) =>
-      modalities[e.id] !== 'modality:exempt' &&
-      !exemptedIds.has(e.id) &&
-      !overriddenIds.has(e.id),
+      modalities[e.id] !== 'modality:exempt' && !exemptedIds.has(e.id) && !overriddenIds.has(e.id),
   );
 
   for (const e of active) {
@@ -866,9 +849,7 @@ export function evaluateDisplay(
       required.push(n);
       continue;
     }
-    const inLieuOfActive = (n.entry['rel:in_lieu_of'] ?? []).filter((r) =>
-      nodeIds.has(r),
-    );
+    const inLieuOfActive = (n.entry['rel:in_lieu_of'] ?? []).filter((r) => nodeIds.has(r));
     if (inLieuOfActive.length > 0) {
       binaries.push(n);
       continue;
@@ -905,10 +886,11 @@ export function evaluateDisplay(
   // exponentiation (not `1 << binaryCount`, itself unsafe past 31) and
   // fail loudly past the signed 32-bit bound rather than silently
   // returning fewer displays than exist (REQ-MODEL-8).
-  const totalCombos =
-    2 ** binaryCount * groupChoiceCounts.reduce((a, b) => a * b, 1);
+  const totalCombos = 2 ** binaryCount * groupChoiceCounts.reduce((a, b) => a * b, 1);
   if (totalCombos > 2 ** 31) {
-    throw new Error(`display enumeration: ${totalCombos} combinations exceeds the signed 32-bit bound`);
+    throw new Error(
+      `display enumeration: ${totalCombos} combinations exceeds the signed 32-bit bound`,
+    );
   }
 
   for (let combo = 0; combo < totalCombos; combo++) {
@@ -993,12 +975,8 @@ export function evaluateDisplay(
     const entryIds = [...members.keys()].sort();
     const fingerprint = JSON.stringify([
       entryIds,
-      lights
-        .map((l) => JSON.stringify(l.spec))
-        .sort(),
-      shapes
-        .map((s) => JSON.stringify(s.spec))
-        .sort(),
+      lights.map((l) => JSON.stringify(l.spec)).sort(),
+      shapes.map((s) => JSON.stringify(s.spec)).sort(),
     ]);
     if (seen.has(fingerprint)) continue;
     seen.add(fingerprint);
@@ -1007,10 +985,7 @@ export function evaluateDisplay(
       entries: entryIds,
       lights,
       shapes,
-      chosen: [
-        ...chosenBinaries.map((n) => n.id),
-        ...chosenGroupOptions.map((g) => g.node.id),
-      ],
+      chosen: [...chosenBinaries.map((n) => n.id), ...chosenGroupOptions.map((g) => g.node.id)],
     });
   }
 

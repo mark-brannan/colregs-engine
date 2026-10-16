@@ -26,7 +26,11 @@ function loadRule18Decode(): DecodeRow[] {
   const wellFormed =
     Array.isArray(rows) &&
     rows.every(
-      (r) => typeof r === 'object' && r !== null && typeof r.value === 'string' && typeof r.when === 'object',
+      (r) =>
+        typeof r === 'object' &&
+        r !== null &&
+        typeof r.value === 'string' &&
+        typeof r.when === 'object',
     );
   if (!wellFormed) {
     throw new Error(

@@ -7,12 +7,7 @@ import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json';
 import { evaluateDisplay } from '../src/evaluate';
-import type {
-  ApplicabilityData,
-  FactRecord,
-  RuleCategory,
-  DepartureStatus,
-} from '../src/types';
+import type { ApplicabilityData, FactRecord, RuleCategory, DepartureStatus } from '../src/types';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
 
@@ -57,17 +52,13 @@ const STATUSES: DepartureStatus[] = [
 
 describe('the category vocabulary', () => {
   it('is the one colregs declares', () => {
-    expect(Object.keys(applicability.categories ?? {}).sort()).toEqual(
-      [...CATEGORIES].sort(),
-    );
+    expect(Object.keys(applicability.categories ?? {}).sort()).toEqual([...CATEGORIES].sort());
   });
 
   it('is reported per applied and imported entry, over modalities key set', () => {
     for (const facts of [sloop12, trawler30]) {
       const result = evaluateDisplay(facts);
-      expect(Object.keys(result.categories)).toEqual(
-        Object.keys(result.modalities),
-      );
+      expect(Object.keys(result.categories)).toEqual(Object.keys(result.modalities));
       expect(Object.keys(result.categories).length).toBeGreaterThan(0);
     }
   });
@@ -109,10 +100,7 @@ describe('the status alphabet', () => {
   });
 
   it('is a type only: a display evaluation carries no status field', () => {
-    const result = evaluateDisplay(sloop12) as unknown as Record<
-      string,
-      unknown
-    >;
+    const result = evaluateDisplay(sloop12) as unknown as Record<string, unknown>;
     expect('status' in result).toBe(false);
     const values = new Set<unknown>(Object.values(result.provenance as object));
     for (const status of STATUSES) expect(values.has(status)).toBe(false);
@@ -121,9 +109,7 @@ describe('the status alphabet', () => {
 
 describe('provenance', () => {
   it('names the categories the verb evaluated', () => {
-    expect(evaluateDisplay(sloop12).provenance.evaluated_categories).toEqual([
-      'category:display',
-    ]);
+    expect(evaluateDisplay(sloop12).provenance.evaluated_categories).toEqual(['category:display']);
   });
 
   it('names every jurisdiction whose entries were eligible to match', () => {
@@ -176,12 +162,7 @@ describe('provenance', () => {
       '37',
     ]);
     for (const p of represented) {
-      expect(Object.keys(p).sort()).toEqual([
-        'category',
-        'cite',
-        'id',
-        'jurisdiction',
-      ]);
+      expect(Object.keys(p).sort()).toEqual(['category', 'cite', 'id', 'jurisdiction']);
     }
   });
 
@@ -208,9 +189,7 @@ describe('provenance', () => {
   it('survives data with no represented_paragraphs at all', () => {
     const stripped = { ...applicability } as ApplicabilityData;
     delete stripped.represented_paragraphs;
-    expect(
-      evaluateDisplay(sloop12, { data: stripped }).provenance.represented,
-    ).toEqual([]);
+    expect(evaluateDisplay(sloop12, { data: stripped }).provenance.represented).toEqual([]);
   });
 
   it('carries the known_omissions registry beside represented, cite, what and why, in data order', () => {
@@ -232,9 +211,7 @@ describe('provenance', () => {
     ]);
     const stripped = { ...applicability } as ApplicabilityData;
     delete stripped.known_omissions;
-    expect(
-      evaluateDisplay(sloop12, { data: stripped }).provenance.known_omissions,
-    ).toEqual([]);
+    expect(evaluateDisplay(sloop12, { data: stripped }).provenance.known_omissions).toEqual([]);
   });
 });
 

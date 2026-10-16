@@ -31,7 +31,10 @@ describe('allocateIds', () => {
   });
 
   it('keeps the id of a key already in the map', () => {
-    const prev: IdMap = { next: 3, ids: { [findingKey(b)]: 'FIND-01', [findingKey(a)]: 'FIND-02' } };
+    const prev: IdMap = {
+      next: 3,
+      ids: { [findingKey(b)]: 'FIND-01', [findingKey(a)]: 'FIND-02' },
+    };
     const { findings } = allocateIds([a, b], prev);
     expect(findings.map((f) => [f.check, f.id])).toEqual([
       ['b-check', 'FIND-01'],
@@ -57,7 +60,10 @@ describe('allocateIds', () => {
   });
 
   it('sorts rows by id, not by key', () => {
-    const prev: IdMap = { next: 3, ids: { [findingKey(c)]: 'FIND-01', [findingKey(a)]: 'FIND-02' } };
+    const prev: IdMap = {
+      next: 3,
+      ids: { [findingKey(c)]: 'FIND-01', [findingKey(a)]: 'FIND-02' },
+    };
     expect(allocateIds([a, c], prev).findings.map((f) => f.id)).toEqual(['FIND-01', 'FIND-02']);
   });
 
@@ -81,7 +87,9 @@ describe('parseIdMap', () => {
   });
 
   it('refuses one number held by two keys', () => {
-    expect(() => parseIdMap(text({ next: 3, ids: { k: 'FIND-01', j: 'FIND-1' } }))).toThrow(/held by both/);
+    expect(() => parseIdMap(text({ next: 3, ids: { k: 'FIND-01', j: 'FIND-1' } }))).toThrow(
+      /held by both/,
+    );
   });
 
   it('refuses a next at or below an allocated number', () => {

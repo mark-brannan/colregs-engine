@@ -70,9 +70,7 @@ const ENCOUNTER_RANK: Record<string, number> = {
  * where in `entries` the new rule happens to sit. Own keys only: without
  * that, `constructor` reads a function off the prototype. */
 function encounterRank(value: string): number {
-  return Object.prototype.hasOwnProperty.call(ENCOUNTER_RANK, value)
-    ? ENCOUNTER_RANK[value]
-    : -1;
+  return Object.prototype.hasOwnProperty.call(ENCOUNTER_RANK, value) ? ENCOUNTER_RANK[value] : -1;
 }
 
 /** A Part D sound/light signal entry: `category:display` like a light or a
@@ -120,7 +118,10 @@ function pooledRoles(
   data: ApplicabilityData,
   flat: FlatSituation,
   situation: Situation,
-): { roles: { self: SubjectRole[]; other: SubjectRole[] }; overridden: { id: string; by: string }[] } {
+): {
+  roles: { self: SubjectRole[]; other: SubjectRole[] };
+  overridden: { id: string; by: string }[];
+} {
   const swapped = swappedSituation(situation);
   const flatSwap = swapped ? flattenSituation(swapped) : undefined;
 
@@ -151,9 +152,12 @@ function pooledRoles(
     const selfEffect = effect?.self as SubjectRole['role'] | undefined;
     const otherEffect = effect?.other as SubjectRole['role'] | undefined;
     const frame = frameOf.get(entry.id);
-    const [toSelf, toOther] = frame === 'self' ? [selfEffect, otherEffect] : [otherEffect, selfEffect];
-    if (toSelf !== undefined && toSelf !== 'role:none') roles.self.push({ role: toSelf, by: entry.id });
-    if (toOther !== undefined && toOther !== 'role:none') roles.other.push({ role: toOther, by: entry.id });
+    const [toSelf, toOther] =
+      frame === 'self' ? [selfEffect, otherEffect] : [otherEffect, selfEffect];
+    if (toSelf !== undefined && toSelf !== 'role:none')
+      roles.self.push({ role: toSelf, by: entry.id });
+    if (toOther !== undefined && toOther !== 'role:none')
+      roles.other.push({ role: toOther, by: entry.id });
   }
   return { roles, overridden };
 }

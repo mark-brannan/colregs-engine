@@ -274,14 +274,14 @@ export function buildEncoding(data: ApplicabilityData): Encoding {
     `;; ${displayEntries.length} one-vessel category: 'category:display' (encoded below), ${excludedScoped.length} excluded`,
   );
   lines.push(';; (every excluded entry reads a self:/other:/pair:-scoped key,');
-  lines.push(';; which this theory declares no constant for; see encode.ts\'s');
+  lines.push(";; which this theory declares no constant for; see encode.ts's");
   lines.push(';; file header, point 4).');
   lines.push(';; Written to research/z3/out/ by `npm run z3` (gitignored: it is');
   lines.push(';; a function of the pinned colregs, not a source file). Hand it to');
   lines.push(';; any SMT-LIB 2 solver as-is.');
   lines.push(';;');
   lines.push(';; Numeric facts are Real: an `unsat` below holds for every real');
-  lines.push(';; value, not only for the enumeration\'s representatives.');
+  lines.push(";; value, not only for the enumeration's representatives.");
   lines.push('');
   lines.push('(set-logic QF_LIRA)');
   lines.push('(set-option :produce-models true)');
@@ -324,8 +324,12 @@ export function buildEncoding(data: ApplicabilityData): Encoding {
   // holds), producing a `sat` witness with no corresponding real record.
   // Constraining the modifier to imply its refinement holds closes that gap.
   const modifierAxes = axes.filter(
-    (a): a is Axis & { kind: 'boolean'; refines: NonNullable<Extract<Axis, { kind: 'boolean' }>['refines']> } =>
-      a.kind === 'boolean' && a.refines !== undefined,
+    (
+      a,
+    ): a is Axis & {
+      kind: 'boolean';
+      refines: NonNullable<Extract<Axis, { kind: 'boolean' }>['refines']>;
+    } => a.kind === 'boolean' && a.refines !== undefined,
   );
   if (modifierAxes.length > 0) {
     lines.push(';; ---------------------------------------------------------------');

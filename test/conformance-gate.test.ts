@@ -8,16 +8,42 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-const HOOK = resolve(dirname(fileURLToPath(import.meta.url)), '../.claude/hooks/conformance-gate.py');
+const HOOK = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../.claude/hooks/conformance-gate.py',
+);
 const RUN = 'npm run conformance -- --sample=1000';
 
 type Answer = string | string[];
 
 function transcript(...asks: { question: string; answer: Answer }[]): string {
   const lines = asks.flatMap(({ question, answer }, i) => [
-    { message: { role: 'assistant', content: [{ type: 'tool_use', id: `ask${i}`, name: 'AskUserQuestion', input: { questions: [{ question, options: [{ label: 'Run conformance' }, { label: 'Skip' }] }] } }] } },
     {
-      message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: `ask${i}`, content: `Your questions have been answered: "${question}"="${answer}".` }] },
+      message: {
+        role: 'assistant',
+        content: [
+          {
+            type: 'tool_use',
+            id: `ask${i}`,
+            name: 'AskUserQuestion',
+            input: {
+              questions: [{ question, options: [{ label: 'Run conformance' }, { label: 'Skip' }] }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      message: {
+        role: 'user',
+        content: [
+          {
+            type: 'tool_result',
+            tool_use_id: `ask${i}`,
+            content: `Your questions have been answered: "${question}"="${answer}".`,
+          },
+        ],
+      },
       toolUseResult: { questions: [{ question }], answers: { [question]: answer } },
     },
   ]);
@@ -28,7 +54,11 @@ function transcript(...asks: { question: string; answer: Answer }[]): string {
 
 function decision(command: string, transcriptPath: string): string {
   const run = spawnSync('python3', [HOOK], {
-    input: JSON.stringify({ tool_name: 'Bash', tool_input: { command }, transcript_path: transcriptPath }),
+    input: JSON.stringify({
+      tool_name: 'Bash',
+      tool_input: { command },
+      transcript_path: transcriptPath,
+    }),
     encoding: 'utf8',
   });
   expect(run.status, run.stderr).toBe(0);
@@ -89,7 +119,10 @@ describe('conformance gate', () => {
   });
 
   it('lets a later Skip withdraw an unspent approval', () => {
-    const path = transcript({ question: ASK, answer: 'Run conformance' }, { question: ASK, answer: 'Skip' });
+    const path = transcript(
+      { question: ASK, answer: 'Run conformance' },
+      { question: ASK, answer: 'Skip' },
+    );
     expect(allowed(RUN, path)).toBe(false);
   });
 

@@ -42,7 +42,8 @@ describe('conformance implausible-walk guard', () => {
 
   it('counts only FIND-nn.json fixtures', () => {
     const dir = mkdtempSync(join(tmpdir(), 'findings-'));
-    for (const n of ['FIND-01.json', 'FIND-02.json', 'README.md', 'triage.json']) writeFileSync(join(dir, n), '');
+    for (const n of ['FIND-01.json', 'FIND-02.json', 'README.md', 'triage.json'])
+      writeFileSync(join(dir, n), '');
     expect(committedFixtureCount(dir)).toBe(2);
     expect(committedFixtureCount(join(dir, 'missing'))).toBe(0);
   });

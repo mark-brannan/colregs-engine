@@ -137,7 +137,15 @@ export function recordFinding(
     }
     return;
   }
-  t.findings[key] = { check, groupKey, count: 1, description, cites, sampleFacts: facts, witnessOrdinal };
+  t.findings[key] = {
+    check,
+    groupKey,
+    count: 1,
+    description,
+    cites,
+    sampleFacts: facts,
+    witnessOrdinal,
+  };
 }
 
 export interface WalkOptions {
@@ -192,7 +200,8 @@ export function walkShard(axes: Axis[], opts: WalkOptions = {}): Tally {
 
       const engineSet = new Set(engineApplied);
       const refSet = new Set(refApplied);
-      const sameSet = engineSet.size === refSet.size && [...engineSet].every((id) => refSet.has(id));
+      const sameSet =
+        engineSet.size === refSet.size && [...engineSet].every((id) => refSet.has(id));
 
       if (!sameSet) {
         t.conformanceFailures++;
@@ -259,7 +268,11 @@ export function walkShard(axes: Axis[], opts: WalkOptions = {}): Tally {
       }
 
       for (const [aId, bId] of excludingPairs) {
-        if (evalResult.modalities[aId] !== 'modality:shall' || evalResult.modalities[bId] !== 'modality:shall') continue;
+        if (
+          evalResult.modalities[aId] !== 'modality:shall' ||
+          evalResult.modalities[bId] !== 'modality:shall'
+        )
+          continue;
         if (!engineApplied.includes(aId) || !engineApplied.includes(bId)) continue;
         t.conflictingObligationCount++;
         recordFinding(
