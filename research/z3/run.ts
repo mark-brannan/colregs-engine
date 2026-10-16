@@ -301,9 +301,8 @@ async function main(): Promise<void> {
       console.log(`    ${r.query.title}`);
       if (r.query.recorded) {
         const rec = r.query.recorded;
-        console.log(
-          `    recorded ${rec.observed_on} by ${rec.observed_by}${rec.finding ? ` (${rec.finding})` : ''}`,
-        );
+        const seen = rec.observed_on ? `recorded ${rec.observed_on} by ${rec.observed_by}` : `triaged as ${rec.class}`;
+        console.log(`    ${seen}${rec.finding ? ` (${rec.finding})` : ''}`);
       }
       if (r.facts) console.log(`    witness: ${describeVessel(r.facts)}`);
       if (r.facts) console.log(`    facts:   ${JSON.stringify(r.facts)}`);
