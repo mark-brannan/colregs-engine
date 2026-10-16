@@ -5,11 +5,18 @@
 //   npm run kinematics -- --coarse            # a sample of it
 //   npm run kinematics -- --model model.json  # solver parameters from a
 //                                             # departure model file
-//   npm run kinematics -- --write-fixtures    # rewrite fixtures.json
+//   npm run kinematics -- --write-fixtures    # rewrite fixtures.json (not
+//                                             # with --model: exits 2)
 //
 // The table goes to research/kinematics/out/boundary.tsv (gitignored: it is a
 // function of the pinned colregs and the README's parameter table). Exits
-// non-zero when a ray is not monotone in range. Not part of `npm test`.
+// non-zero when a ray is not monotone in range. Not part of `npm test`; the
+// model, sweep and fixtures are covered by test/kinematics.test.ts.
+//
+// boundary.tsv has one row per ray: the give-way heading, the closing speed,
+// inside_up_to_m, clear_from_m and whether the ray is monotone in range (a
+// closer point is never outside when a farther one on the ray is inside). A
+// ray with no collision course has empty cells.
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -48,9 +55,10 @@ const known = new Set(['--coarse', '--model', '--write-fixtures', '--help']);
 const modelAt = args.indexOf('--model');
 const unknown = args.filter((a, i) => !known.has(a) && i !== modelAt + 1);
 const missingModel = modelAt >= 0 && !args[modelAt + 1];
-if (args.includes('--help') || unknown.length > 0 || missingModel) {
-  console.error('usage: npm run kinematics -- [--coarse] [--model <file.json>] [--write-fixtures]');
-  process.exit(unknown.length > 0 || missingModel ? 2 : 0);
+const modelAndFixtures = modelAt >= 0 && args.includes('--write-fixtures');
+if (args.includes('--help') || unknown.length > 0 || missingModel || modelAndFixtures) {
+  console.error('usage: npm run kinematics -- [--coarse] [--model <file.json> | --write-fixtures]');
+  process.exit(unknown.length > 0 || missingModel || modelAndFixtures ? 2 : 0);
 }
 
 const solver: KinematicSolverParameters =

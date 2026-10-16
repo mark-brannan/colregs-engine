@@ -11,9 +11,6 @@ npm run kinematics -- --model m.json    # solver parameters from a departure mod
 npm run kinematics -- --write-fixtures  # rewrite fixtures.json from the full grid
 ```
 
-`npm test` covers the model, the sweep, the fixtures and coarse-grid
-monotonicity (test/kinematics.test.ts); the harness itself is not in it.
-
 ## What is computed
 
 Rule 17(b) binds the stand-on vessel when she is "so close that collision
@@ -61,10 +58,11 @@ cadence and separation match `test/departure.test.ts`; `--model` replaces them.
 
 ## What is claimed
 
-- **Outside** is witnessed: some manoeuvre in the set keeps the pair apart.
+- **Outside** is witnessed at the ticks and within the horizon: some manoeuvre
+  in the set keeps the pair apart at every tick, not necessarily between them
+  or after `horizon_s`.
 - **Inside** means no manoeuvre in the set does. A manoeuvre outside the set
   could, so the reported envelope contains the true one.
-- Separation is checked at the ticks, not between them.
 
 Not claimed: what a mariner should do, that any stand-on action resolves an
 inside geometry, Rule 19, a third vessel, wind or current, or a proof (item
@@ -72,11 +70,6 @@ P3.3).
 
 ## Output
 
-- `out/boundary.tsv` (gitignored): one row per ray, with the give-way heading,
-  the closing speed, `inside_up_to_m`, `clear_from_m` and whether the ray is
-  monotone in range. A ray with no collision course has empty cells.
-- `fixtures.json`: pairs of points one metre apart straddling the boundary on
-  three rays, citing 17(a)(ii) and 17(b): inside is where 17(b) binds,
-  outside is where the give-way vessel alone suffices.
-- Monotonicity: a closer point is never outside when a farther one on the ray
-  is inside; a violation exits non-zero.
+`out/boundary.tsv` (gitignored) and `fixtures.json`; `run.ts` lists the
+columns. The fixtures are pairs of points one metre apart straddling the
+boundary on three rays, citing 17(a)(ii) and 17(b).
