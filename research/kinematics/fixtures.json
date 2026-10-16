@@ -1,0 +1,127 @@
+{
+  "note": "Illustrative parameters, labelled pencil in the README. Each pair straddles the envelope on one bearing, one metre apart.",
+  "solver": {
+    "dynamics": [
+      "unicycle"
+    ],
+    "horizon_s": 600,
+    "cadence_s": 1,
+    "separation_m": 100
+  },
+  "points": [
+    {
+      "id": "crossing-port-315-x1-inside",
+      "expect": "inside",
+      "cites": [
+        "17(a)(ii)",
+        "17(b)"
+      ],
+      "stand_on": {
+        "heading_deg": 0,
+        "sog_kn": 10
+      },
+      "give_way": {
+        "rel_bearing_deg": 315,
+        "range_m": 367,
+        "heading_deg": 90,
+        "sog_kn": 10
+      },
+      "reading": "Stand-on vessel making 10 kn on 000. The give-way vessel bears 315 at 367 m, 10 kn on 090.00: a collision course. None of 51 manoeuvres keeps 100 m clear for 600 s: collision cannot be avoided by the give-way vessel alone."
+    },
+    {
+      "id": "crossing-port-315-x1-outside",
+      "expect": "outside",
+      "cites": [
+        "17(a)(ii)",
+        "17(b)"
+      ],
+      "stand_on": {
+        "heading_deg": 0,
+        "sog_kn": 10
+      },
+      "give_way": {
+        "rel_bearing_deg": 315,
+        "range_m": 368,
+        "heading_deg": 90,
+        "sog_kn": 10
+      },
+      "reading": "Stand-on vessel making 10 kn on 000. The give-way vessel bears 315 at 368 m, 10 kn on 090.00: a collision course. At least one of 51 manoeuvres keeps 100 m clear for 600 s: the give-way vessel alone can still avoid collision."
+    },
+    {
+      "id": "crossing-port-300-x1.5-inside",
+      "expect": "inside",
+      "cites": [
+        "17(a)(ii)",
+        "17(b)"
+      ],
+      "stand_on": {
+        "heading_deg": 0,
+        "sog_kn": 10
+      },
+      "give_way": {
+        "rel_bearing_deg": 300,
+        "range_m": 348,
+        "heading_deg": 84.74,
+        "sog_kn": 15
+      },
+      "reading": "Stand-on vessel making 10 kn on 000. The give-way vessel bears 300 at 348 m, 15 kn on 084.74: a collision course. None of 51 manoeuvres keeps 100 m clear for 600 s: collision cannot be avoided by the give-way vessel alone."
+    },
+    {
+      "id": "crossing-port-300-x1.5-outside",
+      "expect": "outside",
+      "cites": [
+        "17(a)(ii)",
+        "17(b)"
+      ],
+      "stand_on": {
+        "heading_deg": 0,
+        "sog_kn": 10
+      },
+      "give_way": {
+        "rel_bearing_deg": 300,
+        "range_m": 349,
+        "heading_deg": 84.74,
+        "sog_kn": 15
+      },
+      "reading": "Stand-on vessel making 10 kn on 000. The give-way vessel bears 300 at 349 m, 15 kn on 084.74: a collision course. At least one of 51 manoeuvres keeps 100 m clear for 600 s: the give-way vessel alone can still avoid collision."
+    },
+    {
+      "id": "overtaking-180-x2-inside",
+      "expect": "inside",
+      "cites": [
+        "17(a)(ii)",
+        "17(b)"
+      ],
+      "stand_on": {
+        "heading_deg": 0,
+        "sog_kn": 10
+      },
+      "give_way": {
+        "rel_bearing_deg": 180,
+        "range_m": 192,
+        "heading_deg": 0,
+        "sog_kn": 20
+      },
+      "reading": "Stand-on vessel making 10 kn on 000. The give-way vessel bears 180 at 192 m, 20 kn on 000.00: a collision course. None of 51 manoeuvres keeps 100 m clear for 600 s: collision cannot be avoided by the give-way vessel alone."
+    },
+    {
+      "id": "overtaking-180-x2-outside",
+      "expect": "outside",
+      "cites": [
+        "17(a)(ii)",
+        "17(b)"
+      ],
+      "stand_on": {
+        "heading_deg": 0,
+        "sog_kn": 10
+      },
+      "give_way": {
+        "rel_bearing_deg": 180,
+        "range_m": 193,
+        "heading_deg": 0,
+        "sog_kn": 20
+      },
+      "reading": "Stand-on vessel making 10 kn on 000. The give-way vessel bears 180 at 193 m, 20 kn on 000.00: a collision course. At least one of 51 manoeuvres keeps 100 m clear for 600 s: the give-way vessel alone can still avoid collision."
+    }
+  ]
+}
