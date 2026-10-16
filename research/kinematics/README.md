@@ -11,9 +11,8 @@ npm run kinematics -- --model m.json    # solver parameters from a departure mod
 npm run kinematics -- --write-fixtures  # rewrite fixtures.json from the full grid
 ```
 
-`npm test` covers the model against two hand-worked trajectories, the sweep
-against a hand-worked collision, the fixtures, and monotonicity on the coarse
-grid (test/kinematics.test.ts). The harness itself is not in `npm test`.
+`npm test` covers the model, the sweep, the fixtures and coarse-grid
+monotonicity (test/kinematics.test.ts); the harness itself is not in it.
 
 ## What is computed
 
@@ -32,11 +31,10 @@ reachability set.
 - The boundary on a ray (one bearing, one speed ratio) is the largest range
   inside, bisected to the metre.
 
-Bearings sample the open interior of the Part B sectors where self is the
-stand-on vessel in a collision-course encounter: overtaking and crossing-port.
-Their edges are read from `situation.constants` in colregs `data/facts.json`.
-The head-on and crossing-starboard sectors make self give-way or neither, so
-17(b) does not name her.
+Bearings sample the open interior of the Part B sectors where self stands on
+in a collision-course encounter: overtaking and crossing-port, with edges read
+from `situation.constants` in colregs `data/facts.json`. In the others self is
+give-way or neither, so 17(b) does not name her.
 
 ## Parameters
 
@@ -58,10 +56,8 @@ The first four are the departure model's `SolverParameters`.
 | `min_range_factor` | 1.2 | nearest range on the grid, times `separation_m` |
 | `max_range_m` | 5000 | farthest range on the grid |
 
-Pencil throughout: no data carries a canonical value for any row, and the
-rate-of-turn and deceleration bounds are not in `SolverParameters` at all. The
-horizon, cadence and separation are the values `test/departure.test.ts`
-uses; `--model` replaces them with a departure model file's own.
+Pencil throughout: no data carries a canonical value for any row. Horizon,
+cadence and separation match `test/departure.test.ts`; `--model` replaces them.
 
 ## What is claimed
 
@@ -70,26 +66,17 @@ uses; `--model` replaces them with a departure model file's own.
   could, so the reported envelope contains the true one.
 - Separation is checked at the ticks, not between them.
 
-Not claimed: what a mariner should do, that any action by the stand-on vessel
-resolves an inside geometry, Rule 19, a third vessel, wind or current, or a
-proof. A proof for a specific claim is item P3.3.
+Not claimed: what a mariner should do, that any stand-on action resolves an
+inside geometry, Rule 19, a third vessel, wind or current, or a proof (item
+P3.3).
 
 ## Output
 
-- `out/boundary.tsv` (gitignored; a function of the pinned colregs and the
-  table): one row per ray, with the give-way heading, the closing speed,
-  `inside_up_to_m`, `clear_from_m` and whether the ray is monotone in range.
-  A ray with no collision course has empty cells.
+- `out/boundary.tsv` (gitignored): one row per ray, with the give-way heading,
+  the closing speed, `inside_up_to_m`, `clear_from_m` and whether the ray is
+  monotone in range. A ray with no collision course has empty cells.
 - `fixtures.json`: pairs of points one metre apart straddling the boundary on
-  three rays, each read as two vessels and citing 17(a)(ii) and 17(b). The
-  inside point is where 17(b) binds; the outside point is where the give-way
-  vessel alone still suffices.
-- Monotonicity: a closer point on a ray is never outside when a farther one is
-  inside. A violation is printed and the run exits non-zero.
-
-## Files
-
-- `model.ts`: the unicycle step and the manoeuvre runner.
-- `sweep.ts`: sectors, collision course, envelope test, rays, boundary.
-- `run.ts`: the grid run, the table, the fixtures.
-- `fixtures.json`: the committed points.
+  three rays, citing 17(a)(ii) and 17(b): inside is where 17(b) binds,
+  outside is where the give-way vessel alone suffices.
+- Monotonicity: a closer point is never outside when a farther one on the ray
+  is inside; a violation exits non-zero.
