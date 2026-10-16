@@ -175,7 +175,7 @@ export function referenceEncounterModality(entry: Entry, flat: ReferenceFlat): M
 /** A Part D signal entry: filed under `category:display` like a light or a
  * shape, but emitting a `signal` sequence, and addressed to the other
  * vessel. The encounter verb reads these and no other display entry. */
-function isSignalEntry(e: Entry): boolean {
+export function isSignalEntry(e: Entry): boolean {
   return categoryOf(e) === 'category:display' && e.signal !== undefined;
 }
 
