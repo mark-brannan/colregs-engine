@@ -212,6 +212,30 @@ describe('provenance', () => {
       evaluateDisplay(sloop12, { data: stripped }).provenance.represented,
     ).toEqual([]);
   });
+
+  it('carries the known_omissions registry beside represented, cite, what and why, in data order', () => {
+    const { known_omissions } = evaluateDisplay(sloop12).provenance;
+    expect(applicability.known_omissions?.length).toBeGreaterThan(0);
+    expect(known_omissions).toEqual(applicability.known_omissions);
+    for (const o of known_omissions) {
+      expect(Object.keys(o).sort()).toEqual(['cite', 'what', 'why']);
+    }
+  });
+
+  it('carries the registry of the caller-supplied data, and none when it has none', () => {
+    const one: ApplicabilityData = {
+      ...applicability,
+      known_omissions: [{ cite: '1(a)', what: 'w', why: 'y' }],
+    };
+    expect(evaluateDisplay(sloop12, { data: one }).provenance.known_omissions).toEqual([
+      { cite: '1(a)', what: 'w', why: 'y' },
+    ]);
+    const stripped = { ...applicability } as ApplicabilityData;
+    delete stripped.known_omissions;
+    expect(
+      evaluateDisplay(sloop12, { data: stripped }).provenance.known_omissions,
+    ).toEqual([]);
+  });
 });
 
 describe('the fields a consumer already reads', () => {
