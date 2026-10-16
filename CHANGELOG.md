@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/mark-brannan/colregs-engine/compare/v0.1.8...v0.1.9) (2026-10-16)
+
+
+### Added
+
+* **conformance:** an act: axis in the situation enumerator, so Rule 34 signal entries are exercised ([#157](https://github.com/mark-brannan/colregs-engine/issues/157)) ([1bdb5bf](https://github.com/mark-brannan/colregs-engine/commit/1bdb5bff89584bae98546af7c93953e1d1cf2710))
+
 ## [0.1.8](https://github.com/mark-brannan/colregs-engine/compare/v0.1.7...v0.1.8) (2026-10-16)
 
 
