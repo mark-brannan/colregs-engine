@@ -475,6 +475,11 @@ export function provenanceOf(
         category,
       }),
     ),
+    known_omissions: (data.known_omissions ?? []).map(({ cite, what, why }) => ({
+      cite,
+      what,
+      why,
+    })),
   };
 }
 

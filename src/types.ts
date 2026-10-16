@@ -9,7 +9,13 @@
 // tests, which read applicability.json directly.
 
 import type { Effect, EffectRole, RuleId, Modality } from './generated/applicability.js';
-import type { LightSpec, RepresentedParagraph, RuleCategory, ShapeSpec } from './schema.js';
+import type {
+  KnownOmission,
+  LightSpec,
+  RepresentedParagraph,
+  RuleCategory,
+  ShapeSpec,
+} from './schema.js';
 import type { FactRecord } from './generated/fact-record.js';
 import type {
   Acts,
@@ -134,6 +140,14 @@ export interface EvaluationProvenance {
    * computed; a represented paragraph never becomes a status or a finding.
    */
   represented: RepresentedParagraph[];
+  /**
+   * Circumstance classes the fact model does not carry at all, in data
+   * order. Unlike `represented`, these are not paragraphs the data holds but
+   * cases its facts cannot express, so no result speaks to them either way.
+   * A statement about the model's inputs: it names no Rule that applies and
+   * is not a Rule 2 mechanism.
+   */
+  known_omissions: KnownOmission[];
 }
 
 /** One light as it appears in a resolved display, with its provenance. */

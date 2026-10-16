@@ -91,4 +91,4 @@ export type {
 // because the envelopes carry them, not a widening of `colregs-engine/schema`.
 export type { ParagraphCite } from './types.js';
 export type { EffectRole, Modality, RuleId } from './generated/applicability.js';
-export type { RepresentedParagraph, RuleCategory } from './schema.js';
+export type { KnownOmission, RepresentedParagraph, RuleCategory } from './schema.js';

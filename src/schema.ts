@@ -79,6 +79,15 @@ export type RepresentedParagraph = Omit<
   'note'
 >;
 
+/**
+ * A circumstance class the fact model does not represent in principle, from
+ * `applicability.json`'s `known_omissions` registry: the rule it touches
+ * (`cite`), what the rule says (`what`) and why the model cannot carry it
+ * (`why`). A statement about the model's inputs, not about which Rule
+ * applies.
+ */
+export type KnownOmission = NonNullable<ApplicabilityData['known_omissions']>[number];
+
 /** A predicate: fact key -> constraint. Every key must match (AND). */
 export type Predicate = When;
 

@@ -187,11 +187,26 @@ describe('ADR 0010 (engine half): nothing in colregs-engine reads rule text', ()
     }
   });
 
+  // The one exclusion, by name: `provenance.known_omissions`. It passes the
+  // registry in applicability.json through verbatim, and that registry's
+  // `what` quotes paragraphs (14(a), 18(d)(ii)) that also sit in the
+  // en-US.uscg corpus. The engine reads no corpus -- the words arrive in the
+  // data it was handed -- so the scan runs over everything else, after
+  // pinning the registry to exactly that data.
+  function withoutRegistry<T extends { provenance: { known_omissions: unknown } }>(
+    results: T[],
+  ): T[] {
+    for (const r of results) {
+      expect(r.provenance.known_omissions).toEqual(applicability.known_omissions ?? []);
+    }
+    return results.map((r) => ({ ...r, provenance: { ...r.provenance, known_omissions: [] } }));
+  }
+
   it('the display envelope carries none of the corpus text', () => {
     const results: DisplayEvaluation[] = displayCases.map((c) =>
       evaluateDisplay(c.facts, { data: applicability }),
     );
-    const serialized = JSON.stringify(results);
+    const serialized = JSON.stringify(withoutRegistry(results));
     for (const text of originalTexts) {
       expect(serialized).not.toContain(text);
     }
@@ -202,7 +217,9 @@ describe('ADR 0010 (engine half): nothing in colregs-engine reads rule text', ()
   it('the encounter envelope carries none of the corpus text', () => {
     // The richer of the two envelopes, and the one a consumer actually ships:
     // scope, roles, overridden, modalities, categories and provenance.
-    const serialized = JSON.stringify(bindingCases.map((c) => evaluateEncounter(c.situation)));
+    const serialized = JSON.stringify(
+      withoutRegistry(bindingCases.map((c) => evaluateEncounter(c.situation))),
+    );
     for (const text of originalTexts) {
       expect(serialized).not.toContain(text);
     }

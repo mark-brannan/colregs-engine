@@ -334,6 +334,7 @@ describe('the encoding against Z3', () => {
     const base: Record<string, FactValue> = {
       'fact:activity': 'activity:none',
       'fact:composite_unit': false,
+      'fact:full_display_impracticable': false,
       'fact:gear_extent_m': 0,
       'fact:length_m': 6,
       'fact:making_way': false,
