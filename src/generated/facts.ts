@@ -209,7 +209,9 @@ export interface FactsData {
         hist: string;
         env: string;
         act: string;
+        traffic: string;
       };
+      subjectless_classes?: string[];
       bare_key?: string;
       directional_note?: string;
     };
@@ -256,11 +258,32 @@ export interface FactsData {
           geo?: string;
           env?: string;
         };
+        traffic?: string;
       };
     };
     environment: {
       note?: string;
       [k: string]: SituationFact | string | undefined;
+    };
+    traffic?: {
+      note?: string;
+      status?: 'ink' | 'pencil' | 'open';
+      settled_by?: string;
+      sectors?: {
+        note?: string;
+        [k: string]: TrafficSector | string | undefined;
+      };
+      [k: string]:
+        | SituationFact
+        | string
+        | 'ink'
+        | 'pencil'
+        | 'open'
+        | {
+            note?: string;
+            [k: string]: TrafficSector | string | undefined;
+          }
+        | undefined;
     };
   };
 }
@@ -288,6 +311,9 @@ export interface NumericGate {
  *
  * This interface was referenced by `undefined`'s JSON-Schema definition
  * via the `patternProperty` "^env:[a-z0-9_]+$".
+ *
+ * This interface was referenced by `undefined`'s JSON-Schema definition
+ * via the `patternProperty` "^traffic:[a-z]+:[a-z0-9_]+$".
  */
 export interface SituationFact {
   type: 'number' | 'boolean' | 'enum' | 'position';
@@ -301,4 +327,15 @@ export interface SituationFact {
   note?: string;
   actuable: boolean;
   signalk?: string | null;
+}
+/**
+ * This interface was referenced by `undefined`'s JSON-Schema definition
+ * via the `patternProperty` "^(?!note$)[a-z]+$".
+ */
+export interface TrafficSector {
+  from: string;
+  to: string;
+  includes_from: boolean;
+  includes_to: boolean;
+  cite: string;
 }

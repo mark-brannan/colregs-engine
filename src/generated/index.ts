@@ -29,6 +29,7 @@ export type * as shapes from './shapes.js';
 export type * as situationFixtures from './situation-fixtures.js';
 export type * as sounds from './sounds.js';
 export type * as trace from './trace.js';
+export type * as trafficFacts from './traffic-facts.js';
 export type * as version from './version.js';
 
 export type { ApplicabilityFixtures } from './applicability-fixtures.js';
@@ -53,4 +54,5 @@ export type { ShapesData } from './shapes.js';
 export type { SituationFixtures } from './situation-fixtures.js';
 export type { SoundsData } from './sounds.js';
 export type { TraceSchema } from './trace.js';
+export type { TrafficFactsSchema } from './traffic-facts.js';
 export type { VersionData } from './version.js';
