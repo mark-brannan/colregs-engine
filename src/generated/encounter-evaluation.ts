@@ -10,6 +10,11 @@
 export type RuleIds = string[];
 export type SubjectRoles = SubjectRole[];
 export type ByEntryList = ByEntry[];
+export type KnownOmissions = {
+  cite: string;
+  what: string;
+  why: string;
+}[];
 
 /**
  * The result of evaluateEncounter: two vessels at one instant -- scope, encounter class, risk of collision with its grounds, roles as a set per subject, overrides and modalities (ADR 0011 §4, ADR 0014). Structure only.
@@ -93,6 +98,7 @@ export interface Provenance {
   )[];
   jurisdictions: string[];
   represented: RepresentedParagraph[];
+  known_omissions?: KnownOmissions;
 }
 export interface RepresentedParagraph {
   id: string;
