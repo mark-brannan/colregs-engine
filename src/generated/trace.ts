@@ -20,7 +20,7 @@ export interface TraceSchema {
   }[];
 }
 /**
- * Two vessels and the encounter at one instant: the input evaluateEncounter reads, nested by subject and class (ADR 0005 §2, ADR 0011 §3, ADR 0014). Structure only -- every kin:/geo:/hist:/env:/act: key must be declared in data/facts.json §situation, checked in the tests.
+ * Two vessels and the encounter at one instant: the input evaluateEncounter reads, nested by subject and class (ADR 0005 §2, ADR 0011 §3, ADR 0014), plus other traffic reduced to facts about self's options (colregs-engine#82). Structure only -- every kin:/geo:/hist:/env:/act: key must be declared in data/facts.json §situation, checked in the tests.
  */
 export interface Situation {
   self: Subject;
@@ -29,6 +29,7 @@ export interface Situation {
     geo?: GeoRecord;
     env?: EnvRecord;
   };
+  traffic?: TrafficFacts;
 }
 export interface Subject {
   fact: FactRecord;
@@ -181,4 +182,18 @@ export interface EnvRecord {
         latitude: number;
         longitude: number;
       };
+}
+/**
+ * Other traffic reduced to facts about self's options, per sector around self: the `traffic` class of a Situation (colregs-engine#82). Not vessels: a Situation stays two-vessel, and these flatten to `traffic:<sector>:<key>` in the predicate namespace. Every field is pencil until the reduction is written. Structure only.
+ */
+export interface TrafficFacts {
+  ahead?: Sector;
+  starboard?: Sector;
+  astern?: Sector;
+  port?: Sector;
+}
+export interface Sector {
+  count?: number;
+  nearest_nm?: number;
+  foreclosed?: boolean;
 }

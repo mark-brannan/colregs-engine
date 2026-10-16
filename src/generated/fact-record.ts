@@ -27,6 +27,7 @@ export const FACT_SPEC = {
   'fact:composite_unit': { kind: 'boolean' },
   'fact:non_displacement': { kind: 'boolean' },
   'fact:wig': { kind: 'boolean' },
+  'fact:seaplane': { kind: 'boolean' },
   'fact:wig_near_surface': { kind: 'boolean' },
   'fact:near_channel': { kind: 'boolean' },
   'fact:inconspicuous_partly_submerged_tow': { kind: 'boolean' },
