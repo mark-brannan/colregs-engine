@@ -850,7 +850,9 @@ export function evaluateDisplay(facts: FactRecord, opts: EvaluateOptions = {}): 
       continue;
     }
     const inLieuOfActive = (n.entry['rel:in_lieu_of'] ?? []).filter((r) => nodeIds.has(r));
-    if (inLieuOfActive.length > 0) {
+    // A `shall` replacement is no alternative: 24(a)(i)'s mastheads still
+    // bind when 24(d) imports the 23(a)(ii) light they replace.
+    if (inLieuOfActive.length > 0 && n.modality !== 'modality:shall') {
       binaries.push(n);
       continue;
     }
@@ -931,6 +933,9 @@ export function evaluateDisplay(facts: FactRecord, opts: EvaluateOptions = {}): 
     const members = new Map<string, Node>();
     for (const n of required) members.set(n.id, n);
     for (const g of chosenGroupOptions) members.set(g.node.id, g.node);
+    for (const n of required) {
+      for (const r of n.entry['rel:in_lieu_of'] ?? []) members.delete(r);
+    }
     for (const n of chosenBinaries) {
       for (const r of n.entry['rel:in_lieu_of'] ?? []) members.delete(r);
       members.set(n.id, n);
