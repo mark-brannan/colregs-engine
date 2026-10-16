@@ -15,19 +15,12 @@
 // input and throws), no error class nothing throws, no predicate internals.
 
 import { evaluateDisplay } from './evaluate.js';
-import { evaluateEncounter } from './encounter.js';
-import { evaluateConduct } from './conduct.js';
+import { evaluateCircumstances } from './circumstances.js';
+import { evaluateCompliance } from './compliance.js';
 import { evaluateDeparture } from './departure.js';
-import { evaluateScene } from './scene.js';
-import { reduceTraffic } from './traffic.js';
-export {
-  evaluateDisplay,
-  evaluateEncounter,
-  evaluateConduct,
-  evaluateDeparture,
-  evaluateScene,
-  reduceTraffic,
-};
+// evaluateScene (scene.ts) and reduceTraffic (traffic.ts) stay in the code,
+// unexported, until colregs' manifest names them again.
+export { evaluateDisplay, evaluateCircumstances, evaluateCompliance, evaluateDeparture };
 export { DataVersionMismatchError } from './errors.js';
 export type { EvaluateOptions } from './evaluate.js';
 
@@ -35,19 +28,20 @@ export type { EvaluateOptions } from './evaluate.js';
 // the exports above, rather than left to a consumer to discover a drift at
 // the call site. `satisfies` verifies structurally and changes no runtime
 // behaviour; the object is not exported. The pinned manifest still names
-// the three companions and the departure verb's old name; the bump to the
-// ADR 0023 manifest collapses this object to the six exports.
+// the three companions by their old verbs (appliedEncounterEntries,
+// appliedConductEntries) and the departure verb by its old name; the bump to
+// the ADR 0023 manifest collapses this object to the four exports.
 import { appliedDisplayEntries } from './evaluate.js';
-import { appliedEncounterEntries } from './encounter.js';
-import { appliedConductEntries } from './conduct.js';
+import { appliedCircumstancesEntries } from './circumstances.js';
+import { appliedComplianceEntries } from './compliance.js';
 import type { ColregsEngine } from './generated/colregs-engine.js';
 ({
   evaluateDisplay,
   appliedDisplayEntries,
-  evaluateEncounter,
-  appliedEncounterEntries,
-  evaluateConduct,
-  appliedConductEntries,
+  evaluateCircumstances,
+  appliedEncounterEntries: appliedCircumstancesEntries,
+  evaluateCompliance,
+  appliedConductEntries: appliedComplianceEntries,
   evaluateRule2Departure: evaluateDeparture,
 }) satisfies ColregsEngine;
 
@@ -57,19 +51,18 @@ export type {
   DepartureModel,
   DepartureRegion,
   Pair,
-  Scene,
   Situation,
   SolverParameters,
-  Subject,
+  Vessel,
   Trace,
   TraceSample,
 } from './types.js';
 
 // Answers.
 export type {
-  ConductEvaluation,
-  ConductPhaseChange,
-  ConductVerdict,
+  ComplianceEvaluation,
+  CompliancePhaseChange,
+  ComplianceVerdict,
   DepartureAdvisory,
   DepartureFinding,
   DepartureStatus,
@@ -77,14 +70,12 @@ export type {
   DisplayEvaluation,
   DisplayLight,
   DisplayShape,
-  EncounterEvaluation,
+  CircumstancesEvaluation,
   EvaluationProvenance,
-  SceneConflict,
-  SceneEvaluation,
-  SubjectRole,
-  TrafficFacts,
-  TrafficSector,
-  TrafficSectorFacts,
+  VesselRole,
+  OthersFacts,
+  OthersSector,
+  OthersSectorFacts,
 } from './types.js';
 
 // The vocabularies the answers are typed in — colregs' own, re-exported

@@ -1,11 +1,11 @@
-// evaluateConduct over a window: validation, the window it saw, conduct
+// evaluateCompliance over a window: validation, the window it saw, conduct
 // entries attaching, and the Rule 13(d)/17 phases read off role transitions.
 
 import { describe, expect, it } from 'vitest';
 import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
 import applicabilityJson from 'colregs/data/applicability.json';
-import { evaluateConduct, evaluateEncounter } from '../src/index';
-import { appliedConductEntries } from '../src/conduct';
+import { evaluateCompliance, evaluateCircumstances } from '../src/index';
+import { appliedComplianceEntries } from '../src/compliance';
 import type { Situation, Trace } from '../src/index';
 import type { ApplicabilityData, Entry } from '../src/types';
 
@@ -19,7 +19,7 @@ const crossing = fixtures.cases.find((c) =>
 
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x));
 
-describe('evaluateConduct', () => {
+describe('evaluateCompliance', () => {
   it('reports the window it saw and no conduct entries, since colregs has none yet', () => {
     const trace: Trace = {
       samples: [
@@ -27,15 +27,15 @@ describe('evaluateConduct', () => {
         { t_s: 30, situation: crossing },
       ],
     };
-    const r = evaluateConduct(trace);
+    const r = evaluateCompliance(trace);
     expect(r.window).toEqual({ from_s: 0, to_s: 30, samples: 2 });
     expect(r.applied).toEqual([]);
     expect(r.verdicts).toEqual([]);
-    expect(appliedConductEntries(trace)).toEqual([]);
+    expect(appliedComplianceEntries(trace)).toEqual([]);
   });
 
   it('phases: the give-way vessel enters Rule 16, the stand-on vessel 17(a)(i)', () => {
-    const r = evaluateConduct({ samples: [{ t_s: 10, situation: crossing }] });
+    const r = evaluateCompliance({ samples: [{ t_s: 10, situation: crossing }] });
     expect(r.phases).toEqual([
       { subject: 'self', phase: '16', at_s: 10 },
       { subject: 'other', phase: '17(a)(i)', at_s: 10 },
@@ -45,7 +45,7 @@ describe('evaluateConduct', () => {
   it('a stand-on vessel that alters course passes to 17(a)(ii)', () => {
     const turning = clone(crossing);
     turning.other!.kin!['kin:rot_deg_min'] = 5;
-    const r = evaluateConduct({
+    const r = evaluateCompliance({
       samples: [
         { t_s: 0, situation: crossing },
         { t_s: 60, situation: turning },
@@ -83,14 +83,14 @@ describe('evaluateConduct', () => {
         env: { 'env:narrow_channel': true },
       },
     };
-    const r = evaluateConduct({ samples: [{ t_s: 0, situation }] });
+    const r = evaluateCompliance({ samples: [{ t_s: 0, situation }] });
     expect(r.phases).toContainEqual({ subject: 'self', phase: '16', at_s: 0 });
     expect(r.phases.filter((p) => p.subject === 'self')).toHaveLength(1);
   });
 
   it('a latched overtaking vessel is in the 13(d) phase', () => {
     const latch = fixtures.cases.find((c) => c.name.startsWith('13(d) latch'))!.situation;
-    const r = evaluateConduct({ samples: [{ t_s: 0, situation: latch }] });
+    const r = evaluateCompliance({ samples: [{ t_s: 0, situation: latch }] });
     expect(r.phases).toContainEqual({ subject: 'self', phase: '13(d)', at_s: 0 });
   });
 
@@ -125,12 +125,12 @@ describe('evaluateConduct', () => {
       },
       pair: { geo: { 'geo:in_sight': true, 'geo:tcpa_s': 300, 'geo:risk_of_collision': true } },
     };
-    expect(evaluateEncounter(situation).roles.other).toContainEqual(
+    expect(evaluateCircumstances(situation).roles.other).toContainEqual(
       expect.objectContaining({ role: 'role:give-way', by: 'rule:13a' }),
     );
     const turning = clone(situation);
     turning.other!.kin!['kin:rot_deg_min'] = 5;
-    const r = evaluateConduct({
+    const r = evaluateCompliance({
       samples: [
         { t_s: 0, situation },
         { t_s: 60, situation: turning },
@@ -154,8 +154,8 @@ describe('evaluateConduct', () => {
     const latch = fixtures.cases.find((c) => c.name.startsWith('13(d) latch'))!.situation;
     const fog = clone(latch);
     fog.pair!.geo!['geo:in_sight'] = false;
-    expect(evaluateEncounter(fog).encounter).toBeUndefined();
-    const r = evaluateConduct({ samples: [{ t_s: 0, situation: fog }] });
+    expect(evaluateCircumstances(fog).encounter).toBeUndefined();
+    const r = evaluateCompliance({ samples: [{ t_s: 0, situation: fog }] });
     expect(r.phases).toEqual([]);
   });
 
@@ -185,7 +185,7 @@ describe('evaluateConduct', () => {
       effect: { self: 'role:give-way', other: 'role:none' },
     } as unknown as Entry;
     const data = { ...applicability, entries: [...applicability.entries, rule16] };
-    const r = evaluateConduct(
+    const r = evaluateCompliance(
       {
         samples: [
           { t_s: 5, situation: crossing },
@@ -202,7 +202,7 @@ describe('evaluateConduct', () => {
   });
 
   it('rejects an empty trace', () => {
-    expect(() => evaluateConduct({ samples: [] })).toThrow(/must not be empty/);
+    expect(() => evaluateCompliance({ samples: [] })).toThrow(/must not be empty/);
   });
 
   it('rejects a non-increasing clock', () => {
@@ -212,7 +212,7 @@ describe('evaluateConduct', () => {
         { t_s: 1, situation: crossing },
       ],
     };
-    expect(() => evaluateConduct(trace)).toThrow(/must be greater than/);
+    expect(() => evaluateCompliance(trace)).toThrow(/must be greater than/);
   });
 
   it('rejects `other` appearing and vanishing across the window', () => {
@@ -223,11 +223,11 @@ describe('evaluateConduct', () => {
         { t_s: 1, situation: self },
       ],
     };
-    expect(() => evaluateConduct(trace)).toThrow(/same two vessels/);
+    expect(() => evaluateCompliance(trace)).toThrow(/same two vessels/);
   });
 
   it('rejects a malformed sample situation', () => {
     const trace = { samples: [{ t_s: 0, situation: { self: { fact: { propulsion: 'sail' } } } }] };
-    expect(() => appliedConductEntries(trace as unknown as Trace)).toThrow(/fact:propulsion/);
+    expect(() => appliedComplianceEntries(trace as unknown as Trace)).toThrow(/fact:propulsion/);
   });
 });

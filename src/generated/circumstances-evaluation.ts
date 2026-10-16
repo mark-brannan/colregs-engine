@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs schema/encounter-evaluation.schema.json
+ * Source: colregs schema/circumstances-evaluation.schema.json
  * Version: declared in package.json, resolved in package-lock.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
@@ -17,9 +17,9 @@ export type KnownOmissions = {
 }[];
 
 /**
- * The result of evaluateEncounter: two vessels at one instant -- scope, encounter class, risk of collision with its grounds, roles as a set per subject, overrides and modalities (ADR 0011 §4, ADR 0014). Structure only.
+ * The result of evaluateCircumstances: two vessels at one instant -- scope, encounter class, risk of collision with its grounds, roles as a set per subject, overrides and modalities (ADR 0011 §4, ADR 0014). Structure only.
  */
-export interface EncounterEvaluationSchema {
+export interface CircumstancesEvaluationSchema {
   colregs: Colregs;
   applied: RuleIds;
   scope: RuleIds;

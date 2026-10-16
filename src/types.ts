@@ -211,7 +211,7 @@ export interface DisplayEvaluation {
   exempted: { id: string; by: string }[];
   /** Applied entries displaced by another applied obligation's
    * rel:overrides, with the overriding id — mirrors the same-named field
-   * ADR 0011 §4 defines on `EncounterEvaluation`. */
+   * ADR 0011 §4 defines on `CircumstancesEvaluation`. */
   overridden: { id: string; by: string }[];
   /** Every complete lawful display (alternatives unresolved, REQ-MODEL-8). */
   displays: Display[];
@@ -251,7 +251,7 @@ export interface DisplayEvaluation {
  * fixture's `situation` object is assignable here unedited — the flat
  * `self:fact:activity` form stays internal to the walker.
  */
-export interface Subject {
+export interface Vessel {
   fact: FactRecord;
   kin?: Kinematics;
   geo?: DirectionalGeometry;
@@ -270,23 +270,23 @@ export interface Pair {
 }
 
 export interface Situation {
-  self: Subject;
-  other?: Subject;
+  self: Vessel;
+  other?: Vessel;
   pair?: Pair;
   /** Other traffic, reduced to facts about `self`'s options (issue #82,
    * decisions.md 2026-09-16). Not vessels: `Situation` stays two-vessel,
-   * `evaluateEncounter` reads none of these keys, and `Trace` keeps the same
-   * two vessels throughout. Flattens to `traffic:<sector>:<key>`. Produced
+   * `evaluateCircumstances` reads none of these keys, and `Trace` keeps the same
+   * two vessels throughout. Flattens to `others:<sector>:<key>`. Produced
    * by `reduceTraffic`, or supplied by a caller that has already reduced. */
-  traffic?: TrafficFacts;
+  others?: OthersFacts;
 }
 
 /** Sectors around `self`, as the Rules and the grid predicates divide them. */
-export type TrafficSector = 'ahead' | 'starboard' | 'astern' | 'port';
+export type OthersSector = 'ahead' | 'starboard' | 'astern' | 'port';
 
 /** One sector's reduced facts. Every field is pencil until `reduceTraffic`
  * is written; a grid region may predicate on any of them today. */
-export interface TrafficSectorFacts {
+export interface OthersSectorFacts {
   /** Vessels in the sector, other than `other`. */
   count?: number;
   /** Range to the nearest of them, nautical miles. */
@@ -297,16 +297,16 @@ export interface TrafficSectorFacts {
   foreclosed?: boolean;
 }
 
-/** `Situation.traffic`: facts per sector, symmetric with nothing. */
-export type TrafficFacts = Partial<Record<TrafficSector, TrafficSectorFacts>>;
+/** `Situation.others`: facts per sector, symmetric with nothing. */
+export type OthersFacts = Partial<Record<OthersSector, OthersSectorFacts>>;
 
 /** The n-vessel input (issue #82 "Deferred", colregs ADR 0023): `self` and
  * every other vessel. `evaluateScene` evaluates each pair with
- * `evaluateEncounter` unchanged, reduces the rest to `TrafficFacts`, and
+ * `evaluateCircumstances` unchanged, reduces the rest to `OthersFacts`, and
  * reports where pairwise duties conflict. Pencil throughout. */
 export interface Scene {
-  self: Subject;
-  others: Subject[];
+  self: Vessel;
+  others: Vessel[];
   pairs?: Pair[];
 }
 
@@ -321,15 +321,15 @@ export interface SceneConflict {
 }
 
 export interface SceneEvaluation {
-  pairs: EncounterEvaluation[];
-  traffic: TrafficFacts;
+  pairs: CircumstancesEvaluation[];
+  others: OthersFacts;
   conflicts: SceneConflict[];
 }
 
 // ---------------------------------------------------------------------------
 // The three verbs ADR 0011 §4 and ADR 0012 name but do not build. Their
 // shapes live here, exported and compiler-checked, from the day they are
-// named; the verbs themselves are stubs in encounter.ts, conduct.ts and
+// named; the verbs themselves are stubs in circumstances.ts, compliance.ts and
 // departure.ts. Every field below is pencil until the verb that fills it is
 // written — see each ADR's register for what would settle it.
 // ---------------------------------------------------------------------------
@@ -343,14 +343,14 @@ export type ParagraphCite = string;
  * it. Roles are a set per subject: a sailing vessel meeting a
  * constrained-by-draught vessel holds `stand-on` and `shall-not-impede` at
  * once (colregs Q-36). */
-export interface SubjectRole {
+export interface VesselRole {
   role: EffectRole;
   by: RuleId;
 }
 
-/** The result of `evaluateEncounter`: two vessels at one instant
+/** The result of `evaluateCircumstances`: two vessels at one instant
  * (ADR 0011 §4). */
-export interface EncounterEvaluation {
+export interface CircumstancesEvaluation {
   colregs: { version: string; source: 'resolved' | 'caller' };
   /** Entries whose predicate matched, in data order. */
   applied: RuleId[];
@@ -362,7 +362,7 @@ export interface EncounterEvaluation {
   /** Rule 7(a) lets an entry add a ground and never deny one, so the
    * grounds ride with the assertion. */
   risk_of_collision: { asserted: boolean; by: RuleId[] };
-  roles: { self: SubjectRole[]; other: SubjectRole[] };
+  roles: { self: VesselRole[]; other: VesselRole[] };
   /** Applied entries displaced by another applied obligation's
    * `rel:overrides`. */
   overridden: { id: RuleId; by: RuleId }[];
@@ -392,7 +392,7 @@ export interface Trace {
 /** One conduct entry's verdict for one subject over the window. `pending`
  * means the window ended before the duty could be judged; an entry that
  * never attached is absent, not `pending`. */
-export interface ConductVerdict {
+export interface ComplianceVerdict {
   id: RuleId;
   subject: 'self' | 'other';
   verdict: 'kept' | 'breached' | 'pending';
@@ -407,21 +407,21 @@ export interface ConductVerdict {
 
 /** A transition of the Rule 13(d)/17 protocol state machine. `phase` is a
  * paragraph cite, never an entry id: several phases have no entry. */
-export interface ConductPhaseChange {
+export interface CompliancePhaseChange {
   subject: 'self' | 'other';
   phase: ParagraphCite;
   at_s: number;
 }
 
-/** The result of `evaluateConduct`: verdicts over the window the caller
+/** The result of `evaluateCompliance`: verdicts over the window the caller
  * handed over (ADR 0012 §3). */
-export interface ConductEvaluation {
+export interface ComplianceEvaluation {
   colregs: { version: string; source: 'resolved' | 'caller' };
   /** What window this result saw. */
   window: { from_s: number; to_s: number; samples: number };
   applied: RuleId[];
-  verdicts: ConductVerdict[];
-  phases: ConductPhaseChange[];
+  verdicts: ComplianceVerdict[];
+  phases: CompliancePhaseChange[];
 }
 
 /** The axes the Rule 2 sensitivity matrix varies. The field set is a claim
@@ -484,7 +484,7 @@ export interface DepartureAdvisory {
  * `no-robust-policy-in-model`. */
 export interface DepartureFinding {
   status: DepartureStatus;
-  rules: EncounterEvaluation;
+  rules: CircumstancesEvaluation;
   advisories: DepartureAdvisory[];
   model: {
     version: string;

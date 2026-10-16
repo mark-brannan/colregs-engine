@@ -1,4 +1,4 @@
-// evaluateEncounter — two vessels at one instant (ADR 0011 §4). One
+// evaluateCircumstances — two vessels at one instant (ADR 0011 §4). One
 // predicate pass over the scope, classification and precedence entries
 // against the flattened situation, then rel:overrides resolved between the
 // applied entries exactly as evaluateDisplay resolves it. Composition calls
@@ -18,14 +18,14 @@ import { validateSituation } from './facts.js';
 import { flattenSituation, situationMatches, type FlatSituation } from './situation.js';
 import type {
   ApplicabilityData,
-  EncounterEvaluation,
+  CircumstancesEvaluation,
   Entry,
   RuleId,
   FactRecord,
   Modality,
   RuleCategory,
   Situation,
-  SubjectRole,
+  VesselRole,
 } from './types.js';
 
 /** colregs' entries are written from one seat, so `roles` alone reads a
@@ -119,7 +119,7 @@ function pooledRoles(
   flat: FlatSituation,
   situation: Situation,
 ): {
-  roles: { self: SubjectRole[]; other: SubjectRole[] };
+  roles: { self: VesselRole[]; other: VesselRole[] };
   overridden: { id: string; by: string }[];
 } {
   const swapped = swappedSituation(situation);
@@ -145,12 +145,12 @@ function pooledRoles(
   const pooled = [...pooledById.values()];
   const { overridden, overriddenIds } = resolveOverrides(pooled, pooledModalities, OBLIGATIONS);
 
-  const roles: { self: SubjectRole[]; other: SubjectRole[] } = { self: [], other: [] };
+  const roles: { self: VesselRole[]; other: VesselRole[] } = { self: [], other: [] };
   for (const entry of pooled) {
     if (overriddenIds.has(entry.id)) continue;
     const effect = entry.effect as Record<string, unknown> | undefined;
-    const selfEffect = effect?.self as SubjectRole['role'] | undefined;
-    const otherEffect = effect?.other as SubjectRole['role'] | undefined;
+    const selfEffect = effect?.self as VesselRole['role'] | undefined;
+    const otherEffect = effect?.other as VesselRole['role'] | undefined;
     const frame = frameOf.get(entry.id);
     const [toSelf, toOther] =
       frame === 'self' ? [selfEffect, otherEffect] : [otherEffect, selfEffect];
@@ -169,7 +169,7 @@ function pooledRoles(
  *
  * @alpha
  */
-export function appliedEncounterEntries(
+export function appliedCircumstancesEntries(
   situation: Situation,
   opts: EvaluateOptions = {},
 ): RuleId[] {
@@ -186,10 +186,10 @@ export function appliedEncounterEntries(
  *
  * @alpha
  */
-export function evaluateEncounter(
+export function evaluateCircumstances(
   situation: Situation,
   opts: EvaluateOptions = {},
-): EncounterEvaluation {
+): CircumstancesEvaluation {
   checkDataVersion(opts);
   const data = opts.data ?? RESOLVED_DATA;
   const source: 'resolved' | 'caller' = opts.data ? 'caller' : 'resolved';
@@ -209,7 +209,7 @@ export function evaluateEncounter(
 
   const scope: RuleId[] = [];
   const riskBy: RuleId[] = [];
-  let encounter: EncounterEvaluation['encounter'];
+  let encounter: CircumstancesEvaluation['encounter'];
 
   for (const e of standing) {
     const effect = e.effect as Record<string, unknown> | undefined;
@@ -220,7 +220,7 @@ export function evaluateEncounter(
       case 'category:classification':
         if (effect?.risk_of_collision === true) riskBy.push(e.id);
         if (typeof effect?.encounter === 'string') {
-          const value = effect.encounter as NonNullable<EncounterEvaluation['encounter']>;
+          const value = effect.encounter as NonNullable<CircumstancesEvaluation['encounter']>;
           if (encounter === undefined || encounterRank(value) > encounterRank(encounter)) {
             encounter = value;
           }

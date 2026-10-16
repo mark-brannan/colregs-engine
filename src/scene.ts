@@ -1,5 +1,5 @@
 // The n-vessel combinator deferred by issue #82: every pair through
-// evaluateEncounter unchanged, the rest reduced to TrafficFacts, and a
+// evaluateCircumstances unchanged, the rest reduced to OthersFacts, and a
 // report of where pairwise duties conflict. Depends on reduceTraffic.
 import type { EvaluateOptions } from './evaluate.js';
 import type { Scene, SceneEvaluation } from './types.js';

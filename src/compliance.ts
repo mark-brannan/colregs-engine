@@ -1,4 +1,4 @@
-// evaluateConduct — what a vessel did over a window (ADR 0012 §2-§3). The
+// evaluateCompliance — what a vessel did over a window (ADR 0012 §2-§3). The
 // trace is validated and windowed, each sample is evaluated as an encounter,
 // conduct-category entries are matched at every sample, and the Rule 13(d)/17
 // protocol phases are read off the role transitions. The STL monitors that
@@ -12,14 +12,14 @@ import {
   entryCategory,
   type EvaluateOptions,
 } from './evaluate.js';
-import { evaluateEncounter } from './encounter.js';
+import { evaluateCircumstances } from './circumstances.js';
 import { validateTrace } from './facts.js';
 import { flattenSituation, situationMatches } from './situation.js';
 import type {
-  ConductEvaluation,
-  ConductPhaseChange,
-  ConductVerdict,
-  EncounterEvaluation,
+  ComplianceEvaluation,
+  CompliancePhaseChange,
+  ComplianceVerdict,
+  CircumstancesEvaluation,
   Entry,
   RuleId,
   ParagraphCite,
@@ -85,7 +85,7 @@ function isManoeuvring(
 function phaseAt(
   prev: TraceSample | undefined,
   cur: TraceSample,
-  evaluation: EncounterEvaluation,
+  evaluation: CircumstancesEvaluation,
   subject: SubjectKey,
 ): ParagraphCite | undefined {
   const latched = cur.situation[subject]?.hist?.['hist:was_overtaking'] === true;
@@ -115,7 +115,7 @@ function subjectsOf(entry: Entry): SubjectKey[] {
  *
  * @alpha
  */
-export function appliedConductEntries(trace: Trace, opts: EvaluateOptions = {}): RuleId[] {
+export function appliedComplianceEntries(trace: Trace, opts: EvaluateOptions = {}): RuleId[] {
   checkDataVersion(opts);
   validateTrace(trace);
   const candidates = conductEntries((opts.data ?? RESOLVED_DATA).entries);
@@ -132,17 +132,17 @@ export function appliedConductEntries(trace: Trace, opts: EvaluateOptions = {}):
  * @alpha Verdicts are `pending`: the monitors that decide `kept` and
  * `breached` are not built. Phases and attachment times are computed.
  */
-export function evaluateConduct(trace: Trace, opts: EvaluateOptions = {}): ConductEvaluation {
+export function evaluateCompliance(trace: Trace, opts: EvaluateOptions = {}): ComplianceEvaluation {
   checkDataVersion(opts);
   validateTrace(trace);
   const data = opts.data ?? RESOLVED_DATA;
   const source: 'resolved' | 'caller' = opts.data ? 'caller' : 'resolved';
   const samples = trace.samples;
 
-  const evaluations = samples.map((s) => evaluateEncounter(s.situation, opts));
+  const evaluations = samples.map((s) => evaluateCircumstances(s.situation, opts));
   const flats = samples.map((s) => flattenSituation(s.situation));
 
-  const verdicts: ConductVerdict[] = [];
+  const verdicts: ComplianceVerdict[] = [];
   const applied: RuleId[] = [];
   for (const e of conductEntries(data.entries)) {
     const at = flats.findIndex((flat) => situationMatches(e.when, flat));
@@ -153,7 +153,7 @@ export function evaluateConduct(trace: Trace, opts: EvaluateOptions = {}): Condu
     }
   }
 
-  const phases: ConductPhaseChange[] = [];
+  const phases: CompliancePhaseChange[] = [];
   const current: Record<SubjectKey, ParagraphCite | undefined> = {
     self: undefined,
     other: undefined,

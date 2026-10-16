@@ -18,7 +18,7 @@ import {
   HIST_SPEC,
   KIN_SPEC,
 } from './generated/situation.js';
-import type { Situation, Subject, Trace } from './types.js';
+import type { Situation, Vessel, Trace } from './types.js';
 
 /** Every generated spec, widened for lookup by an arbitrary runtime key. */
 type Spec =
@@ -132,7 +132,7 @@ export function validateFacts(facts: FactRecord): void {
   checkRecord(facts, SPEC, KEYS, 'fact');
 }
 
-function validateSubject(which: 'self' | 'other', subject: Subject): void {
+function validateVessel(which: 'self' | 'other', subject: Vessel): void {
   if (typeof subject !== 'object' || subject === null) {
     throw new Error(
       `situation.${which} is required and must be an object, got ${JSON.stringify(subject)}.`,
@@ -166,8 +166,8 @@ function validateSubject(which: 'self' | 'other', subject: Subject): void {
  * whatever TypeError reading a property of `undefined` happens to throw.
  */
 export function validateSituation(situation: Situation): void {
-  validateSubject('self', situation.self);
-  if (situation.other !== undefined) validateSubject('other', situation.other);
+  validateVessel('self', situation.self);
+  if (situation.other !== undefined) validateVessel('other', situation.other);
   if (situation.pair !== undefined) {
     if (typeof situation.pair !== 'object' || situation.pair === null) {
       throw new Error(`situation.pair must be an object, got ${JSON.stringify(situation.pair)}.`);

@@ -2,7 +2,7 @@
 // case, this package's real output validates against colregs' own result
 // schema — the manifest's `output` for each operation. Not a replay of the
 // fixture's `expect` (fixtures.test.ts and situation-fixtures.test.ts do
-// that); this checks the shape of what evaluateDisplay/evaluateEncounter
+// that); this checks the shape of what evaluateDisplay/evaluateCircumstances
 // actually return, against the schema colregs ships for it, so a field this
 // package adds, drops or mistypes fails here even when every entry id still
 // matches.
@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 import operationsJson from 'colregs/data/operations.json';
 import applicabilityFixturesJson from 'colregs/fixtures/applicability-fixtures.json';
 import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
-import { evaluateEncounter, evaluateDisplay } from '../src/index';
+import { evaluateCircumstances, evaluateDisplay } from '../src/index';
 import type { FactRecord, Situation } from '../src/index';
 
 const SCHEMA_DIR = 'node_modules/colregs/schema';
@@ -54,7 +54,7 @@ const situationFixtures = situationFixturesJson as unknown as {
 
 describe('round-trip conformance against colregs result schemas (ADR 0014)', () => {
   it('every operation in data/operations.json this package implements has a compilable output schema', () => {
-    for (const verb of ['evaluateDisplay', 'evaluateEncounter']) {
+    for (const verb of ['evaluateDisplay', 'evaluateCircumstances']) {
       expect(() => validatorFor(operations[verb].output)).not.toThrow();
     }
   });
@@ -68,10 +68,10 @@ describe('round-trip conformance against colregs result schemas (ADR 0014)', () 
     });
   }
 
-  const validateEncounter = validatorFor(operations.evaluateEncounter.output);
+  const validateEncounter = validatorFor(operations.evaluateCircumstances.output);
   for (const c of situationFixtures.cases) {
-    it(`evaluateEncounter("${c.name}") satisfies schema/encounter-evaluation.schema.json`, () => {
-      const result = evaluateEncounter(c.situation);
+    it(`evaluateCircumstances("${c.name}") satisfies schema/circumstances-evaluation.schema.json`, () => {
+      const result = evaluateCircumstances(c.situation);
       const valid = validateEncounter(result);
       expect(valid, JSON.stringify(validateEncounter.errors)).toBe(true);
     });
@@ -82,7 +82,7 @@ describe('round-trip conformance against colregs result schemas (ADR 0014)', () 
     // these pin that it is present and that the schema, not just this
     // package's own types, constrains it.
     const display = evaluateDisplay(displayFixtures.cases[0].facts);
-    const encounter = evaluateEncounter(situationFixtures.cases[0].situation);
+    const encounter = evaluateCircumstances(situationFixtures.cases[0].situation);
 
     it('is carried non-empty by both verbs, and the shared provenance schema accepts it', () => {
       for (const [result, validate] of [

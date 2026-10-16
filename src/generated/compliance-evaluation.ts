@@ -1,7 +1,7 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Source: colregs schema/conduct-evaluation.schema.json
+ * Source: colregs schema/compliance-evaluation.schema.json
  * Version: declared in package.json, resolved in package-lock.json
  * Regenerate with `npm run generate`; `npm run generate:check` fails the
  * build if this file and the pinned schema disagree.
@@ -11,9 +11,9 @@ export type RuleIds = string[];
 export type Subject = 'self' | 'other';
 
 /**
- * The result of evaluateConduct: one verdict per applied conduct entry per subject over the window the caller handed over, and the Rule 13(d)/17 phase changes seen (ADR 0012 §3, ADR 0014). Structure only.
+ * The result of evaluateCompliance: one verdict per applied conduct entry per subject over the window the caller handed over, and the Rule 13(d)/17 phase changes seen (ADR 0012 §3, ADR 0014). Structure only.
  */
-export interface ConductEvaluationSchema {
+export interface ComplianceEvaluationSchema {
   colregs: Colregs;
   window: {
     from_s: number;
