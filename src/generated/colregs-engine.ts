@@ -8,11 +8,11 @@
  */
 
 import type {
-  ConductEvaluation,
+  CircumstancesEvaluation,
+  ComplianceEvaluation,
   DepartureFinding,
   DepartureModel,
   DisplayEvaluation,
-  EncounterEvaluation,
   FactRecord,
   RuleId,
   Situation,
@@ -29,9 +29,9 @@ import type {
 export interface ColregsEngine {
   evaluateDisplay(facts: FactRecord): DisplayEvaluation;
   appliedDisplayEntries(facts: FactRecord): RuleId[];
-  evaluateEncounter(situation: Situation): EncounterEvaluation;
+  evaluateCircumstances(situation: Situation): CircumstancesEvaluation;
   appliedEncounterEntries(situation: Situation): RuleId[];
-  evaluateConduct(trace: Trace): ConductEvaluation;
+  evaluateCompliance(trace: Trace): ComplianceEvaluation;
   appliedConductEntries(trace: Trace): RuleId[];
   evaluateRule2Departure(situation: Situation, model: DepartureModel): DepartureFinding;
 }

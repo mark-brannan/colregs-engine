@@ -161,12 +161,13 @@ describe('mergeTallies', () => {
 });
 
 describe('--full pieces and the CI legs', () => {
-  // The real axes, each cut to its first two representatives: the same
-  // data and checks, a space small enough to walk in pieces in a test.
+  // The real axes, the first eleven cut to two representatives and the rest
+  // to one: the same data and checks, 2048 records, so every one of the
+  // 1024 pieces below holds a record and the walk stays small.
   const realAxes = extractAxes(applicabilityJson as unknown as ApplicabilityData).axes;
   const axes = realAxes.map((a, i) => ({
     ...a,
-    values: a.values.slice(0, i < 12 ? 2 : 1),
+    values: a.values.slice(0, i < 11 ? 2 : 1),
   })) as Axis[];
   // What the register is built from: the tally less wall time and the shard
   // list, which differ by construction, with findings in the register's order.
@@ -179,6 +180,9 @@ describe('--full pieces and the CI legs', () => {
     });
   const roundTrip = (t: Tally) => JSON.parse(JSON.stringify(t)) as Tally;
 
+  // Three full walks of the cut space, every record against every entry:
+  // the cost grows with colregs' entry count, so the timeout is the walk's
+  // own, not vitest's 5 s default (2.6 s on a CI runner at 127 entries).
   it('merging all 1024 pieces equals the 16-leg CI merge, byte for byte', () => {
     expect(totalRecords(axes)).toBeGreaterThan(1024);
     const whole = { index: 0, of: 1 };
@@ -205,7 +209,7 @@ describe('--full pieces and the CI legs', () => {
     expect(canonical(ci)).toBe(canonical(walkShard(axes)));
     expect(shardCoverage(mergeTallies(pieces).shards).complete).toBe(true);
     expect(shardCoverage(ci.shards).complete).toBe(true);
-  });
+  }, 20_000);
 
   it('a sample covers no shards, so it is never whole', () => {
     expect(walkShard(axes, { sample: 10 }).shards).toEqual([]);

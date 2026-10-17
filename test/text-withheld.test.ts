@@ -20,7 +20,7 @@
 //     bearing: a grep cannot see an import assembled at runtime, and the
 //     poisoned modules intercept only *dynamic* imports -- a static `import`
 //     of one, with or without an import attribute, loads the real file
-//     untouched (verified by mutation against src/encounter.ts), as does a
+//     untouched (verified by mutation against src/circumstances.ts), as does a
 //     `readFileSync` of the path. Each mutation the other misses is caught by
 //     its partner, so keep both.
 //
@@ -38,7 +38,7 @@ import corporaJson from 'colregs/data/corpora.json';
 import fixturesJson from 'colregs/fixtures/applicability-fixtures.json';
 import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
 import { evaluateDisplay } from '../src/evaluate';
-import { evaluateEncounter } from '../src/encounter';
+import { evaluateCircumstances } from '../src/circumstances';
 import type { CorporaData } from '../src/generated/corpora';
 import type {
   ApplicabilityData,
@@ -161,11 +161,13 @@ describe('ADR 0010 (engine half): nothing in colregs-engine reads rule text', ()
     expect(bindingCases.length).toBeGreaterThan(0);
     poisonText();
     try {
-      const { appliedEncounterEntries } = await import('../src/encounter');
+      const { appliedCircumstancesEntries } = await import('../src/circumstances');
       const idOf = (e: SituationFixtureCase['expect'][number]) =>
         typeof e === 'string' ? e : e.entry;
       for (const c of bindingCases) {
-        expect([...appliedEncounterEntries(c.situation)].sort()).toEqual(c.expect.map(idOf).sort());
+        expect([...appliedCircumstancesEntries(c.situation)].sort()).toEqual(
+          c.expect.map(idOf).sort(),
+        );
       }
     } finally {
       unpoison();
@@ -218,7 +220,7 @@ describe('ADR 0010 (engine half): nothing in colregs-engine reads rule text', ()
     // The richer of the two envelopes, and the one a consumer actually ships:
     // scope, roles, overridden, modalities, categories and provenance.
     const serialized = JSON.stringify(
-      withoutRegistry(bindingCases.map((c) => evaluateEncounter(c.situation))),
+      withoutRegistry(bindingCases.map((c) => evaluateCircumstances(c.situation))),
     );
     for (const text of originalTexts) {
       expect(serialized).not.toContain(text);
@@ -236,7 +238,7 @@ describe('ADR 0010 (engine half): nothing in colregs-engine reads rule text', ()
       }
     }
     for (const c of bindingCases) {
-      for (const p of evaluateEncounter(c.situation).provenance.represented) {
+      for (const p of evaluateCircumstances(c.situation).provenance.represented) {
         expect(Object.keys(p).sort()).toEqual(['category', 'cite', 'id', 'jurisdiction']);
         seen += 1;
       }

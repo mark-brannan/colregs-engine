@@ -39,9 +39,12 @@ export const FACT_SPEC = {
   'fact:following_traffic_lane': { kind: 'boolean' },
   'fact:nearing_obscured_bend': { kind: 'boolean' },
   'fact:manned': { kind: 'boolean' },
+  'fact:partly_submerged': { kind: 'boolean' },
+  'fact:tow_display_impracticable': { kind: 'boolean' },
   'fact:obstruction_side': { kind: 'enum', values: ['obstruction_side:port', 'obstruction_side:starboard'] },
   'fact:time': { kind: 'enum', values: ['time:day', 'time:night'] },
   'fact:visibility': { kind: 'enum', values: ['visibility:good', 'visibility:restricted'] },
+  'fact:tow_rigidity': { kind: 'enum', values: ['tow_rigidity:line', 'tow_rigidity:alongside', 'tow_rigidity:pushed_ahead'] },
 } as const;
 
 /** Every fact key colregs defines. */

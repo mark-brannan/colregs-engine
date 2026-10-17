@@ -1,11 +1,11 @@
-// evaluateEncounter's envelope: roles, encounter type, risk grounds,
+// evaluateCircumstances's envelope: roles, encounter type, risk grounds,
 // rel:overrides between the applied entries, and the derived Rule 18 class.
 
 import { describe, expect, it } from 'vitest';
 import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
 import applicabilityJson from 'colregs/data/applicability.json';
-import { evaluateEncounter } from '../src/index';
-import { appliedEncounterEntries } from '../src/encounter';
+import { evaluateCircumstances } from '../src/index';
+import { appliedCircumstancesEntries } from '../src/circumstances';
 import type { Situation } from '../src/index';
 import type { ApplicabilityData } from '../src/types';
 
@@ -25,9 +25,9 @@ const power = {
   'fact:position': 'position:underway',
 } as const;
 
-describe('evaluateEncounter', () => {
+describe('evaluateCircumstances', () => {
   it('a crossing: give-way and stand-on, risk grounded in 7(d)(i)', () => {
-    const r = evaluateEncounter(fixture('crossing: self power-driven'));
+    const r = evaluateCircumstances(fixture('crossing: self power-driven'));
     expect(r.encounter).toBe('encounter:crossing');
     expect(r.scope).toEqual(['rule:4', 'rule:11']);
     expect(r.roles.self).toEqual([{ role: 'role:give-way', by: 'rule:15a:keep_out_of_the_way' }]);
@@ -45,7 +45,7 @@ describe('evaluateEncounter', () => {
   });
 
   it("18(f)(i) displaces 18(a)(iv) and takes the sailing vessel's stand-on with it", () => {
-    const r = evaluateEncounter(fixture('18(f)(i) overrides 18(a)(iv)'));
+    const r = evaluateCircumstances(fixture('18(f)(i) overrides 18(a)(iv)'));
     expect(r.applied).toContain('rule:18a_iv');
     expect(r.overridden).toEqual([{ id: 'rule:18a_iv', by: 'rule:18f_i' }]);
     expect(r.roles.self).toEqual([{ role: 'role:keep-clear', by: 'rule:18f_i' }]);
@@ -53,7 +53,7 @@ describe('evaluateEncounter', () => {
   });
 
   it('a latched overtaking stays an overtaking', () => {
-    const r = evaluateEncounter(fixture('13(a) overrides 18(a)(iv)'));
+    const r = evaluateCircumstances(fixture('13(a) overrides 18(a)(iv)'));
     expect(r.encounter).toBe('encounter:overtaking');
     expect(r.roles.self).toEqual([{ role: 'role:give-way', by: 'rule:13a' }]);
   });
@@ -62,17 +62,17 @@ describe('evaluateEncounter', () => {
     // rule:18a_i fires only in the swapped frame (ADR 0016) and overrides
     // rule:15a:keep_out_of_the_way, which fires only in the self frame --
     // self-frame-only override resolution could never see this pair.
-    const r = evaluateEncounter(fixture('18(a)(i) over 15(a) across frames'));
+    const r = evaluateCircumstances(fixture('18(a)(i) over 15(a) across frames'));
     expect(r.overridden).toContainEqual({ id: 'rule:15a:keep_out_of_the_way', by: 'rule:18a_i' });
   });
 
   it('a stated risk of collision is asserted even when no entry grounds it', () => {
-    const r = evaluateEncounter(fixture('7(d)(i) does not apply'));
+    const r = evaluateCircumstances(fixture('7(d)(i) does not apply'));
     expect(r.risk_of_collision).toEqual({ asserted: true, by: [] });
   });
 
   it('own alone: Part B Section I applies and nothing else can be said', () => {
-    const r = evaluateEncounter({ self: { fact: { ...power } } });
+    const r = evaluateCircumstances({ self: { fact: { ...power } } });
     expect(r.applied).toEqual(['rule:4']);
     expect(r.encounter).toBeUndefined();
     expect(r.roles).toEqual({ self: [], other: [] });
@@ -80,7 +80,7 @@ describe('evaluateEncounter', () => {
   });
 
   it('derives fact:rule18_class per subject: a severely restricted tow ranks as RAM', () => {
-    const r = evaluateEncounter({
+    const r = evaluateCircumstances({
       self: { fact: { ...power } },
       other: {
         fact: {
@@ -99,7 +99,7 @@ describe('evaluateEncounter', () => {
   });
 
   it('a `none` effect confers no role but the entry still applies', () => {
-    const r = evaluateEncounter({
+    const r = evaluateCircumstances({
       self: { fact: { ...power } },
       other: { fact: { ...power } },
       pair: { geo: { 'geo:risk_of_collision': true } },
@@ -109,9 +109,9 @@ describe('evaluateEncounter', () => {
   });
 
   it("stamps caller data as the caller's", () => {
-    const r = evaluateEncounter({ self: { fact: { ...power } } }, { data: applicability });
+    const r = evaluateCircumstances({ self: { fact: { ...power } } }, { data: applicability });
     expect(r.colregs.source).toBe('caller');
-    expect(evaluateEncounter({ self: { fact: { ...power } } }).colregs.source).toBe('resolved');
+    expect(evaluateCircumstances({ self: { fact: { ...power } } }).colregs.source).toBe('resolved');
   });
 
   it('reports an encounter value colregs adds later, without letting it displace a known one', () => {
@@ -134,8 +134,12 @@ describe('evaluateEncounter', () => {
       entries: [...applicability.entries, novel],
     };
     // The known classification wins from either position in the data.
-    expect(evaluateEncounter(overtaking, { data: first }).encounter).toBe('encounter:overtaking');
-    expect(evaluateEncounter(overtaking, { data: last }).encounter).toBe('encounter:overtaking');
+    expect(evaluateCircumstances(overtaking, { data: first }).encounter).toBe(
+      'encounter:overtaking',
+    );
+    expect(evaluateCircumstances(overtaking, { data: last }).encounter).toBe(
+      'encounter:overtaking',
+    );
     // With nothing known applying, the new value is still reported, not dropped.
     const onlyNovel: ApplicabilityData = {
       ...applicability,
@@ -144,14 +148,14 @@ describe('evaluateEncounter', () => {
         ...applicability.entries.filter((e) => e.category !== 'category:classification'),
       ],
     };
-    expect(evaluateEncounter(overtaking, { data: onlyNovel }).encounter).toBe(
+    expect(evaluateCircumstances(overtaking, { data: onlyNovel }).encounter).toBe(
       'overtaking-in-narrow-channel',
     );
   });
 
   it('rejects a malformed situation rather than answering', () => {
     const bad = { self: { fact: { propulsion: 'power' } } } as unknown as Situation;
-    expect(() => evaluateEncounter(bad)).toThrow(/did you mean 'fact:propulsion'/);
-    expect(() => appliedEncounterEntries(bad)).toThrow(/did you mean 'fact:propulsion'/);
+    expect(() => evaluateCircumstances(bad)).toThrow(/did you mean 'fact:propulsion'/);
+    expect(() => appliedCircumstancesEntries(bad)).toThrow(/did you mean 'fact:propulsion'/);
   });
 });

@@ -37,7 +37,7 @@ import type {
   Predicate,
   RuleCategory,
   Situation,
-  Subject,
+  Vessel,
 } from '../../src/types.js';
 
 import { numericRepresentatives } from './enumerate.js';
@@ -548,7 +548,7 @@ export function buildSituation(
     (classOf[`${subject}:${cls}`] ??= {})[`${cls}:${name}`] = value;
   }
 
-  const subjects: Record<string, Subject> = {};
+  const subjects: Record<string, Vessel> = {};
   for (const slot of ['self', 'other'] as const) {
     subjects[slot] = {
       fact: facts[slot],
@@ -556,7 +556,7 @@ export function buildSituation(
       ...(classOf[`${slot}:geo`] ? { geo: classOf[`${slot}:geo`] } : {}),
       ...(classOf[`${slot}:hist`] ? { hist: classOf[`${slot}:hist`] } : {}),
       ...(classOf[`${slot}:act`] ? { act: classOf[`${slot}:act`] } : {}),
-    } as Subject;
+    } as Vessel;
   }
 
   return {

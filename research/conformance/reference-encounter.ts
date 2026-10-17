@@ -3,8 +3,8 @@
 // Written from colregs ADR 0005 (the situation record and its namespace),
 // ADR 0016 (two frames, pooled, resolved, then roles), ADR 0019 point 1
 // (how far rel:overrides reaches) and docs/engine-notes.md items 9-13 — not
-// from src/encounter.ts, and not importing it. Its only job is to be a
-// second opinion for the Part B conformance check; src/encounter.ts is the
+// from src/circumstances.ts, and not importing it. Its only job is to be a
+// second opinion for the Part B conformance check; src/circumstances.ts is the
 // engine under test.
 //
 // It reuses reference.ts for constraint semantics alone: the predicate
@@ -22,8 +22,8 @@ import type {
   Predicate,
   RuleCategory,
   Situation,
-  Subject,
-  SubjectRole,
+  Vessel,
+  VesselRole,
 } from '../../src/types.js';
 
 import { referenceWhenMatches } from './reference.js';
@@ -114,7 +114,7 @@ export type ReferenceFlat = Record<string, unknown>;
 
 const SUBJECT_CLASSES = ['fact', 'kin', 'geo', 'hist', 'act'] as const;
 
-function flattenSubject(out: ReferenceFlat, prefix: string, subject: Subject, bare: boolean): void {
+function flattenVessel(out: ReferenceFlat, prefix: string, subject: Vessel, bare: boolean): void {
   for (const cls of SUBJECT_CLASSES) {
     const record = subject[cls] as Record<string, unknown> | undefined;
     if (!record) continue;
@@ -132,16 +132,16 @@ function flattenSubject(out: ReferenceFlat, prefix: string, subject: Subject, ba
 
 export function referenceFlatten(situation: Situation): ReferenceFlat {
   const out: ReferenceFlat = {};
-  flattenSubject(out, 'self', situation.self, true);
-  if (situation.other) flattenSubject(out, 'other', situation.other, false);
+  flattenVessel(out, 'self', situation.self, true);
+  if (situation.other) flattenVessel(out, 'other', situation.other, false);
   for (const cls of ['geo', 'env'] as const) {
     const record = situation.pair?.[cls] as Record<string, unknown> | undefined;
     if (!record) continue;
     for (const [key, value] of Object.entries(record)) out[`pair:${key}`] = value;
   }
-  for (const [sector, facts] of Object.entries(situation.traffic ?? {})) {
+  for (const [sector, facts] of Object.entries(situation.others ?? {})) {
     for (const [key, value] of Object.entries(facts ?? {})) {
-      out[`traffic:${sector}:${key}`] = value;
+      out[`others:${sector}:${key}`] = value;
     }
   }
   return out;
@@ -242,7 +242,7 @@ export function referenceOverridden(
 type Frame = 'self' | 'swap';
 
 export interface ReferenceRoles {
-  roles: { self: SubjectRole[]; other: SubjectRole[] };
+  roles: { self: VesselRole[]; other: VesselRole[] };
   overridden: { id: string; by: string }[];
   /** Which frame each pooled precedence entry was read in. */
   frames: Record<string, Frame>;
@@ -277,12 +277,12 @@ export function referencePooledRoles(
   const inForce = [...pooled.values()];
   const { overridden, overriddenIds } = referenceOverridden(inForce, modalities);
 
-  const roles: { self: SubjectRole[]; other: SubjectRole[] } = { self: [], other: [] };
+  const roles: { self: VesselRole[]; other: VesselRole[] } = { self: [], other: [] };
   for (const e of inForce) {
     if (overriddenIds.has(e.id)) continue;
     const effect = e.effect as Record<string, unknown> | undefined;
-    const onFrameSelf = effect?.self as SubjectRole['role'] | undefined;
-    const onFrameOther = effect?.other as SubjectRole['role'] | undefined;
+    const onFrameSelf = effect?.self as VesselRole['role'] | undefined;
+    const onFrameOther = effect?.other as VesselRole['role'] | undefined;
     // In the swapped frame the entry's `self` is the situation's `other`.
     const [toSelf, toOther] =
       frames[e.id] === 'self' ? [onFrameSelf, onFrameOther] : [onFrameOther, onFrameSelf];
@@ -304,7 +304,7 @@ export interface ReferenceEncounter {
   scope: string[];
   encounter?: string;
   risk_of_collision: { asserted: boolean; by: string[] };
-  roles: { self: SubjectRole[]; other: SubjectRole[] };
+  roles: { self: VesselRole[]; other: VesselRole[] };
   overridden: { id: string; by: string }[];
   modalities: Record<string, Modality>;
   categories: Record<string, RuleCategory>;

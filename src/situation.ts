@@ -6,7 +6,7 @@
 
 import factsData from 'colregs/data/facts.json' with { type: 'json' };
 import { predicateMatches } from './evaluate.js';
-import type { FactRecord, Predicate, Situation, Subject } from './types.js';
+import type { FactRecord, Predicate, Situation, Vessel } from './types.js';
 
 /** A situation in predicate form. Values are whatever the classes carry;
  * the walker compares them exactly as it compares a fact record's. */
@@ -53,7 +53,7 @@ export function rule18Class(fact: FactRecord): string | undefined {
 
 const SUBJECT_CLASSES = ['fact', 'kin', 'geo', 'hist', 'act'] as const;
 
-function flattenSubject(out: FlatSituation, prefix: string, subject: Subject, bare: boolean) {
+function flattenVessel(out: FlatSituation, prefix: string, subject: Vessel, bare: boolean) {
   for (const cls of SUBJECT_CLASSES) {
     const record = subject[cls] as Record<string, unknown> | undefined;
     if (!record) continue;
@@ -73,8 +73,8 @@ function flattenSubject(out: FlatSituation, prefix: string, subject: Subject, ba
  * bare. Assumes the situation has already passed validateSituation. */
 export function flattenSituation(situation: Situation): FlatSituation {
   const out: FlatSituation = {};
-  flattenSubject(out, 'self', situation.self, true);
-  if (situation.other) flattenSubject(out, 'other', situation.other, false);
+  flattenVessel(out, 'self', situation.self, true);
+  if (situation.other) flattenVessel(out, 'other', situation.other, false);
   if (situation.pair) {
     for (const cls of ['geo', 'env'] as const) {
       const record = situation.pair[cls] as Record<string, unknown> | undefined;
@@ -82,10 +82,10 @@ export function flattenSituation(situation: Situation): FlatSituation {
       for (const [key, value] of Object.entries(record)) out[`pair:${key}`] = value;
     }
   }
-  if (situation.traffic) {
-    for (const [sector, facts] of Object.entries(situation.traffic)) {
+  if (situation.others) {
+    for (const [sector, facts] of Object.entries(situation.others)) {
       if (!facts) continue;
-      for (const [key, value] of Object.entries(facts)) out[`traffic:${sector}:${key}`] = value;
+      for (const [key, value] of Object.entries(facts)) out[`others:${sector}:${key}`] = value;
     }
   }
   return out;

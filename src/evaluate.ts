@@ -452,7 +452,7 @@ export function entryCategory(e: Entry): RuleCategory {
 
 // The categories `evaluateDisplay` matches. A one-element list rather than a
 // bare string because the field it feeds is a list on every verb: ADR 0001's
-// evaluateEncounter reads scope, classification and precedence in one
+// evaluateCircumstances reads scope, classification and precedence in one
 // predicate pass.
 const DISPLAY_CATEGORIES: readonly RuleCategory[] = ['category:display'];
 
@@ -498,7 +498,7 @@ const DISPLAY_OBLIGATIONS: ReadonlySet<Modality> = new Set<Modality>([
  * rel:includes import, which are not applied. A displaced entry's own
  * overrides do not fire, so a chain stops at the first displacement;
  * colregs' own CI (REQ-CAT-3) keeps the data acyclic, so the memo alone
- * terminates. Shared by evaluateDisplay and evaluateEncounter so the two
+ * terminates. Shared by evaluateDisplay and evaluateCircumstances so the two
  * verbs cannot drift on it.
  */
 export function resolveOverrides(

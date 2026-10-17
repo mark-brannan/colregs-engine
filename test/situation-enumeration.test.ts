@@ -48,7 +48,8 @@ const categoryOf = (e: Entry): RuleCategory => (e.category ?? 'category:display'
 
 /** A Part D signal: a display entry that emits a `signal` sequence. The
  * encounter verb reads these and no other display entry. */
-const isSignal = (e: Entry): boolean => categoryOf(e) === 'category:display' && e.signal !== undefined;
+const isSignal = (e: Entry): boolean =>
+  categoryOf(e) === 'category:display' && e.signal !== undefined;
 
 const twoSubject: Entry[] = data.entries.filter(
   (e) => ENCOUNTER_CATEGORIES.includes(categoryOf(e)) || isSignal(e),
@@ -169,7 +170,9 @@ describe('the situation axis table', () => {
     const acts = axes.filter((a) => a.key.split(':')[1] === 'act');
     expect(acts.length).toBeGreaterThan(0);
     const gated = new Set(
-      [...readKeys].filter((k) => k.split(':')[1] === 'act').map((k) => k.slice(k.indexOf(':') + 1)),
+      [...readKeys]
+        .filter((k) => k.split(':')[1] === 'act')
+        .map((k) => k.slice(k.indexOf(':') + 1)),
     );
     expect([...gated].sort()).toEqual(Object.keys(ACT_SPEC).sort());
     for (const axis of acts) {
@@ -312,7 +315,9 @@ describe('the enumeration', () => {
     const subset = axes.filter((a) => keep.has(a.key) || a.key.split(':')[1] === 'act');
     expect(subset.length).toBe(keep.size + Object.keys(ACT_SPEC).length);
 
-    const rule34 = data.entries.filter((e) => isSignal(e) && /^rule:34/.test(e.id)).map((e) => e.id);
+    const rule34 = data.entries
+      .filter((e) => isSignal(e) && /^rule:34/.test(e.id))
+      .map((e) => e.id);
     expect(rule34.length).toBeGreaterThan(0);
     const fired = new Set<string>();
     for (const situation of enumerateSituations(data, subset)) {

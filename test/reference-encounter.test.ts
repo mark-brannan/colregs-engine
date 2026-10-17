@@ -8,8 +8,8 @@ import applicabilityJson from 'colregs/data/applicability.json';
 import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
 
 import type { ApplicabilityData, FixtureExpectation, Situation } from '../src/types';
-import { evaluateEncounter } from '../src/index';
-import { appliedEncounterEntries } from '../src/encounter';
+import { evaluateCircumstances } from '../src/index';
+import { appliedCircumstancesEntries } from '../src/circumstances';
 import { rule18Class } from '../src/situation';
 import {
   RULE18_CLASS_VALUES,
@@ -56,13 +56,13 @@ describe('the reference encounter read against the engine', () => {
     it(`${c.name}: applied entries agree`, () => {
       const reference = referenceEncounter(data, c.situation);
       expect([...reference.applied].sort()).toEqual(
-        [...appliedEncounterEntries(c.situation)].sort(),
+        [...appliedCircumstancesEntries(c.situation)].sort(),
       );
     });
 
     it(`${c.name}: the whole envelope agrees`, () => {
       const reference = referenceEncounter(data, c.situation);
-      const engine = evaluateEncounter(c.situation);
+      const engine = evaluateCircumstances(c.situation);
       expect(reference.scope).toEqual(engine.scope);
       expect(reference.encounter).toEqual(engine.encounter);
       expect(reference.risk_of_collision).toEqual(engine.risk_of_collision);

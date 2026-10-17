@@ -21,7 +21,7 @@ export type KnownOmissions = {
  */
 export interface Rule2DepartureFindingSchema {
   status: 'not-flagged' | 'model-rule-conflict' | 'no-robust-policy-in-model' | 'inconclusive-in-model';
-  rules: EncounterEvaluation;
+  rules: CircumstancesEvaluation;
   advisories: Advisory[];
   model: {
     version: string;
@@ -31,9 +31,9 @@ export interface Rule2DepartureFindingSchema {
   };
 }
 /**
- * The result of evaluateEncounter: two vessels at one instant -- scope, encounter class, risk of collision with its grounds, roles as a set per subject, overrides and modalities (ADR 0011 §4, ADR 0014). Structure only.
+ * The result of evaluateCircumstances: two vessels at one instant -- scope, encounter class, risk of collision with its grounds, roles as a set per subject, overrides and modalities (ADR 0011 §4, ADR 0014). Structure only.
  */
-export interface EncounterEvaluation {
+export interface CircumstancesEvaluation {
   colregs: Colregs;
   applied: RuleIds;
   scope: RuleIds;

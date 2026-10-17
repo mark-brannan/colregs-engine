@@ -5,7 +5,7 @@
 // `assumptions_violated` rather than throwing.
 
 import type { EvaluateOptions } from './evaluate.js';
-import { evaluateEncounter } from './encounter.js';
+import { evaluateCircumstances } from './circumstances.js';
 import { flattenSituation, situationMatches } from './situation.js';
 import type {
   DepartureAdvisory,
@@ -64,7 +64,7 @@ export function evaluateDeparture(
   opts?: EvaluateOptions,
 ): DepartureFinding {
   validateModel(model);
-  const rules = evaluateEncounter(situation, opts);
+  const rules = evaluateCircumstances(situation, opts);
   const flat = flattenSituation(situation);
 
   const assumptionsViolated: string[] = [];

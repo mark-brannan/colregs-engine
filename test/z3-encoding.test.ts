@@ -333,6 +333,7 @@ describe('the encoding against Z3', () => {
     // Rule 30's `position:anchored` gate, independent of any finding.
     const base: Record<string, FactValue> = {
       'fact:activity': 'activity:none',
+      'fact:beam_m': 2,
       'fact:composite_unit': false,
       'fact:full_display_impracticable': false,
       'fact:gear_extent_m': 0,
@@ -344,12 +345,15 @@ describe('the encoding against Z3', () => {
       'fact:nearing_obscured_bend': false,
       'fact:non_displacement': false,
       'fact:obstruction_exists': false,
+      'fact:partly_submerged': false,
       'fact:position': 'position:anchored',
       'fact:propulsion': 'propulsion:power',
       'fact:seaplane': false,
       'fact:time': 'time:night',
+      'fact:tow_display_impracticable': false,
       'fact:tow_length_m': 0,
       'fact:tow_restricts_deviation': false,
+      'fact:tow_rigidity': 'tow_rigidity:line',
       'fact:visibility': 'visibility:good',
       'fact:wig': false,
       'fact:wig_near_surface': false,

@@ -70,18 +70,18 @@ export interface SituationFixtures {
   geometry_note?: string;
 }
 /**
- * Two vessels and the encounter at one instant: the input evaluateEncounter reads, nested by subject and class (ADR 0005 §2, ADR 0011 §3, ADR 0014), plus other traffic reduced to facts about self's options (colregs-engine#82). Structure only -- every kin:/geo:/hist:/env:/act: key must be declared in data/facts.json §situation, checked in the tests.
+ * Two vessels and the encounter at one instant: the input evaluateCircumstances reads, nested by subject and class (ADR 0005 §2, ADR 0011 §3, ADR 0014), plus other vessels reduced to facts about self's options (colregs-engine#82). Structure only -- every kin:/geo:/hist:/env:/act: key must be declared in data/facts.json §situation, checked in the tests.
  */
 export interface Situation {
-  self: Subject;
-  other?: Subject;
+  self: Vessel;
+  other?: Vessel;
   pair?: {
     geo?: GeoRecord;
     env?: EnvRecord;
   };
-  traffic?: TrafficFacts;
+  others?: OthersFacts;
 }
-export interface Subject {
+export interface Vessel {
   fact: FactRecord;
   kin?: KinRecord;
   geo?: GeoRecord;
@@ -234,9 +234,9 @@ export interface EnvRecord {
       };
 }
 /**
- * Other traffic reduced to facts about self's options, per sector around self: the `traffic` class of a Situation (colregs-engine#82). Not vessels: a Situation stays two-vessel, and these flatten to `traffic:<sector>:<key>` in the predicate namespace. Every field is pencil until the reduction is written. Structure only.
+ * Other vessels reduced to facts about self's options, per sector around self: the `others` class of a Situation (colregs-engine#82). Not vessels: a Situation stays two-vessel, and these flatten to `others:<sector>:<key>` in the predicate namespace. Every field is pencil until the reduction is written. Structure only.
  */
-export interface TrafficFacts {
+export interface OthersFacts {
   ahead?: Sector;
   starboard?: Sector;
   astern?: Sector;
