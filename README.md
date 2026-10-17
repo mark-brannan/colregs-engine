@@ -120,6 +120,7 @@ own vocabulary and do not move when colregs releases data.
 | [`FactRecord`](src/generated/fact-record.ts)                                                                                                                                                 | the input, generated from colregs' `facts.json`                                                                                   |
 | [`Modality`](src/generated/applicability.ts)                                                                                                                                                 | how strongly a light is required: `shall`, `may`, `shall-if-practicable` and the rest, as colregs defines them                    |
 | [`evaluateCircumstances(situation, opts?)`](src/circumstances.ts), [`evaluateCompliance(trace, opts?)`](src/compliance.ts), [`evaluateDeparture(situation, model, opts?)`](src/departure.ts) | scope, encounter type, risk grounds, roles and overrides for two vessels; the trace and departure verbs, partial as above         |
+| [`evaluate(circumstances, opts?)`](src/unified.ts)                                                                                                                                           | the unified form, a second variant beside the three: one evaluation, its `appraisal`, `signals` and `indicated` read lazily       |
 
 `colregs-engine/schema` ([src/schema.ts](src/schema.ts)) is the colregs data
 shapes generated from that package's JSON Schema: `Entry`, `Predicate`,

@@ -1,7 +1,9 @@
-// Public API of the colregs-engine package: exactly the operations colregs'
+// Public API of the colregs-engine package: the operations colregs'
 // manifest names (data/operations.json, ADR 0014, ADR 0023), one per thing
 // evaluated, the one error a verb throws about the caller's data, and the
-// types their inputs and answers are written in.
+// types their inputs and answers are written in. Beside them, `evaluate`:
+// the unified form (src/unified.ts), a second variant workshopped against
+// the same cases until one of the two is preferred.
 //
 // Deliberately narrow. Everything here is API-tier: it must stay stable
 // across colregs data releases, so it is the engine's own vocabulary and
@@ -21,6 +23,7 @@ import { evaluateDeparture } from './departure.js';
 // evaluateScene (scene.ts) and reduceTraffic (traffic.ts) stay in the code,
 // unexported, until colregs' manifest names them again.
 export { evaluateDisplay, evaluateCircumstances, evaluateCompliance, evaluateDeparture };
+export { evaluate, Evaluation } from './unified.js';
 export { DataVersionMismatchError } from './errors.js';
 export type { EvaluateOptions } from './evaluate.js';
 
@@ -47,6 +50,7 @@ import type { ColregsEngine } from './generated/colregs-engine.js';
 
 // Inputs.
 export type { FactRecord } from './generated/fact-record.js';
+export type { Circumstances, Known, Observed, Other, OtherGeometry } from './unified.js';
 export type {
   DepartureModel,
   DepartureRegion,
@@ -59,6 +63,7 @@ export type {
 } from './types.js';
 
 // Answers.
+export type { Appraisal, AppraisalOfOther, Indication, RestedOn } from './unified.js';
 export type {
   ComplianceEvaluation,
   CompliancePhaseChange,
