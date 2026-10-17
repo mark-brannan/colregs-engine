@@ -169,7 +169,8 @@ jobs:
       pull-requests: read
     uses: mark-brannan/.github/.github/workflows/pin-bump-alone.yml@main
     with:
-      package: colregs
+      packages: |
+        colregs
       allow: |
         src/generated/**
         test/**
