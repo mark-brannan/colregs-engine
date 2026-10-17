@@ -262,6 +262,7 @@ describe('the encoding against Z3', () => {
     }
   }
 
+  // Cost scales with 500 records times colregs' display entries and fact axes.
   it('matches predicateMatches for every entry on 500 random records', async () => {
     // A deterministic PRNG, so a failure is reproducible from the seed.
     let seed = 20260906;
