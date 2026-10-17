@@ -160,7 +160,9 @@ jobs:
   # move changes their cost and their counts, and beside other work a red
   # test cannot be traced to the pin or the code. The pin may bring its
   # regenerated types, the tests it forces and the findings register, and
-  # nothing else. Bypass is the pin-bump-mixed-ok label, a human's to apply;
+  # nothing else. A pin that breaks the schema forces hand-written src/ edits
+  # too; that is the label's normal use, so someone decides each time.
+  # Bypass is the pin-bump-mixed-ok label, a human's to apply;
   # re-run the failed job after labelling. Listed in ci-gate's needs, so it
   # needs no ruleset entry.
   pin-bump-alone:
