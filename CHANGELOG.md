@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.11](https://github.com/mark-brannan/colregs-engine/compare/v0.1.10...v0.1.11) (2026-10-17)
+
+
+### Added
+
+* evaluate(circumstances), the unified form beside the three operations ([#172](https://github.com/mark-brannan/colregs-engine/issues/172)) ([91c5389](https://github.com/mark-brannan/colregs-engine/commit/91c5389733c48dc22475e8aaa4411b1d9fb07091))
+
 ## [0.1.10](https://github.com/mark-brannan/colregs-engine/compare/v0.1.9...v0.1.10) (2026-10-17)
 
 
