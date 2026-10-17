@@ -155,7 +155,10 @@ function checkOther(other: unknown, i: number, conditions: Environment | undefin
       throw new Error(`${where}.${key} expects a number, got ${JSON.stringify(other[key])}.`);
     }
   }
-  if (isRecord(other.geo)) {
+  if (other.geo !== undefined) {
+    if (!isRecord(other.geo)) {
+      throw new Error(`${where}.geo must be an object, got ${JSON.stringify(other.geo)}.`);
+    }
     for (const key of ['geo:in_sight', 'geo:range_m'] as const) {
       if (key in other.geo) {
         throw new Error(
@@ -194,8 +197,10 @@ const OWN_GEO: Record<keyof DirectionalGeometry, true> = {
 function pairGeo(other: Other): PairGeometry {
   const geo: PairGeometry = { 'geo:in_sight': other.known === 'in-sight' };
   if (other.range_nm !== undefined) geo['geo:range_m'] = other.range_nm * NM_IN_M;
+  // Every key not in her own frame is the pair's, unknown ones included, so
+  // validateSituation names them instead of this dropping them.
   for (const [key, value] of Object.entries(other.geo ?? {})) {
-    if (key.startsWith('geo:') && !(key in OWN_GEO)) (geo as Record<string, unknown>)[key] = value;
+    if (!(key in OWN_GEO)) (geo as Record<string, unknown>)[key] = value;
   }
   return geo;
 }
@@ -226,13 +231,14 @@ export function situationFor(self: Vessel, other: Other, conditions?: Environmen
   return s;
 }
 
-/** The fact one other's appraisal rests on. open: when no fact is asserted
- * the appraisal rests on nothing and points at the indication; resting it
- * on the indication instead (one candidate, or the duty every candidate
+/** The fact one other's appraisal rests on. The indication is a thunk so an
+ * asserted fact never computes it. open: when no fact is asserted the
+ * appraisal rests on nothing and points at the indication; resting it on
+ * the indication instead (one candidate, or the duty every candidate
  * shares) plugs in here and nowhere else. */
 function restingFact(
   other: Other,
-  _indication: Indication,
+  _indication: () => Indication,
 ): { fact?: FactRecord; restedOn: RestedOn } {
   if (other.fact !== undefined) return { fact: other.fact, restedOn: 'asserted' };
   return { restedOn: 'nothing' };
@@ -268,7 +274,7 @@ export class Evaluation {
       const self = this.#c.self;
       if (self === undefined) return undefined;
       const others = (this.#c.others ?? []).map((other, i): AppraisalOfOther => {
-        const { fact, restedOn } = restingFact(other, this.indicated[i]);
+        const { fact, restedOn } = restingFact(other, () => this.indicated[i]);
         if (fact === undefined) {
           return { restedOn, because: `other vessel not asserted; see indicated[${i}]` };
         }

@@ -182,6 +182,16 @@ describe('validation, in evaluate() before any reading', () => {
       /did you mean 'env:narrow_channel'/,
     ],
     ['others not a list', () => evaluate({ others: other as never }), /must be a list/],
+    [
+      'geo not an object',
+      () => evaluate({ others: [{ ...other, geo: 'x' as never }] }),
+      /geo must be an object/,
+    ],
+    [
+      'a mistyped geo key, which is never dropped',
+      () => evaluate({ others: [{ ...other, geo: { cpa_m: 3 } as never }] }),
+      /did you mean 'geo:cpa_m'/,
+    ],
   ])('%s throws', (_name, call, message) => {
     expect(call).toThrow(message);
   });
