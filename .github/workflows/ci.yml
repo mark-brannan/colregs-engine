@@ -156,6 +156,28 @@ jobs:
   adr-elsewhere:
     uses: mark-brannan/.github/.github/workflows/adr-elsewhere.yml@main
 
+  # A colregs pin bump is its own PR: the tests walk colregs' data, so a pin
+  # move changes their cost and their counts, and beside other work a red
+  # test cannot be traced to the pin or the code. The pin may bring its
+  # regenerated types, the tests it forces and the findings register, and
+  # nothing else. A pin that breaks the schema forces hand-written src/ edits
+  # too; that is the label's normal use, so someone decides each time.
+  # Bypass is the pin-bump-mixed-ok label, a human's to apply;
+  # re-run the failed job after labelling. Listed in ci-gate's needs, so it
+  # needs no ruleset entry.
+  pin-bump-alone:
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: mark-brannan/.github/.github/workflows/pin-bump-alone.yml@main
+    with:
+      packages: |
+        colregs
+      allow: |
+        src/generated/**
+        test/**
+        research/conformance/findings/**
+
   # The single required status check, shared across repositories: the
   # `gate` job of mark-brannan/.github's reusable ci-gate workflow, which fails
   # unless every result in `needs` is green. The reported context is
@@ -165,7 +187,8 @@ jobs:
   # evaluate when a dependency failed or was skipped, so it reports an explicit
   # pass or fail of its own rather than inheriting the skip.
   ci-gate:
-    needs: [test, conformance-sample, partition-proof, prose-budget, nonempty, adr-elsewhere]
+    needs:
+      [test, conformance-sample, partition-proof, prose-budget, nonempty, adr-elsewhere, pin-bump-alone]
     if: ${{ always() && github.event_name == 'pull_request' }}
     # It reads nothing and writes nothing; the results go in as an input.
     permissions: {}
