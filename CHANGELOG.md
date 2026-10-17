@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.10](https://github.com/mark-brannan/colregs-engine/compare/v0.1.9...v0.1.10) (2026-10-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* evaluateCompliance, evaluateCircumstances, Vessel, others; four exports ([#166](https://github.com/mark-brannan/colregs-engine/issues/166))
+
+### Changed
+
+* evaluateCompliance, evaluateCircumstances, Vessel, others; four exports ([#166](https://github.com/mark-brannan/colregs-engine/issues/166)) ([e653831](https://github.com/mark-brannan/colregs-engine/commit/e653831125dba42bd409e5644d74fefd656fd3ac))
+
 ## [0.1.9](https://github.com/mark-brannan/colregs-engine/compare/v0.1.8...v0.1.9) (2026-10-16)
 
 
