@@ -31,9 +31,9 @@ export type { EvaluateOptions } from './evaluate.js';
 // The engine interface colregs owns (ADR 0014): checked here, once, against
 // the exports above, rather than left to a consumer to discover a drift at
 // the call site. `satisfies` verifies structurally and changes no runtime
-// behaviour; the object is not exported. The pinned manifest still names
-// the companions and the departure verb by its old name; the bump to the
-// ADR 0023 manifest collapses this object to the exports.
+// behaviour; the object is not exported. The pinned manifest still lists
+// the companions and names the departure verb by its old name; the bump to
+// the ADR 0023 manifest collapses this object to the exports.
 import { appliedSignalsEntries } from './evaluate.js';
 import { appliedCircumstancesEntries } from './circumstances.js';
 import { appliedComplianceEntries } from './compliance.js';

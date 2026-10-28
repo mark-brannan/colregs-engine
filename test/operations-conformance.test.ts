@@ -54,7 +54,7 @@ const situationFixtures = situationFixturesJson as unknown as {
 
 describe('round-trip conformance against colregs result schemas (ADR 0014)', () => {
   it('every operation in data/operations.json this package implements has a compilable output schema', () => {
-    for (const verb of ['evaluateSignals', 'evaluateCircumstances']) {
+    for (const verb of ['evaluateSignals', 'evaluateCircumstances', 'evaluate']) {
       expect(() => validatorFor(operations[verb].output)).not.toThrow();
     }
   });

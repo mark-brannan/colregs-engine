@@ -3,8 +3,8 @@
 // foreclosed. The departure verb asks whether a compliant manoeuvre exists,
 // and that question is quantified over all other vessels, not one pair
 // (issue #82). Roles stay pairwise; this never touches them. The one
-// operation in colregs' manifest that evaluates nothing: it derives an input
-// class (colregs ADR 0023).
+// operation colregs ADR 0023 names that evaluates nothing: it derives an
+// input class. Not in the manifest yet.
 import type { EvaluateOptions } from './evaluate.js';
 import type { Vessel, OthersFacts } from './types.js';
 
