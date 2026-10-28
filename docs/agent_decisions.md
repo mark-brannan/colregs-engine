@@ -15,3 +15,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261028t075659z
 - evaluateScene renamed evaluateVessels, Scene renamed Vessels, SceneEvaluation renamed VesselsEvaluation, file src/vessels.ts (Scene is forbidden) Undo: rename back in a follow-up PR ([#178](https://github.com/mark-brannan/colregs-engine/pull/178))
+
+### 20261028t075702z
+- reduceTraffic renamed reduceOthers, files src/others.ts and test/others.test.ts, following the others: class and OthersFacts Undo: rename back in a follow-up PR ([#178](https://github.com/mark-brannan/colregs-engine/pull/178))
