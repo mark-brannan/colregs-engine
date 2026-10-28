@@ -12,3 +12,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261017t081525z
 - pin-bump-alone's allowlist reads 'the fixture dirs' as research/conformance/findings/**, the register a pin rewrites; the repo has no fixtures directory Undo: edit the allow list in ci.yml ([#168](https://github.com/mark-brannan/colregs-engine/pull/168))
+
+### 20261028t075659z
+- evaluateScene renamed evaluateVessels, Scene renamed Vessels, SceneEvaluation renamed VesselsEvaluation, file src/vessels.ts (Scene is forbidden) Undo: rename back in a follow-up PR ([#178](https://github.com/mark-brannan/colregs-engine/pull/178))
