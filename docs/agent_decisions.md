@@ -21,3 +21,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261028t075705z
 - SceneConflict renamed DutyConflict Undo: rename back in a follow-up PR ([#178](https://github.com/mark-brannan/colregs-engine/pull/178))
+
+### 20261028t075709z
+- local for the classified situation in evaluateCircumstances and the reference reading named classified, since the parameter is already situation Undo: rename the local ([#178](https://github.com/mark-brannan/colregs-engine/pull/178))
