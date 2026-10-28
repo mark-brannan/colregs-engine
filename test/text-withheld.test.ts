@@ -37,7 +37,7 @@ import applicabilityJson from 'colregs/data/applicability.json';
 import corporaJson from 'colregs/data/corpora.json';
 import fixturesJson from 'colregs/fixtures/applicability-fixtures.json';
 import situationFixturesJson from 'colregs/fixtures/situation-fixtures.json';
-import { evaluateDisplay } from '../src/evaluate';
+import { evaluateSignals } from '../src/evaluate';
 import { evaluateCircumstances } from '../src/circumstances';
 import type { CorporaData } from '../src/generated/corpora';
 import type {
@@ -145,10 +145,10 @@ describe('ADR 0010 (engine half): nothing in colregs-engine reads rule text', ()
     expect(displayCases.length).toBeGreaterThan(0);
     poisonText();
     try {
-      const { evaluateDisplay } = await import('../src/evaluate');
+      const { evaluateSignals } = await import('../src/evaluate');
       for (const c of displayCases) {
         const jurisdiction = c.jurisdiction ?? fixtures.jurisdiction;
-        const result = evaluateDisplay(c.facts, { data: applicability, jurisdiction });
+        const result = evaluateSignals(c.facts, { data: applicability, jurisdiction });
         const expectedIds = c.expect.map((e) => (typeof e === 'string' ? e : e.entry));
         expect([...result.applied].sort()).toEqual([...expectedIds].sort());
       }
@@ -206,7 +206,7 @@ describe('ADR 0010 (engine half): nothing in colregs-engine reads rule text', ()
 
   it('the display envelope carries none of the corpus text', () => {
     const results: DisplayEvaluation[] = displayCases.map((c) =>
-      evaluateDisplay(c.facts, { data: applicability }),
+      evaluateSignals(c.facts, { data: applicability }),
     );
     const serialized = JSON.stringify(withoutRegistry(results));
     for (const text of originalTexts) {
@@ -232,7 +232,7 @@ describe('ADR 0010 (engine half): nothing in colregs-engine reads rule text', ()
   it('provenance.represented carries only id/jurisdiction/cite/category, never text or rule_title', () => {
     let seen = 0;
     for (const c of displayCases) {
-      for (const p of evaluateDisplay(c.facts, { data: applicability }).provenance.represented) {
+      for (const p of evaluateSignals(c.facts, { data: applicability }).provenance.represented) {
         expect(Object.keys(p).sort()).toEqual(['category', 'cite', 'id', 'jurisdiction']);
         seen += 1;
       }

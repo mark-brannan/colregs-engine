@@ -6,7 +6,7 @@
 // counting, and a LightRef-level modality override picking up a shift too.
 
 import { describe, expect, it } from 'vitest';
-import { entrySignalKinds, evaluateDisplay } from '../src/evaluate';
+import { entrySignalKinds, evaluateSignals } from '../src/evaluate';
 import type { ApplicabilityData, Entry, FactRecord, ModalityShift } from '../src/types';
 
 const dayGoodVis = {
@@ -102,7 +102,7 @@ describe('entrySignalKinds', () => {
     // The imported entry's own `when` gates on a plain (non-axis) fact this
     // case's facts don't satisfy, so it's never actually available
     // (importAvailable) -- its shape kind must not count toward the
-    // carrier's reach, matching the filter evaluateDisplay's own
+    // carrier's reach, matching the filter evaluateSignals's own
     // import-resolution loop applies. fact:length_m isn't one of
     // facts.json's axes/modifiers (AXIS_FACTS), so whenAvailable doesn't
     // wave it through the way it would an axis fact.
@@ -124,7 +124,7 @@ describe("a light's own modality override", () => {
   // its own `modality` bypasses the (already-shifted) node.modality
   // entirely and, unfixed, never saw a shift. Issue #125 step 3 says both
   // the per-entry and per-light modality "carry the shifted value", so this
-  // goes through evaluateDisplay()'s public API end-to-end (a shift with an
+  // goes through evaluateSignals()'s public API end-to-end (a shift with an
   // always-true `when`, so it needs no unreleased fact vocabulary).
   const alwaysShiftsLights: ModalityShift = {
     id: 'shift:test',
@@ -152,7 +152,7 @@ describe("a light's own modality override", () => {
       ],
       modality_shifts: [alwaysShiftsLights],
     };
-    const result = evaluateDisplay({}, { data });
+    const result = evaluateSignals({}, { data });
     // The shift turns the entry's own modality shall -> may too, so it
     // lands among optional_additions (unconditional, unlike displays,
     // which enumerate the may/shall alternatives) -- same place any other

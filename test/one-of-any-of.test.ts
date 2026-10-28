@@ -7,11 +7,11 @@
 // gap the `not`/`any_of` work introduced the possibility of.
 
 import { describe, expect, it } from 'vitest';
-import { evaluateDisplay } from '../src/evaluate';
+import { evaluateSignals } from '../src/evaluate';
 import type { ApplicabilityData, DisplayEvaluation, Entry, FactRecord } from '../src/types';
 
 function evaluate(data: ApplicabilityData, facts: FactRecord): DisplayEvaluation {
-  return evaluateDisplay(facts, { data });
+  return evaluateSignals(facts, { data });
 }
 
 function carrierWithOneOf(): Entry {

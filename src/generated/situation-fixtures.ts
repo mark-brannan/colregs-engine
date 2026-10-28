@@ -62,8 +62,8 @@ export interface SituationFixtures {
     expect: ExpectItem[];
     situation: Situation;
     roles?: {
-      self: SubjectRole[];
-      other: SubjectRole[];
+      self: VesselRole[];
+      other: VesselRole[];
     };
   }[];
   collapse_note?: string;
@@ -89,7 +89,7 @@ export interface Vessel {
   act?: ActRecord;
 }
 /**
- * What a consumer asserts about one vessel at one moment: the input evaluateDisplay reads (ADR 0011 §2, ADR 0014). Structure only -- which fact keys exist and which values each takes is data/facts.json's, checked in the tests; see docs/adr/0006-json-schema-and-identifier-diff.md.
+ * What a consumer asserts about one vessel at one moment: the input evaluateSignals reads (ADR 0011 §2, ADR 0014). Structure only -- which fact keys exist and which values each takes is data/facts.json's, checked in the tests; see docs/adr/0006-json-schema-and-identifier-diff.md.
  */
 export interface FactRecord {
   /**
@@ -247,7 +247,7 @@ export interface Sector {
   nearest_nm?: number;
   foreclosed?: boolean;
 }
-export interface SubjectRole {
+export interface VesselRole {
   role: 'role:give-way' | 'role:stand-on' | 'role:shall-not-impede' | 'role:keep-clear' | 'role:none';
   by: RuleId;
 }

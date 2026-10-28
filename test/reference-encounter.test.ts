@@ -64,7 +64,7 @@ describe('the reference encounter read against the engine', () => {
       const reference = referenceEncounter(data, c.situation);
       const engine = evaluateCircumstances(c.situation);
       expect(reference.scope).toEqual(engine.scope);
-      expect(reference.encounter).toEqual(engine.encounter);
+      expect(reference.situation).toEqual(engine.situation);
       expect(reference.risk_of_collision).toEqual(engine.risk_of_collision);
       expect(reference.modalities).toEqual(engine.modalities);
       expect(reference.categories).toEqual(engine.categories);

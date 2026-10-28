@@ -8,6 +8,7 @@
  */
 
 import type {
+  Circumstances,
   CircumstancesEvaluation,
   ComplianceEvaluation,
   DepartureFinding,
@@ -17,6 +18,7 @@ import type {
   RuleId,
   Situation,
   Trace,
+  UnifiedEvaluation,
 } from '../types.js';
 
 /**
@@ -27,11 +29,12 @@ import type {
  * signatures below.
  */
 export interface ColregsEngine {
-  evaluateDisplay(facts: FactRecord): DisplayEvaluation;
-  appliedDisplayEntries(facts: FactRecord): RuleId[];
+  evaluateSignals(facts: FactRecord): DisplayEvaluation;
+  appliedSignalsEntries(facts: FactRecord): RuleId[];
   evaluateCircumstances(situation: Situation): CircumstancesEvaluation;
-  appliedEncounterEntries(situation: Situation): RuleId[];
+  appliedCircumstancesEntries(situation: Situation): RuleId[];
   evaluateCompliance(trace: Trace): ComplianceEvaluation;
-  appliedConductEntries(trace: Trace): RuleId[];
+  appliedComplianceEntries(trace: Trace): RuleId[];
   evaluateRule2Departure(situation: Situation, model: DepartureModel): DepartureFinding;
+  evaluate(circumstances: Circumstances): UnifiedEvaluation;
 }

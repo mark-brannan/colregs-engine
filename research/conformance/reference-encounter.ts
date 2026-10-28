@@ -48,15 +48,15 @@ const OBLIGATIONS: ReadonlySet<Modality> = new Set<Modality>([
  * order (engine-notes item 12: 13(d) forbids reclassifying a latch, 14(c)
  * errs head-on). A value this release does not name ranks below all of them:
  * reported when nothing known fired, never displacing something known. */
-const ENCOUNTER_ORDER: readonly string[] = [
-  'encounter:none',
-  'encounter:crossing',
-  'encounter:head-on',
-  'encounter:overtaking',
+const SITUATION_ORDER: readonly string[] = [
+  'situation:none',
+  'situation:crossing',
+  'situation:head-on',
+  'situation:overtaking',
 ];
 
-function encounterRank(value: string): number {
-  return ENCOUNTER_ORDER.indexOf(value);
+function situationRank(value: string): number {
+  return SITUATION_ORDER.indexOf(value);
 }
 
 // ---------------------------------------------------------------------
@@ -302,7 +302,7 @@ export function referencePooledRoles(
 export interface ReferenceEncounter {
   applied: string[];
   scope: string[];
-  encounter?: string;
+  situation?: string;
   risk_of_collision: { asserted: boolean; by: string[] };
   roles: { self: VesselRole[]; other: VesselRole[] };
   overridden: { id: string; by: string }[];
@@ -332,16 +332,16 @@ export function referenceEncounter(
 
   const scope: string[] = [];
   const riskBy: string[] = [];
-  let encounter: string | undefined;
+  let classified: string | undefined;
   for (const e of standing) {
     const effect = e.effect as Record<string, unknown> | undefined;
     if (categoryOf(e) === 'category:scope') scope.push(e.id);
     if (categoryOf(e) !== 'category:classification') continue;
     if (effect?.risk_of_collision === true) riskBy.push(e.id);
-    if (typeof effect?.encounter === 'string') {
-      const value = effect.encounter;
-      if (encounter === undefined || encounterRank(value) > encounterRank(encounter)) {
-        encounter = value;
+    if (typeof effect?.situation === 'string') {
+      const value = effect.situation;
+      if (classified === undefined || situationRank(value) > situationRank(classified)) {
+        classified = value;
       }
     }
   }
@@ -360,7 +360,7 @@ export function referenceEncounter(
   return {
     applied,
     scope,
-    encounter,
+    situation: classified,
     risk_of_collision: { asserted: stated || riskBy.length > 0, by: riskBy },
     roles: pooled.roles,
     overridden,

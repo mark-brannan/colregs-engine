@@ -89,7 +89,7 @@ function phaseAt(
   subject: SubjectKey,
 ): ParagraphCite | undefined {
   const latched = cur.situation[subject]?.hist?.['hist:was_overtaking'] === true;
-  if (latched && evaluation.encounter === 'encounter:overtaking') return '13(d)';
+  if (latched && evaluation.situation === 'situation:overtaking') return '13(d)';
   const role = strongestRole(evaluation.roles[subject]);
   if (role === undefined) return undefined;
   if (role === 'role:stand-on' && isManoeuvring(prev, cur, subject)) return '17(a)(ii)';

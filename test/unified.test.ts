@@ -9,7 +9,7 @@ import {
   Evaluation,
   evaluate,
   evaluateCircumstances,
-  evaluateDisplay,
+  evaluateSignals,
 } from '../src/index';
 import type { Circumstances, Other, Situation } from '../src/index';
 import type { ApplicabilityData } from '../src/types';
@@ -65,8 +65,8 @@ describe('appraisal', () => {
     const a = circumstancesOf(crossing);
     const b = circumstancesOf(wig);
     const { appraisal } = evaluate({ ...a, others: [...a.others!, ...b.others!] });
-    expect(appraisal?.others.map((o) => o.evaluation?.encounter)).toEqual([
-      'encounter:crossing',
+    expect(appraisal?.others.map((o) => o.evaluation?.situation)).toEqual([
+      'situation:crossing',
       undefined,
     ]);
     expect(appraisal?.others[1].evaluation?.roles.self).toEqual(
@@ -89,9 +89,9 @@ describe('appraisal', () => {
 });
 
 describe('signals', () => {
-  it('reads what evaluateDisplay reads for self', () => {
+  it('reads what evaluateSignals reads for self', () => {
     const { signals } = evaluate({ self: { fact: sloop } });
-    expect(signals).toEqual(evaluateDisplay(sloop));
+    expect(signals).toEqual(evaluateSignals(sloop));
   });
 });
 

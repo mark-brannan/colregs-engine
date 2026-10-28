@@ -10,6 +10,7 @@
 export type * as applicabilityFixtures from './applicability-fixtures.js';
 export type * as applicability from './applicability.js';
 export type * as circumstancesEvaluation from './circumstances-evaluation.js';
+export type * as circumstances from './circumstances.js';
 export type * as complianceEvaluation from './compliance-evaluation.js';
 export type * as corpora from './corpora.js';
 export type * as corpus from './corpus.js';
@@ -30,11 +31,13 @@ export type * as shapes from './shapes.js';
 export type * as situationFixtures from './situation-fixtures.js';
 export type * as sounds from './sounds.js';
 export type * as trace from './trace.js';
+export type * as unifiedEvaluation from './unified-evaluation.js';
 export type * as version from './version.js';
 
 export type { ApplicabilityFixtures } from './applicability-fixtures.js';
 export type { ApplicabilityData } from './applicability.js';
 export type { CircumstancesEvaluationSchema } from './circumstances-evaluation.js';
+export type { CircumstancesSchema } from './circumstances.js';
 export type { ComplianceEvaluationSchema } from './compliance-evaluation.js';
 export type { CorporaData } from './corpora.js';
 export type { CorpusData } from './corpus.js';
@@ -55,4 +58,5 @@ export type { ShapesData } from './shapes.js';
 export type { SituationFixtures } from './situation-fixtures.js';
 export type { SoundsData } from './sounds.js';
 export type { TraceSchema } from './trace.js';
+export type { UnifiedEvaluationSchema } from './unified-evaluation.js';
 export type { VersionData } from './version.js';

@@ -54,6 +54,8 @@ const TYPE_BY_SCHEMA_REF: Record<string, string> = {
   'schema/circumstances-evaluation.schema.json': 'CircumstancesEvaluation',
   'schema/compliance-evaluation.schema.json': 'ComplianceEvaluation',
   'schema/others-facts.schema.json': 'OthersFacts',
+  'schema/circumstances.schema.json': 'Circumstances',
+  'schema/unified-evaluation.schema.json': 'UnifiedEvaluation',
   'schema/evaluation.schema.json#/$defs/ruleIds': 'RuleId[]',
   // The stems the pinned colregs still ships; gone at the bump to ADR 0023's manifest.
   'schema/rule2-departure-model.schema.json': 'DepartureModel',

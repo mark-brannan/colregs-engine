@@ -1,0 +1,354 @@
+/**
+ * GENERATED FILE — DO NOT EDIT.
+ *
+ * Source: colregs schema/unified-evaluation.schema.json
+ * Version: declared in package.json, resolved in package-lock.json
+ * Regenerate with `npm run generate`; `npm run generate:check` fails the
+ * build if this file and the pinned schema disagree.
+ */
+
+export type RuleIds = string[];
+export type VesselRoles = VesselRole[];
+export type ByEntryList = ByEntry[];
+export type KnownOmissions = {
+  cite: string;
+  what: string;
+  why: string;
+}[];
+export type RestedOn = 'asserted' | 'indicated' | 'nothing';
+
+/**
+ * The result of evaluate(circumstances), the unified form beside the three operations, as it serialises: the appraisal (Part B, what binds self regardless and then per other), self's signals (Parts C and D, every lawful display) and, per other, what her observed signals indicate. Straw man: the shape may change. Structure only.
+ */
+export interface UnifiedEvaluationSchema {
+  appraisal?: {
+    self: CircumstancesEvaluation;
+    others: AppraisalOfOther[];
+  };
+  signals?: DisplayEvaluation;
+  indicated: Indication[];
+}
+/**
+ * The result of evaluateCircumstances: two vessels at one instant -- scope, encounter class, risk of collision with its grounds, roles as a set per subject, overrides and modalities (ADR 0011 §4, ADR 0014). Structure only.
+ */
+export interface CircumstancesEvaluation {
+  colregs: Colregs;
+  applied: RuleIds;
+  scope: RuleIds;
+  situation?: 'situation:head-on' | 'situation:crossing' | 'situation:overtaking' | 'situation:none';
+  risk_of_collision: {
+    asserted: boolean;
+    by: RuleIds;
+  };
+  roles: {
+    self: VesselRoles;
+    other: VesselRoles;
+  };
+  overridden: ByEntryList;
+  modalities: Modalities;
+  categories: Categories;
+  provenance: Provenance;
+  signals?: EncounterSignal[];
+}
+export interface Colregs {
+  version: string;
+  source: 'resolved' | 'caller';
+}
+export interface VesselRole {
+  role: 'role:give-way' | 'role:stand-on' | 'role:shall-not-impede' | 'role:keep-clear' | 'role:none';
+  by: string;
+}
+export interface ByEntry {
+  id: string;
+  by: string;
+}
+export interface Modalities {
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  [k: string]:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
+export interface Categories {
+  /**
+   * This interface was referenced by `Categories`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  [k: string]:
+    | 'category:definition'
+    | 'category:standard'
+    | 'category:scope'
+    | 'category:display'
+    | 'category:classification'
+    | 'category:precedence'
+    | 'category:conduct'
+    | 'category:care'
+    | 'category:meta';
+}
+export interface Provenance {
+  /**
+   * Items: This interface was referenced by `Categories`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  evaluated_categories: (
+    | 'category:definition'
+    | 'category:standard'
+    | 'category:scope'
+    | 'category:display'
+    | 'category:classification'
+    | 'category:precedence'
+    | 'category:conduct'
+    | 'category:care'
+    | 'category:meta'
+  )[];
+  jurisdictions: string[];
+  represented: RepresentedParagraph[];
+  known_omissions?: KnownOmissions;
+}
+export interface RepresentedParagraph {
+  id: string;
+  jurisdiction: string;
+  cite: string;
+  category:
+    | 'category:care'
+    | 'category:meta'
+    | 'category:scope'
+    | 'category:definition'
+    | 'category:standard'
+    | 'category:display';
+}
+export interface EncounterSignal {
+  spec: SignalRef;
+  source_entry: string;
+  cite?: string;
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  modality:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
+export interface SignalRef {
+  /**
+   * @minItems 1
+   */
+  sequence: SignalElement[];
+  repeat?: {
+    max_interval_s?: number;
+    min_interval_s?: number;
+  };
+  gap_s?: number;
+  rapid?: boolean;
+  note?: string;
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  modality?:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
+export interface SignalElement {
+  element: string;
+  count?: number;
+  at_least?: boolean;
+  duration_s?: number;
+  gap_s?: number;
+  placement?: string;
+  note?: string;
+}
+export interface AppraisalOfOther {
+  restedOn: RestedOn;
+  evaluation?: CircumstancesEvaluation1;
+  because?: string;
+}
+/**
+ * The result of evaluateCircumstances: two vessels at one instant -- scope, encounter class, risk of collision with its grounds, roles as a set per subject, overrides and modalities (ADR 0011 §4, ADR 0014). Structure only.
+ */
+export interface CircumstancesEvaluation1 {
+  colregs: Colregs;
+  applied: RuleIds;
+  scope: RuleIds;
+  situation?: 'situation:head-on' | 'situation:crossing' | 'situation:overtaking' | 'situation:none';
+  risk_of_collision: {
+    asserted: boolean;
+    by: RuleIds;
+  };
+  roles: {
+    self: VesselRoles;
+    other: VesselRoles;
+  };
+  overridden: ByEntryList;
+  modalities: Modalities;
+  categories: Categories;
+  provenance: Provenance;
+  signals?: EncounterSignal[];
+}
+/**
+ * The result of evaluateSignals: every complete lawful display for one vessel, alternatives unresolved (REQ-MODEL-8), with the data it was read against (ADR 0011 §1, ADR 0014). Structure only; the $defs shared with the other envelopes live in schema/evaluation.schema.json.
+ */
+export interface DisplayEvaluation {
+  colregs: Colregs;
+  applied: RuleIds;
+  exempted: ByEntryList;
+  overridden: ByEntryList;
+  /**
+   * Every complete lawful display. The order is significant: a display whose chosen entry carries the narrower gate comes before the display it stands in lieu of, the base display last (30(b) before 30(a); 23(d)(i) before 23(a)). Derived at evaluation time from `modality`, `when` and `rel:in_lieu_of`; the corpus still picks no option (REQ-MODEL-8).
+   */
+  displays: Display[];
+  optional_additions: Items[];
+  /**
+   * @deprecated
+   */
+  optionalAdditions?: Items[];
+  modalities: Modalities;
+  categories: Categories;
+  provenance: Provenance;
+}
+export interface Display {
+  entries: RuleIds;
+  lights: DisplayLight[];
+  chosen: string[];
+  shapes?: DisplayShape[];
+  signals?: DisplaySignal[];
+}
+export interface DisplayLight {
+  spec: LightRef;
+  source_entry: string;
+  /**
+   * @deprecated
+   */
+  sourceEntry?: string;
+  via?: string;
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  modality:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
+export interface LightRef {
+  light: string;
+  position?: string;
+  count?: number;
+  color?: string;
+  character?: string;
+  intensity?: string;
+  arrangement?: 'vertical';
+  combined?: boolean;
+  note?: string;
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  modality?:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
+export interface DisplayShape {
+  spec: ShapeRef;
+  source_entry: string;
+  via?: string;
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  modality:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
+export interface ShapeRef {
+  shape: string;
+  position?: string;
+  count?: number;
+  arrangement?: 'vertical';
+  note?: string;
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  modality?:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
+export interface DisplaySignal {
+  spec: SignalRef;
+  source_entry: string;
+  via?: string;
+  /**
+   * This interface was referenced by `Modalities`'s JSON-Schema definition
+   * via the `patternProperty` "^rule:[0-9]+[a-z]?(_[ivx]+)*(:[a-z][a-z0-9_]*)?$".
+   */
+  modality:
+    | 'modality:shall'
+    | 'modality:may'
+    | 'modality:shall-if-practicable'
+    | 'modality:conditional'
+    | 'modality:exempt'
+    | 'modality:shall-not'
+    | 'modality:shall-not-impede';
+}
+export interface Items {
+  id: string;
+  via?: string;
+  lights: DisplayLight[];
+  cite: string;
+  shapes?: DisplayShape[];
+  signals?: DisplaySignal[];
+}
+export interface Indication {
+  couldBe: {
+    fact: FactRecord;
+    by: RuleIds;
+  }[];
+  consistent?: boolean;
+}
+/**
+ * What a consumer asserts about one vessel at one moment: the input evaluateSignals reads (ADR 0011 §2, ADR 0014). Structure only -- which fact keys exist and which values each takes is data/facts.json's, checked in the tests; see docs/adr/0006-json-schema-and-identifier-diff.md.
+ */
+export interface FactRecord {
+  /**
+   * This interface was referenced by `FactRecord`'s JSON-Schema definition
+   * via the `patternProperty` "^fact:[a-z0-9_]+$".
+   */
+  [k: string]: string | number | boolean;
+}

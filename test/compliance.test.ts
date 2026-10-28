@@ -154,7 +154,7 @@ describe('evaluateCompliance', () => {
     const latch = fixtures.cases.find((c) => c.name.startsWith('13(d) latch'))!.situation;
     const fog = clone(latch);
     fog.pair!.geo!['geo:in_sight'] = false;
-    expect(evaluateCircumstances(fog).encounter).toBeUndefined();
+    expect(evaluateCircumstances(fog).situation).toBeUndefined();
     const r = evaluateCompliance({ samples: [{ t_s: 0, situation: fog }] });
     expect(r.phases).toEqual([]);
   });

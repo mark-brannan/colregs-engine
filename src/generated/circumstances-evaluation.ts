@@ -8,7 +8,7 @@
  */
 
 export type RuleIds = string[];
-export type SubjectRoles = SubjectRole[];
+export type VesselRoles = VesselRole[];
 export type ByEntryList = ByEntry[];
 export type KnownOmissions = {
   cite: string;
@@ -23,14 +23,14 @@ export interface CircumstancesEvaluationSchema {
   colregs: Colregs;
   applied: RuleIds;
   scope: RuleIds;
-  encounter?: 'encounter:head-on' | 'encounter:crossing' | 'encounter:overtaking' | 'encounter:none';
+  situation?: 'situation:head-on' | 'situation:crossing' | 'situation:overtaking' | 'situation:none';
   risk_of_collision: {
     asserted: boolean;
     by: RuleIds;
   };
   roles: {
-    self: SubjectRoles;
-    other: SubjectRoles;
+    self: VesselRoles;
+    other: VesselRoles;
   };
   overridden: ByEntryList;
   modalities: Modalities;
@@ -42,7 +42,7 @@ export interface Colregs {
   version: string;
   source: 'resolved' | 'caller';
 }
-export interface SubjectRole {
+export interface VesselRole {
   role: 'role:give-way' | 'role:stand-on' | 'role:shall-not-impede' | 'role:keep-clear' | 'role:none';
   by: string;
 }

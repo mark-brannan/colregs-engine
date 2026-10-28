@@ -7,7 +7,7 @@
 
 import applicabilityJson from 'colregs/data/applicability.json' with { type: 'json' };
 
-import { evaluateDisplay, predicateMatches } from '../../src/evaluate.js';
+import { evaluateSignals, predicateMatches } from '../../src/evaluate.js';
 import type { ApplicabilityData, Entry, FactRecord } from '../../src/types.js';
 
 import { type Axis, enumerateIndexed, type Shard, totalRecords, WHOLE_SPACE } from './enumerate.js';
@@ -194,7 +194,7 @@ export function walkShard(axes: Axis[], opts: WalkOptions = {}): Tally {
       t.n++;
       const ordinal = jurisdictionOffset + local;
 
-      const evalResult = evaluateDisplay(facts, { data, jurisdiction });
+      const evalResult = evaluateSignals(facts, { data, jurisdiction });
       const engineApplied = evalResult.applied;
       const refApplied = referenceAppliedEntries(data, facts, jurisdiction);
 

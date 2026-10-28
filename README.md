@@ -25,9 +25,9 @@ One call. Pass a fact record describing one vessel at one moment and get
 back every complete lawful display.
 
 ```ts
-import { evaluateDisplay } from 'colregs-engine';
+import { evaluateSignals } from 'colregs-engine';
 
-const result = evaluateDisplay({
+const result = evaluateSignals({
   'fact:propulsion': 'propulsion:sail',
   'fact:activity': 'activity:none',
   'fact:position': 'position:underway',
@@ -59,7 +59,7 @@ When one rule vetoes another, the result says who did it. A fishing vessel
 aground:
 
 ```ts
-evaluateDisplay({
+evaluateSignals({
   'fact:propulsion': 'propulsion:power',
   'fact:activity': 'activity:fishing',
   'fact:position': 'position:aground',
@@ -87,7 +87,7 @@ through a cast is rejected too:
 ```ts
 import type { FactRecord } from 'colregs-engine';
 
-evaluateDisplay({ propulsion: 'sail' } as unknown as FactRecord);
+evaluateSignals({ propulsion: 'sail' } as unknown as FactRecord);
 // Error: unknown fact key 'propulsion'; did you mean 'fact:propulsion'? …
 ```
 
@@ -112,7 +112,7 @@ own vocabulary and do not move when colregs releases data.
 
 | Export                                                                                                                                                                                       | What you get                                                                                                                      |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| [`evaluateDisplay(facts, opts?)`](src/evaluate.ts)                                                                                                                                           | every complete lawful display for one vessel, plus which entries applied and which were excluded and by whom                      |
+| [`evaluateSignals(facts, opts?)`](src/evaluate.ts)                                                                                                                                           | every complete lawful display for one vessel, plus which entries applied and which were excluded and by whom                      |
 | [`DisplayEvaluation`](src/types.ts)                                                                                                                                                          | the result: `applied`, `excluded`, `displays`, the per-entry `categories`, the `provenance` block and the `colregs` version stamp |
 | [`EvaluationProvenance`](src/types.ts), [`RuleCategory`](src/schema.ts), [`RepresentedParagraph`](src/schema.ts), [`KnownOmission`](src/schema.ts)                                           | what the evaluation read: categories, jurisdictions, Rule 2(a)/2(b) as represented but never computed, and known omissions        |
 | [`DepartureStatus`](src/types.ts)                                                                                                                                                            | the closed status alphabet colregs' ADR 0005 §5 fixes, for `evaluateDeparture`; no field of `DisplayEvaluation` carries one       |

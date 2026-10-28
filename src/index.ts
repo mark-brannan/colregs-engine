@@ -16,13 +16,14 @@
 // `applied`, from the same call), no validator (every verb validates its
 // input and throws), no error class nothing throws, no predicate internals.
 
-import { evaluateDisplay } from './evaluate.js';
+import { evaluateSignals } from './evaluate.js';
 import { evaluateCircumstances } from './circumstances.js';
 import { evaluateCompliance } from './compliance.js';
 import { evaluateDeparture } from './departure.js';
-// evaluateScene (scene.ts) and reduceTraffic (traffic.ts) stay in the code,
+// evaluateVessels (vessels.ts) and reduceOthers (others.ts) stay in the code,
 // unexported, until colregs' manifest names them again.
-export { evaluateDisplay, evaluateCircumstances, evaluateCompliance, evaluateDeparture };
+export { evaluateSignals, evaluateCircumstances, evaluateCompliance, evaluateDeparture };
+import { evaluate } from './unified.js';
 export { evaluate, Evaluation } from './unified.js';
 export { DataVersionMismatchError } from './errors.js';
 export type { EvaluateOptions } from './evaluate.js';
@@ -30,22 +31,22 @@ export type { EvaluateOptions } from './evaluate.js';
 // The engine interface colregs owns (ADR 0014): checked here, once, against
 // the exports above, rather than left to a consumer to discover a drift at
 // the call site. `satisfies` verifies structurally and changes no runtime
-// behaviour; the object is not exported. The pinned manifest still names
-// the three companions by their old verbs (appliedEncounterEntries,
-// appliedConductEntries) and the departure verb by its old name; the bump to
-// the ADR 0023 manifest collapses this object to the four exports.
-import { appliedDisplayEntries } from './evaluate.js';
+// behaviour; the object is not exported. The pinned manifest still lists
+// the companions and names the departure verb by its old name; the bump to
+// the ADR 0023 manifest collapses this object to the exports.
+import { appliedSignalsEntries } from './evaluate.js';
 import { appliedCircumstancesEntries } from './circumstances.js';
 import { appliedComplianceEntries } from './compliance.js';
 import type { ColregsEngine } from './generated/colregs-engine.js';
 ({
-  evaluateDisplay,
-  appliedDisplayEntries,
+  evaluateSignals,
+  appliedSignalsEntries,
   evaluateCircumstances,
-  appliedEncounterEntries: appliedCircumstancesEntries,
+  appliedCircumstancesEntries,
   evaluateCompliance,
-  appliedConductEntries: appliedComplianceEntries,
+  appliedComplianceEntries,
   evaluateRule2Departure: evaluateDeparture,
+  evaluate,
 }) satisfies ColregsEngine;
 
 // Inputs.

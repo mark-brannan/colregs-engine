@@ -89,7 +89,7 @@ export type Effect =
       other: EffectRole;
     }
   | {
-      encounter: 'encounter:head-on' | 'encounter:crossing' | 'encounter:overtaking' | 'encounter:none';
+      situation: 'situation:head-on' | 'situation:crossing' | 'situation:overtaking' | 'situation:none';
     }
   | {
       risk_of_collision: true;
@@ -149,11 +149,11 @@ export interface ApplicabilityData {
       'role:keep-clear': string;
       'role:none': string;
     };
-    encounters?: {
-      'encounter:head-on': string;
-      'encounter:crossing': string;
-      'encounter:overtaking': string;
-      'encounter:none': string;
+    situations?: {
+      'situation:head-on': string;
+      'situation:crossing': string;
+      'situation:overtaking': string;
+      'situation:none': string;
     };
     classification_shape?: string;
   };
