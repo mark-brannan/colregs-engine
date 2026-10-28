@@ -18,3 +18,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261028t075702z
 - reduceTraffic renamed reduceOthers, files src/others.ts and test/others.test.ts, following the others: class and OthersFacts Undo: rename back in a follow-up PR ([#178](https://github.com/mark-brannan/colregs-engine/pull/178))
+
+### 20261028t075705z
+- SceneConflict renamed DutyConflict Undo: rename back in a follow-up PR ([#178](https://github.com/mark-brannan/colregs-engine/pull/178))
