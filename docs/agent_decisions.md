@@ -27,3 +27,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261028t075712z
 - lockfile colregs entry carries no integrity hash, as npm writes none for a GitHub-hosted dependency resolved afresh Undo: restore the integrity line ([#178](https://github.com/mark-brannan/colregs-engine/pull/178))
+
+### 20261028t083330z
+- decisions line carries no provenance stamp; the file header names whose lines they are Undo: append a provenance stamp to the line ([#180](https://github.com/mark-brannan/colregs-engine/pull/180))
