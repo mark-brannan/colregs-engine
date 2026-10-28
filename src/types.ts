@@ -235,7 +235,7 @@ export interface DisplayEvaluation {
   /**
    * Category per applied/imported entry id, over the same key set as
    * {@link DisplayEvaluation.modalities}. Every value here is `display`
-   * while `evaluateDisplay` is the only verb; it is stated rather than
+   * while `evaluateSignals` is the only verb; it is stated rather than
    * assumed because colregs leaves `category` absent on a display entry, and
    * a consumer reading `applied` against the data has no other way to learn
    * which default was applied.
@@ -273,25 +273,25 @@ export interface Situation {
   self: Vessel;
   other?: Vessel;
   pair?: Pair;
-  /** Other traffic, reduced to facts about `self`'s options (issue #82,
+  /** The other vessels, reduced to facts about `self`'s options (issue #82,
    * decisions.md 2026-09-16). Not vessels: `Situation` stays two-vessel,
    * `evaluateCircumstances` reads none of these keys, and `Trace` keeps the same
    * two vessels throughout. Flattens to `others:<sector>:<key>`. Produced
-   * by `reduceTraffic`, or supplied by a caller that has already reduced. */
+   * by `reduceOthers`, or supplied by a caller that has already reduced. */
   others?: OthersFacts;
 }
 
 /** Sectors around `self`, as the Rules and the grid predicates divide them. */
 export type OthersSector = 'ahead' | 'starboard' | 'astern' | 'port';
 
-/** One sector's reduced facts. Every field is pencil until `reduceTraffic`
+/** One sector's reduced facts. Every field is pencil until `reduceOthers`
  * is written; a grid region may predicate on any of them today. */
 export interface OthersSectorFacts {
   /** Vessels in the sector, other than `other`. */
   count?: number;
   /** Range to the nearest of them, nautical miles. */
   nearest_nm?: number;
-  /** Whether a helm action into this sector is foreclosed by that traffic —
+  /** Whether a helm action into this sector is foreclosed by those vessels —
    * the NTSB finding on *Fitzgerald*: room to pass ahead of one ship, not
    * prudent given another. */
   foreclosed?: boolean;
@@ -301,10 +301,10 @@ export interface OthersSectorFacts {
 export type OthersFacts = Partial<Record<OthersSector, OthersSectorFacts>>;
 
 /** The n-vessel input (issue #82 "Deferred", colregs ADR 0023): `self` and
- * every other vessel. `evaluateScene` evaluates each pair with
+ * every other vessel. `evaluateVessels` evaluates each pair with
  * `evaluateCircumstances` unchanged, reduces the rest to `OthersFacts`, and
  * reports where pairwise duties conflict. Pencil throughout. */
-export interface Scene {
+export interface Vessels {
   self: Vessel;
   others: Vessel[];
   pairs?: Pair[];
@@ -312,19 +312,24 @@ export interface Scene {
 
 /** One conflict between duties owed to different vessels: the helm action
  * one pair asks for is foreclosed by another. */
-export interface SceneConflict {
+export interface DutyConflict {
   duty: string;
-  /** Index into `Scene.others` of the vessel the duty is owed to. */
+  /** Index into `Vessels.others` of the vessel the duty is owed to. */
   to: number;
-  /** Indices into `Scene.others` of the vessels foreclosing it. */
+  /** Indices into `Vessels.others` of the vessels foreclosing it. */
   blocked_by: number[];
 }
 
-export interface SceneEvaluation {
+export interface VesselsEvaluation {
   pairs: CircumstancesEvaluation[];
   others: OthersFacts;
-  conflicts: SceneConflict[];
+  conflicts: DutyConflict[];
 }
+
+// The unified form's input and answer, under the names colregs' manifest
+// gives them; their shapes are the engine's own (src/unified.ts).
+export type { Circumstances } from './unified.js';
+export type { Evaluation as UnifiedEvaluation } from './unified.js';
 
 // ---------------------------------------------------------------------------
 // The three verbs ADR 0011 §4 and ADR 0012 name but do not build. Their
@@ -358,7 +363,7 @@ export interface CircumstancesEvaluation {
   scope: RuleId[];
   /** Absent when no classification entry fired: "cannot say", not "none"
    * (colregs Q-43). */
-  encounter?: Extract<Effect, { encounter: unknown }>['encounter'];
+  situation?: Extract<Effect, { situation: unknown }>['situation'];
   /** Rule 7(a) lets an entry add a ground and never deny one, so the
    * grounds ride with the assertion. */
   risk_of_collision: { asserted: boolean; by: RuleId[] };

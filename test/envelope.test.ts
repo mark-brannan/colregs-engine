@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json';
-import { evaluateDisplay } from '../src/evaluate';
+import { evaluateSignals } from '../src/evaluate';
 import type { ApplicabilityData, FactRecord, RuleCategory, DepartureStatus } from '../src/types';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
@@ -57,14 +57,14 @@ describe('the category vocabulary', () => {
 
   it('is reported per applied and imported entry, over modalities key set', () => {
     for (const facts of [sloop12, trawler30]) {
-      const result = evaluateDisplay(facts);
+      const result = evaluateSignals(facts);
       expect(Object.keys(result.categories)).toEqual(Object.keys(result.modalities));
       expect(Object.keys(result.categories).length).toBeGreaterThan(0);
     }
   });
 
   it("applies colregs' absent-means-display default", () => {
-    const result = evaluateDisplay(trawler30);
+    const result = evaluateSignals(trawler30);
     const byId = new Map(applicability.entries.map((e) => [e.id, e]));
     for (const [id, category] of Object.entries(result.categories)) {
       expect(category).toBe('category:display');
@@ -80,7 +80,7 @@ describe('the category vocabulary', () => {
         .map((e) => e.id),
     );
     expect(nonDisplay.size).toBeGreaterThan(0);
-    const result = evaluateDisplay(trawler30);
+    const result = evaluateSignals(trawler30);
     for (const id of Object.keys(result.categories)) {
       expect(nonDisplay.has(id)).toBe(false);
     }
@@ -100,7 +100,7 @@ describe('the status alphabet', () => {
   });
 
   it('is a type only: a display evaluation carries no status field', () => {
-    const result = evaluateDisplay(sloop12) as unknown as Record<string, unknown>;
+    const result = evaluateSignals(sloop12) as unknown as Record<string, unknown>;
     expect('status' in result).toBe(false);
     const values = new Set<unknown>(Object.values(result.provenance as object));
     for (const status of STATUSES) expect(values.has(status)).toBe(false);
@@ -109,7 +109,7 @@ describe('the status alphabet', () => {
 
 describe('provenance', () => {
   it('names the categories the verb evaluated', () => {
-    expect(evaluateDisplay(sloop12).provenance.evaluated_categories).toEqual(['category:display']);
+    expect(evaluateSignals(sloop12).provenance.evaluated_categories).toEqual(['category:display']);
   });
 
   it('names every jurisdiction whose entries were eligible to match', () => {
@@ -120,14 +120,14 @@ describe('provenance', () => {
           .map((e) => e.jurisdiction),
       ),
     ];
-    expect(evaluateDisplay(sloop12).provenance.jurisdictions).toEqual(expected);
+    expect(evaluateSignals(sloop12).provenance.jurisdictions).toEqual(expected);
     // The engine has no jurisdiction parameter, so more than one is offered.
     // A single-jurisdiction result here would mean the gap had quietly closed.
     expect(expected.length).toBeGreaterThan(1);
   });
 
   it('carries the represented paragraphs, identity only, never the prose', () => {
-    const { represented } = evaluateDisplay(sloop12).provenance;
+    const { represented } = evaluateSignals(sloop12).provenance;
     expect(represented.map((p) => p.id)).toEqual([
       'rule:2a',
       'rule:2b',
@@ -167,7 +167,7 @@ describe('provenance', () => {
   });
 
   it('never reports a represented paragraph as applied', () => {
-    const result = evaluateDisplay(sloop12);
+    const result = evaluateSignals(sloop12);
     for (const p of result.provenance.represented) {
       expect(result.applied).not.toContain(p.id);
       expect(result.categories[p.id]).toBeUndefined();
@@ -180,7 +180,7 @@ describe('provenance', () => {
       entries: applicability.entries.filter((e) => e.jurisdiction === 'intl'),
       represented_paragraphs: [],
     };
-    const result = evaluateDisplay(sloop12, { data: oneJurisdiction });
+    const result = evaluateSignals(sloop12, { data: oneJurisdiction });
     expect(result.provenance.jurisdictions).toEqual(['intl']);
     expect(result.provenance.represented).toEqual([]);
     expect(result.colregs.source).toBe('caller');
@@ -189,11 +189,11 @@ describe('provenance', () => {
   it('survives data with no represented_paragraphs at all', () => {
     const stripped = { ...applicability } as ApplicabilityData;
     delete stripped.represented_paragraphs;
-    expect(evaluateDisplay(sloop12, { data: stripped }).provenance.represented).toEqual([]);
+    expect(evaluateSignals(sloop12, { data: stripped }).provenance.represented).toEqual([]);
   });
 
   it('carries the known_omissions registry beside represented, cite, what and why, in data order', () => {
-    const { known_omissions } = evaluateDisplay(sloop12).provenance;
+    const { known_omissions } = evaluateSignals(sloop12).provenance;
     expect(applicability.known_omissions?.length).toBeGreaterThan(0);
     expect(known_omissions).toEqual(applicability.known_omissions);
     for (const o of known_omissions) {
@@ -206,12 +206,12 @@ describe('provenance', () => {
       ...applicability,
       known_omissions: [{ cite: '1(a)', what: 'w', why: 'y' }],
     };
-    expect(evaluateDisplay(sloop12, { data: one }).provenance.known_omissions).toEqual([
+    expect(evaluateSignals(sloop12, { data: one }).provenance.known_omissions).toEqual([
       { cite: '1(a)', what: 'w', why: 'y' },
     ]);
     const stripped = { ...applicability } as ApplicabilityData;
     delete stripped.known_omissions;
-    expect(evaluateDisplay(sloop12, { data: stripped }).provenance.known_omissions).toEqual([]);
+    expect(evaluateSignals(sloop12, { data: stripped }).provenance.known_omissions).toEqual([]);
   });
 });
 
@@ -220,7 +220,7 @@ describe('the fields a consumer already reads', () => {
   // serialises the whole envelope. The additions are additive: nothing here
   // is renamed, re-typed or reordered.
   it('are all still present, and the additions are the only new keys', () => {
-    const result = evaluateDisplay(trawler30);
+    const result = evaluateSignals(trawler30);
     expect(Object.keys(result).sort()).toEqual([
       'applied',
       'categories',
@@ -236,7 +236,7 @@ describe('the fields a consumer already reads', () => {
   });
 
   it('carry what they carried: the fixture contract is untouched', () => {
-    const result = evaluateDisplay(sloop12);
+    const result = evaluateSignals(sloop12);
     expect(result.applied).toEqual(['rule:25a', 'rule:25b', 'rule:25c']);
     expect(result.displays.length).toBe(3);
     expect(result.exempted).toEqual([]);
@@ -246,7 +246,7 @@ describe('the fields a consumer already reads', () => {
   });
 
   it('serialise: the envelope is still JSON round-trippable', () => {
-    const result = evaluateDisplay(trawler30);
+    const result = evaluateSignals(trawler30);
     expect(JSON.parse(JSON.stringify(result))).toEqual(result);
   });
 });

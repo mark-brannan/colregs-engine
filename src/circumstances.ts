@@ -1,7 +1,7 @@
 // evaluateCircumstances — two vessels at one instant (ADR 0011 §4). One
 // predicate pass over the scope, classification and precedence entries
 // against the flattened situation, then rel:overrides resolved between the
-// applied entries exactly as evaluateDisplay resolves it. Composition calls
+// applied entries exactly as evaluateSignals resolves it. Composition calls
 // the data leaves open are recorded in docs/engine-notes.md.
 
 import {
@@ -29,7 +29,7 @@ import type {
 } from './types.js';
 
 /** colregs' entries are written from one seat, so `roles` alone reads a
- * second, swapped frame (self and other exchanged, `pair`/`traffic`
+ * second, swapped frame (self and other exchanged, `pair`/`others`
  * unchanged) per ADR 0016: an override whose source sits in one vessel's
  * seat and target in the other's is invisible to a one-seat reader. */
 function swappedSituation(situation: Situation): Situation | undefined {
@@ -54,14 +54,14 @@ const OBLIGATIONS: ReadonlySet<Modality> = new Set<Modality>([
   'modality:shall-not-impede',
 ]);
 
-/** When two classification entries assert different encounters at once,
+/** When two classification entries assert different situations at once,
  * the one that reads history wins: 13(d) says a latched overtaking is never
  * reclassified, and 14(c) errs toward head-on over crossing. */
-const ENCOUNTER_RANK: Record<string, number> = {
-  'encounter:overtaking': 3,
-  'encounter:head-on': 2,
-  'encounter:crossing': 1,
-  'encounter:none': 0,
+const SITUATION_RANK: Record<string, number> = {
+  'situation:overtaking': 3,
+  'situation:head-on': 2,
+  'situation:crossing': 1,
+  'situation:none': 0,
 };
 
 /** A value colregs adds after this release ranks below every value named
@@ -69,8 +69,8 @@ const ENCOUNTER_RANK: Record<string, number> = {
  * displaces a known classification — and the answer stops depending on
  * where in `entries` the new rule happens to sit. Own keys only: without
  * that, `constructor` reads a function off the prototype. */
-function encounterRank(value: string): number {
-  return Object.prototype.hasOwnProperty.call(ENCOUNTER_RANK, value) ? ENCOUNTER_RANK[value] : -1;
+function situationRank(value: string): number {
+  return Object.prototype.hasOwnProperty.call(SITUATION_RANK, value) ? SITUATION_RANK[value] : -1;
 }
 
 /** A Part D sound/light signal entry: `category:display` like a light or a
@@ -105,7 +105,7 @@ function precedenceEntries(data: ApplicabilityData, flat: FlatSituation): Entry[
 /** ADR 0016: precedence entries pool across the self and swapped frames,
  * keyed by which actual vessel each fired for; `rel:overrides` resolves over
  * the pool, and only the survivors' `effect.self`/`effect.other` become
- * roles. `applied`/`scope`/`encounter`/`modalities`/`categories` stay
+ * roles. `applied`/`scope`/`situation`/`modalities`/`categories` stay
  * self-frame (§4) and are computed elsewhere from `flat` alone.
  *
  * Deduplicated by entry id, self-frame preferred: no precedence entry in
@@ -164,7 +164,7 @@ function pooledRoles(
 
 /**
  * The ids of the entries whose predicate holds, without resolving relations
- * — the situation-fixture contract, as `appliedDisplayEntries` is the
+ * — the situation-fixture contract, as `appliedSignalsEntries` is the
  * applicability-fixture one. Validates `situation` on the same terms.
  *
  * @alpha
@@ -209,7 +209,7 @@ export function evaluateCircumstances(
 
   const scope: RuleId[] = [];
   const riskBy: RuleId[] = [];
-  let encounter: CircumstancesEvaluation['encounter'];
+  let classified: CircumstancesEvaluation['situation'];
 
   for (const e of standing) {
     const effect = e.effect as Record<string, unknown> | undefined;
@@ -219,10 +219,10 @@ export function evaluateCircumstances(
         break;
       case 'category:classification':
         if (effect?.risk_of_collision === true) riskBy.push(e.id);
-        if (typeof effect?.encounter === 'string') {
-          const value = effect.encounter as NonNullable<CircumstancesEvaluation['encounter']>;
-          if (encounter === undefined || encounterRank(value) > encounterRank(encounter)) {
-            encounter = value;
+        if (typeof effect?.situation === 'string') {
+          const value = effect.situation as NonNullable<CircumstancesEvaluation['situation']>;
+          if (classified === undefined || situationRank(value) > situationRank(classified)) {
+            classified = value;
           }
         }
         break;
@@ -248,7 +248,7 @@ export function evaluateCircumstances(
     colregs: { version: COLREGS_VERSION, source },
     applied: applied.map((e) => e.id),
     scope,
-    encounter,
+    situation: classified,
     risk_of_collision: { asserted: stated || riskBy.length > 0, by: riskBy },
     roles,
     overridden,

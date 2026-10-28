@@ -31,7 +31,7 @@ up.
 
 ## What is in scope
 
-**Treat a fact record as untrusted input.** `evaluateDisplay` and everything
+**Treat a fact record as untrusted input.** `evaluateSignals` and everything
 it calls is meant to run over a caller-supplied fact record, which may come
 from a live sensor feed rather than a fixture.
 

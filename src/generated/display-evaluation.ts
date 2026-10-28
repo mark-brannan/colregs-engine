@@ -16,7 +16,7 @@ export type KnownOmissions = {
 }[];
 
 /**
- * The result of evaluateDisplay: every complete lawful display for one vessel, alternatives unresolved (REQ-MODEL-8), with the data it was read against (ADR 0011 §1, ADR 0014). Structure only; the $defs shared with the other envelopes live in schema/evaluation.schema.json.
+ * The result of evaluateSignals: every complete lawful display for one vessel, alternatives unresolved (REQ-MODEL-8), with the data it was read against (ADR 0011 §1, ADR 0014). Structure only; the $defs shared with the other envelopes live in schema/evaluation.schema.json.
  */
 export interface DisplayEvaluationSchema {
   colregs: Colregs;

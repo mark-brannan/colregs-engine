@@ -3,14 +3,14 @@
 // over self, the other vessels and the conditions; its readings are memoized
 // getters, so `const { appraisal } = evaluate(c)` computes the appraisal and
 // nothing else. The appraisal and the signals delegate to
-// evaluateCircumstances and evaluateDisplay over a Situation built per other
+// evaluateCircumstances and evaluateSignals over a Situation built per other
 // vessel; the indication and compliance are stubs with their shapes typed.
 // Validation runs in evaluate() itself: assertions that contradict each
 // other throw before any reading is pulled. Every `open:` line below marks a
 // question the design leaves undecided and the one place the code would
 // change to go the other way.
 
-import { checkDataVersion, evaluateDisplay, type EvaluateOptions } from './evaluate.js';
+import { checkDataVersion, evaluateSignals, type EvaluateOptions } from './evaluate.js';
 import { evaluateCircumstances } from './circumstances.js';
 import { validateSituation } from './facts.js';
 import type {
@@ -288,11 +288,11 @@ export class Evaluation {
     });
   }
 
-  /** Parts C and D for self: every lawful display, as evaluateDisplay reads
+  /** Parts C and D for self: every lawful display, as evaluateSignals reads
    * it. Sound signals are not read here yet. */
   get signals(): DisplayEvaluation | undefined {
     return this.#once('signals', () =>
-      this.#c.self === undefined ? undefined : evaluateDisplay(this.#c.self.fact, this.#opts),
+      this.#c.self === undefined ? undefined : evaluateSignals(this.#c.self.fact, this.#opts),
     );
   }
 

@@ -28,7 +28,7 @@ const power = {
 describe('evaluateCircumstances', () => {
   it('a crossing: give-way and stand-on, risk grounded in 7(d)(i)', () => {
     const r = evaluateCircumstances(fixture('crossing: self power-driven'));
-    expect(r.encounter).toBe('encounter:crossing');
+    expect(r.situation).toBe('situation:crossing');
     expect(r.scope).toEqual(['rule:4', 'rule:11']);
     expect(r.roles.self).toEqual([{ role: 'role:give-way', by: 'rule:15a:keep_out_of_the_way' }]);
     expect(r.roles.other).toEqual([{ role: 'role:stand-on', by: 'rule:15a:keep_out_of_the_way' }]);
@@ -54,7 +54,7 @@ describe('evaluateCircumstances', () => {
 
   it('a latched overtaking stays an overtaking', () => {
     const r = evaluateCircumstances(fixture('13(a) overrides 18(a)(iv)'));
-    expect(r.encounter).toBe('encounter:overtaking');
+    expect(r.situation).toBe('situation:overtaking');
     expect(r.roles.self).toEqual([{ role: 'role:give-way', by: 'rule:13a' }]);
   });
 
@@ -74,7 +74,7 @@ describe('evaluateCircumstances', () => {
   it('own alone: Part B Section I applies and nothing else can be said', () => {
     const r = evaluateCircumstances({ self: { fact: { ...power } } });
     expect(r.applied).toEqual(['rule:4']);
-    expect(r.encounter).toBeUndefined();
+    expect(r.situation).toBeUndefined();
     expect(r.roles).toEqual({ self: [], other: [] });
     expect(r.risk_of_collision).toEqual({ asserted: false, by: [] });
   });
@@ -122,7 +122,7 @@ describe('evaluateCircumstances', () => {
       category: 'category:classification',
       modality: 'modality:shall',
       when: { 'pair:geo:in_sight': true },
-      effect: { encounter: 'overtaking-in-narrow-channel' },
+      effect: { situation: 'overtaking-in-narrow-channel' },
     } as unknown as ApplicabilityData['entries'][number];
     const overtaking = fixture('13(d) latch');
     const first: ApplicabilityData = {
@@ -134,11 +134,11 @@ describe('evaluateCircumstances', () => {
       entries: [...applicability.entries, novel],
     };
     // The known classification wins from either position in the data.
-    expect(evaluateCircumstances(overtaking, { data: first }).encounter).toBe(
-      'encounter:overtaking',
+    expect(evaluateCircumstances(overtaking, { data: first }).situation).toBe(
+      'situation:overtaking',
     );
-    expect(evaluateCircumstances(overtaking, { data: last }).encounter).toBe(
-      'encounter:overtaking',
+    expect(evaluateCircumstances(overtaking, { data: last }).situation).toBe(
+      'situation:overtaking',
     );
     // With nothing known applying, the new value is still reported, not dropped.
     const onlyNovel: ApplicabilityData = {
@@ -148,7 +148,7 @@ describe('evaluateCircumstances', () => {
         ...applicability.entries.filter((e) => e.category !== 'category:classification'),
       ],
     };
-    expect(evaluateCircumstances(overtaking, { data: onlyNovel }).encounter).toBe(
+    expect(evaluateCircumstances(overtaking, { data: onlyNovel }).situation).toBe(
       'overtaking-in-narrow-channel',
     );
   });

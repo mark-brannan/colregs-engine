@@ -4,18 +4,18 @@
 
 import { describe, expect, it } from 'vitest';
 import applicabilityJson from 'colregs/data/applicability.json';
-import { appliedDisplayEntries, evaluateDisplay } from '../src/evaluate';
+import { appliedSignalsEntries, evaluateSignals } from '../src/evaluate';
 import type { ApplicabilityData, DisplayEvaluation, Entry, FactRecord } from '../src/types';
 
 const applicability = applicabilityJson as unknown as ApplicabilityData;
 
 // Local positional-arg wrappers, matching this suite's existing call shape —
-// evaluateDisplay/appliedDisplayEntries take facts first and data via opts.
+// evaluateSignals/appliedSignalsEntries take facts first and data via opts.
 function evaluate(data: ApplicabilityData, facts: FactRecord): DisplayEvaluation {
-  return evaluateDisplay(facts, { data });
+  return evaluateSignals(facts, { data });
 }
 function appliedEntries(data: ApplicabilityData, facts: FactRecord): string[] {
-  return appliedDisplayEntries(facts, { data });
+  return appliedSignalsEntries(facts, { data });
 }
 
 const sloop12: FactRecord = {
@@ -353,7 +353,7 @@ describe('rel:overrides', () => {
     const data = cloneData();
     const e = findEntry(data, 'rule:26c_i');
     e['rel:overrides'] = ['rule:30a', 'rule:30b'];
-    const result = evaluateDisplay(anchoredFishing(30), { data });
+    const result = evaluateSignals(anchoredFishing(30), { data });
     expect(result.displays).toHaveLength(1);
     expect(result.displays[0].entries).toEqual(['rule:26c_i']);
     expect(result.overridden).toEqual([
@@ -372,7 +372,7 @@ describe('rel:overrides', () => {
     e['rel:overrides'] = ['rule:30a', 'rule:30b'];
     // 30(b) requires length < 50 m; at 60 m it never applies, so it can't
     // be displaced.
-    const result = evaluateDisplay(anchoredFishing(60), { data });
+    const result = evaluateSignals(anchoredFishing(60), { data });
     expect(result.overridden).toEqual([{ id: 'rule:30a', by: 'rule:26c_i' }]);
     expect(result.displays).toHaveLength(1);
   });
@@ -382,7 +382,7 @@ describe('rel:overrides', () => {
     const e = findEntry(data, 'rule:26c_i');
     e['rel:overrides'] = ['rule:30a', 'rule:30b'];
     e.modality = 'modality:may';
-    const result = evaluateDisplay(anchoredFishing(30), { data });
+    const result = evaluateSignals(anchoredFishing(30), { data });
     expect(result.overridden).toEqual([]);
     const allEntries = result.displays.flatMap((d) => d.entries);
     expect(allEntries).toContain('rule:30a');
@@ -394,7 +394,7 @@ describe('rel:overrides', () => {
     const e26c = findEntry(data, 'rule:26c_i');
     e26c['rel:overrides'] = ['rule:30a'];
     findEntry(data, 'rule:30a')['rel:overrides'] = ['rule:30c'];
-    const result = evaluateDisplay(anchoredFishing(30), { data });
+    const result = evaluateSignals(anchoredFishing(30), { data });
     expect(result.overridden).toEqual([{ id: 'rule:30a', by: 'rule:26c_i' }]);
     expect(result.applied).toContain('rule:30c');
   });
@@ -404,7 +404,7 @@ describe('rel:overrides', () => {
     const e = findEntry(data, 'rule:26c_i');
     e['rel:overrides'] = ['rule:30a', 'rule:30b'];
     const facts = anchoredFishing(6, { 'fact:near_channel': false });
-    const result = evaluateDisplay(facts, { data });
+    const result = evaluateSignals(facts, { data });
     expect(result.exempted.map((x) => x.id).sort()).toEqual(['rule:30a', 'rule:30b']);
     expect(result.overridden).toEqual([]);
   });
@@ -419,7 +419,7 @@ describe('rel:overrides', () => {
     const overrider = findEntry(data, 'rule:26c_i');
     overrider['rel:overrides'] = [e30e.id];
     const facts = anchoredFishing(6, { 'fact:near_channel': false });
-    const result = evaluateDisplay(facts, { data });
+    const result = evaluateSignals(facts, { data });
     expect(result.overridden).toEqual([{ id: e30e.id, by: 'rule:26c_i' }]);
     expect(result.exempted).toEqual([]);
     const allEntries = result.displays.flatMap((d) => d.entries);
@@ -463,7 +463,7 @@ describe('relation reach and import reads (colregs ADR 0019)', () => {
   }
 
   it('an import whose source carries a scalar gate the vessel fails imports nothing', () => {
-    const result = evaluateDisplay(mineClearanceUnderway(60), { data: with27fIncluding30b() });
+    const result = evaluateSignals(mineClearanceUnderway(60), { data: with27fIncluding30b() });
     expect(result.applied).toContain('rule:27f');
     expect(result.modalities).not.toHaveProperty('rule:30b');
     for (const d of result.displays) expect(d.entries).not.toContain('rule:30b');
@@ -471,7 +471,7 @@ describe('relation reach and import reads (colregs ADR 0019)', () => {
   });
 
   it("an import never reads its source's axes: the same include imports at 30 m", () => {
-    const result = evaluateDisplay(mineClearanceUnderway(30), { data: with27fIncluding30b() });
+    const result = evaluateSignals(mineClearanceUnderway(30), { data: with27fIncluding30b() });
     expect(result.modalities['rule:30b']).toBe('modality:may');
     expect(result.optional_additions.map((a) => a.id)).toContain('rule:30b');
   });
@@ -482,7 +482,7 @@ describe('relation reach and import reads (colregs ADR 0019)', () => {
     // rel:excludes would have struck 25(b) from the entries in force.
     findEntry(data, 'rule:25a')['rel:excludes'] = ['rule:25b'];
     findEntry(data, 'rule:25b')['rel:excludes'] = ['rule:25a'];
-    const result = evaluateDisplay(sloop12, { data });
+    const result = evaluateSignals(sloop12, { data });
     const sets = result.displays
       .map((d) => d.entries)
       .sort((a, b) => a.join().localeCompare(b.join()));
@@ -570,9 +570,9 @@ describe('day shapes (Rule 20(d))', () => {
 });
 
 describe('display order (engine-notes item 8)', () => {
-  // Same call shape as searoom's evaluateDisplayIn: jurisdiction first.
-  function evaluateDisplayIn(jurisdiction: string, facts: FactRecord): DisplayEvaluation {
-    return evaluateDisplay(facts, { jurisdiction });
+  // Same call shape as searoom's evaluateSignalsIn: jurisdiction first.
+  function evaluateSignalsIn(jurisdiction: string, facts: FactRecord): DisplayEvaluation {
+    return evaluateSignals(facts, { jurisdiction });
   }
   const vessel = (
     propulsion: 'power' | 'sail' | 'oars',
@@ -587,7 +587,7 @@ describe('display order (engine-notes item 8)', () => {
     ...extra,
   });
   const orderOf = (facts: FactRecord) =>
-    evaluateDisplayIn('intl', facts).displays.map((d) => d.entries);
+    evaluateSignalsIn('intl', facts).displays.map((d) => d.entries);
 
   const table: [string, FactRecord, string[]][] = [
     ['sail 10 m anchored', vessel('sail', 'anchored', 10), ['rule:30b']],
@@ -647,7 +647,7 @@ describe('display order (engine-notes item 8)', () => {
 
   it('us/inland: 30(b) on a mooring buoy outranks 30(a) the same way', () => {
     const moored = vessel('power', 'moored', 10, { 'fact:on_mooring_buoy': true });
-    expect(evaluateDisplayIn('us/inland', moored).displays.map((d) => d.entries)).toEqual([
+    expect(evaluateSignalsIn('us/inland', moored).displays.map((d) => d.entries)).toEqual([
       ['rule:30b:mooring_buoy'],
       ['rule:30a:mooring_buoy'],
     ]);

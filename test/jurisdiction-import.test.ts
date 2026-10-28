@@ -1,4 +1,4 @@
-// Regression: `byId` in evaluateDisplay() was built from unfiltered
+// Regression: `byId` in evaluateSignals() was built from unfiltered
 // data.entries, while `applied` was jurisdiction-filtered via
 // jurisdictionEntries(). An intl entry a jurisdiction suppresses (ADR 0018)
 // was still reachable through rel:includes/rel:conditional_includes/one_of
@@ -9,7 +9,7 @@
 // importRef's existing `if (!ref) throw`.
 
 import { describe, expect, it } from 'vitest';
-import { evaluateDisplay } from '../src/evaluate';
+import { evaluateSignals } from '../src/evaluate';
 import type { ApplicabilityData, Entry } from '../src/types';
 
 const suppressed: Entry = {
@@ -46,13 +46,13 @@ const data: ApplicabilityData = {
 
 describe('jurisdiction filtering: rel:includes cannot resurrect a suppressed entry', () => {
   it('importing a suppressed entry via rel:includes fails closed', () => {
-    expect(() => evaluateDisplay({}, { data, jurisdiction: 'us/inland' })).toThrow(
+    expect(() => evaluateSignals({}, { data, jurisdiction: 'us/inland' })).toThrow(
       /unknown entry ref suppressedIntl/,
     );
   });
 
   it('the same entry is reachable when no jurisdiction suppresses it', () => {
-    const result = evaluateDisplay({}, { data, jurisdiction: 'intl' });
+    const result = evaluateSignals({}, { data, jurisdiction: 'intl' });
     const entryIds = result.displays.flatMap((d) => d.entries);
     expect(entryIds).toContain('suppressedIntl');
   });

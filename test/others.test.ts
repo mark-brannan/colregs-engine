@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateScene } from '../src/scene.js';
-import { reduceTraffic } from '../src/traffic.js';
+import { evaluateVessels } from '../src/vessels.js';
+import { reduceOthers } from '../src/others.js';
 import { flattenSituation } from '../src/situation.js';
 import type { Situation } from '../src/types.js';
 
@@ -17,8 +17,8 @@ describe('Situation.others', () => {
     expect(flat['others:starboard:nearest_nm']).toBe(1.2);
   });
 
-  it('reduceTraffic and evaluateScene are stubs that throw', () => {
-    expect(() => reduceTraffic(own, [])).toThrow(/stub/);
-    expect(() => evaluateScene({ self: own, others: [] })).toThrow(/stub/);
+  it('reduceOthers and evaluateVessels are stubs that throw', () => {
+    expect(() => reduceOthers(own, [])).toThrow(/stub/);
+    expect(() => evaluateVessels({ self: own, others: [] })).toThrow(/stub/);
   });
 });

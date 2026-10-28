@@ -10,7 +10,7 @@
 export type Label = string;
 
 /**
- * Display catalog for one BCP 47 language: UI strings for the closed vocabularies the package emits (lights, shapes, modalities, roles, encounters, jurisdictions, closed-list fact values), not legal text -- see docs/adr/0003-language-as-a-dimension.md 'Display catalogs' and REQ-LANG-6.
+ * Display catalog for one BCP 47 language: UI strings for the closed vocabularies the package emits (lights, shapes, modalities, roles, situations, jurisdictions, closed-list fact values), not legal text -- see docs/adr/0003-language-as-a-dimension.md 'Display catalogs' and REQ-LANG-6.
  */
 export interface I18NCatalogData {
   /**
@@ -33,7 +33,7 @@ export interface I18NCatalogData {
     licence?: string;
   };
   /**
-   * One section per vocabulary (REQ-LANG-6, REQ-LANG-9's ruling docs/adr/0017). Every section is keyed by the identifier itself, as documented in docs/identifiers.md -- light, modality, role and encounter identifiers carry a type prefix; jurisdiction and closed-list fact values are keyed by their own bare or fact-prefixed form. Values are static strings: no interpolation, no plurals -- the consumer's i18n system owns composition.
+   * One section per vocabulary (REQ-LANG-6, REQ-LANG-9's ruling docs/adr/0017). Every section is keyed by the identifier itself, as documented in docs/identifiers.md -- light, modality, role and situation identifiers carry a type prefix; jurisdiction and closed-list fact values are keyed by their own bare or fact-prefixed form. Values are static strings: no interpolation, no plurals -- the consumer's i18n system owns composition.
    */
   strings: {
     lights?: {
@@ -48,7 +48,7 @@ export interface I18NCatalogData {
     roles?: {
       [k: string]: Label;
     };
-    encounters?: {
+    situations?: {
       [k: string]: Label;
     };
     jurisdictions?: {

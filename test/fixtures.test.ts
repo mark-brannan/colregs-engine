@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import fixturesJson from 'colregs/fixtures/applicability-fixtures.json';
 import applicabilityJson from 'colregs/data/applicability.json';
 import colregsPackage from 'colregs/package.json';
-import { evaluateDisplay } from '../src/evaluate';
+import { evaluateSignals } from '../src/evaluate';
 import type {
   ApplicabilityData,
   DisplayEvaluation,
@@ -21,7 +21,7 @@ function evaluate(
   facts: FactRecord,
   jurisdiction: string,
 ): DisplayEvaluation {
-  return evaluateDisplay(facts, { data, jurisdiction });
+  return evaluateSignals(facts, { data, jurisdiction });
 }
 
 interface FixtureCase {

@@ -29,6 +29,7 @@ const OUT_DIR = 'src/generated';
 const ROOT_NAMES: Record<string, string> = {
   applicability: 'ApplicabilityData',
   'applicability-fixtures': 'ApplicabilityFixtures',
+  circumstances: 'CircumstancesSchema',
   'circumstances-evaluation': 'CircumstancesEvaluationSchema',
   'compliance-evaluation': 'ComplianceEvaluationSchema',
   corpora: 'CorporaData',
@@ -48,6 +49,7 @@ const ROOT_NAMES: Record<string, string> = {
   'situation-fixtures': 'SituationFixtures',
   sounds: 'SoundsData',
   trace: 'TraceSchema',
+  'unified-evaluation': 'UnifiedEvaluationSchema',
   // The stems the pinned colregs still ships; gone at the bump to ADR 0023's manifest.
   'rule2-departure-finding': 'Rule2DepartureFindingSchema',
   'rule2-departure-model': 'Rule2DepartureModelSchema',

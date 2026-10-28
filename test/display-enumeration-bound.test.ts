@@ -8,13 +8,13 @@
 // iterates billions of combos.
 
 import { describe, expect, it } from 'vitest';
-import { evaluateDisplay } from '../src/evaluate';
+import { evaluateSignals } from '../src/evaluate';
 import type { ApplicabilityData, DisplayEvaluation, Entry, FactRecord } from '../src/types';
 
 const facts: FactRecord = {};
 
 function evaluate(data: ApplicabilityData, facts: FactRecord): DisplayEvaluation {
-  return evaluateDisplay(facts, { data });
+  return evaluateSignals(facts, { data });
 }
 
 function relationalMayPair(i: number): Entry[] {

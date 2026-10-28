@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url';
 import applicabilityJson from 'colregs/data/applicability.json' with { type: 'json' };
 import { init } from 'z3-solver';
 
-import { appliedDisplayEntries, predicateMatches, resolveModality } from '../../src/evaluate.js';
+import { appliedSignalsEntries, predicateMatches, resolveModality } from '../../src/evaluate.js';
 import type { ApplicabilityData, Entry, FactRecord, FactValue } from '../../src/types.js';
 import {
   referenceAppliedEntries,
@@ -70,7 +70,7 @@ function appliedBy(which: Evaluator, facts: FactRecord): Set<string> {
   // Both evaluators filter to category: 'display', as the theory does.
   return new Set(
     which === 'engine'
-      ? appliedDisplayEntries(facts, { data })
+      ? appliedSignalsEntries(facts, { data })
       : referenceAppliedEntries(data, facts),
   );
 }

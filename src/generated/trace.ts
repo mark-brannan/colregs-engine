@@ -39,7 +39,7 @@ export interface Vessel {
   act?: ActRecord;
 }
 /**
- * What a consumer asserts about one vessel at one moment: the input evaluateDisplay reads (ADR 0011 §2, ADR 0014). Structure only -- which fact keys exist and which values each takes is data/facts.json's, checked in the tests; see docs/adr/0006-json-schema-and-identifier-diff.md.
+ * What a consumer asserts about one vessel at one moment: the input evaluateSignals reads (ADR 0011 §2, ADR 0014). Structure only -- which fact keys exist and which values each takes is data/facts.json's, checked in the tests; see docs/adr/0006-json-schema-and-identifier-diff.md.
  */
 export interface FactRecord {
   /**

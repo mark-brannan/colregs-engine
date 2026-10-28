@@ -450,7 +450,7 @@ export function entryCategory(e: Entry): RuleCategory {
   return e.category ?? 'category:display';
 }
 
-// The categories `evaluateDisplay` matches. A one-element list rather than a
+// The categories `evaluateSignals` matches. A one-element list rather than a
 // bare string because the field it feeds is a list on every verb: ADR 0001's
 // evaluateCircumstances reads scope, classification and precedence in one
 // predicate pass.
@@ -498,7 +498,7 @@ const DISPLAY_OBLIGATIONS: ReadonlySet<Modality> = new Set<Modality>([
  * rel:includes import, which are not applied. A displaced entry's own
  * overrides do not fire, so a chain stops at the first displacement;
  * colregs' own CI (REQ-CAT-3) keeps the data acyclic, so the memo alone
- * terminates. Shared by evaluateDisplay and evaluateCircumstances so the two
+ * terminates. Shared by evaluateSignals and evaluateCircumstances so the two
  * verbs cannot drift on it.
  */
 export function resolveOverrides(
@@ -577,9 +577,9 @@ function appliedEntryList(
 }
 
 /** Ids of the entries whose predicate matches `facts` — the same set
- * `evaluateDisplay(...).applied` returns, without running display
- * composition. Validates `facts` on the same terms evaluateDisplay() does. */
-export function appliedDisplayEntries(facts: FactRecord, opts: EvaluateOptions = {}): string[] {
+ * `evaluateSignals(...).applied` returns, without running display
+ * composition. Validates `facts` on the same terms evaluateSignals() does. */
+export function appliedSignalsEntries(facts: FactRecord, opts: EvaluateOptions = {}): string[] {
   checkDataVersion(opts);
   validateFacts(facts);
   return appliedEntryList(
@@ -714,7 +714,7 @@ function rankDisplays(
  * vocabulary: an empty result must mean "this vessel shows nothing", never
  * "you misspelt something".
  */
-export function evaluateDisplay(facts: FactRecord, opts: EvaluateOptions = {}): DisplayEvaluation {
+export function evaluateSignals(facts: FactRecord, opts: EvaluateOptions = {}): DisplayEvaluation {
   checkDataVersion(opts);
   const data = opts.data ?? RESOLVED_DATA;
   const source: 'resolved' | 'caller' = opts.data ? 'caller' : 'resolved';
