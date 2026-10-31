@@ -30,3 +30,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261028t083330z
 - decisions line carries no provenance stamp; the file header names whose lines they are Undo: append a provenance stamp to the line ([#180](https://github.com/mark-brannan/colregs-engine/pull/180))
+
+### 20261031t003515z
+- E2: no PR; the card's step 2-6 targets are gone from main and the one commit is superseded by main's voice.allow trim Undo: redo steps on a fresh branch (no PR, branch main)
