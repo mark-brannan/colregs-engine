@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.12](https://github.com/mark-brannan/colregs-engine/compare/v0.1.11...v0.1.12) (2026-10-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* **api:** evaluateDisplay is removed; call evaluateSignals. CircumstancesEvaluation.encounter is now situation, with values situation:head-on|crossing|overtaking|none.
+
+### Added
+
+* **api:** follow colregs [#229](https://github.com/mark-brannan/colregs-engine/issues/229) — evaluateSignals, situation, VesselRole ([#178](https://github.com/mark-brannan/colregs-engine/issues/178)) ([5e1cb2a](https://github.com/mark-brannan/colregs-engine/commit/5e1cb2aa56fb0156403cf83975c01b8dda20539f))
+
 ## [0.1.11](https://github.com/mark-brannan/colregs-engine/compare/v0.1.10...v0.1.11) (2026-10-17)
 
 
