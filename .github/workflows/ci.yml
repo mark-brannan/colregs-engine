@@ -118,35 +118,55 @@ jobs:
 
   # Ladder step 4 (research/rocq/): the partition-soundness lemma the
   # conformance job's representatives rest on, compiled by the distribution's
-  # Coq 8.18 from an image pinned by digest, so no step downloads packages:
-  # `apt-get install coq` from the runner's mirror stalled past a 10-minute
-  # cap on every attempt for colregs-engine#183 while the proof takes ~1 s.
-  # A newer Coq is a new tag and digest here. Fails on a compile or proof
-  # error, or on the generic theorem acquiring an assumption; the stdlib
-  # deprecation warnings a newer Rocq prints do not fail it.
+  # Coq 8.18 from Ubuntu's apt package, with the downloaded .deb files kept
+  # in the Actions cache so a normal run never touches the mirror. Why: the
+  # mirror stalled `apt-get install coq` past a 10-minute cap on every attempt
+  # for colregs-engine#183; the pinned coqorg/coq image (#184) was steady but
+  # spent 71-84 s pulling 1.4 GB, and the proof itself takes ~1 s. A cache
+  # miss (first run, a new key, an evicted cache) falls back to the mirror
+  # under a 4-minute limit. A newer Coq, or a runner image the cached files no
+  # longer install on, is a new key below. Fails on a compile or proof error,
+  # or on the generic theorem acquiring an assumption; the stdlib deprecation
+  # warnings a newer Rocq prints do not fail it.
   #
-  # Reading a failure: "Initialize containers" red = the image pull (Docker
-  # Hub), not the proof; a timeout with no ::error:: line = the runner; an
-  # ::error:: line from the prove step says which of the two checks failed.
+  # Reading a failure: every red step prints one ::error:: line naming its
+  # cause -- the mirror (rerun), coqc rejecting the file, or an assumption.
   partition-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    container:
-      image: coqorg/coq:8.18@sha256:b0ddec11e839ab96fd514040d6f2a3a1f47b9e2a3999cc5c7f2527d1925f9126
-      # The workspace GitHub mounts is not writable by the image's coq user.
-      options: --user root
-    defaults:
-      run:
-        shell: bash
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v7
-      - name: Prove research/rocq/Partition.v
-        timeout-minutes: 2
+      - uses: actions/cache@v6
+        with:
+          path: ~/coq-debs
+          key: coq-debs-${{ runner.os }}-noble-coq-8.18-v1
+      - name: Get Coq
+        timeout-minutes: 5
         run: |
-          # GitHub bypasses the image's opam entrypoint, so put its coqc on PATH.
-          export PATH="/home/coq/.opam/${COMPILER}/bin:$PATH"
-          command -v coqc >/dev/null || { echo "::error::no coqc under /home/coq/.opam/${COMPILER:-<COMPILER unset>}/bin: the image layout changed, not the proof."; exit 1; }
-          echo "$(coqc --version | head -1), from the pinned coqorg/coq image"
+          debs="$HOME/coq-debs"
+          from_cache() {
+            ls "$debs"/*.deb >/dev/null 2>&1 || return 1
+            echo "Installing Coq from $(ls "$debs"/*.deb | wc -l) cached .deb files; the mirror is not used."
+            sudo apt-get install -y -qq --no-install-recommends "$debs"/*.deb >/dev/null \
+              || { echo "::warning::the cached .deb files no longer install on this runner image; falling back to the mirror. Bump the cache key in ci.yml."; return 1; }
+          }
+          from_mirror() {
+            echo "No usable cache: downloading Coq from the runner's Ubuntu mirror."
+            opts="-o Acquire::http::Timeout=20 -o Acquire::Retries=3 -qq"
+            start=$(date +%s)
+            if ! timeout 240 bash -c "sudo apt-get $opts update && sudo apt-get $opts install -y --no-install-recommends --download-only coq"; then
+              echo "::error::the Ubuntu mirror did not deliver Coq within 4 min (stalled or unreachable). The runner's network is at fault, not Partition.v: rerun the job."
+              exit 1
+            fi
+            echo "Mirror download took $(( $(date +%s) - start )) s; about 15 s is normal."
+            mkdir -p "$debs" && cp /var/cache/apt/archives/*.deb "$debs"/
+            sudo apt-get install -y -qq --no-install-recommends "$debs"/*.deb >/dev/null
+          }
+          from_cache || from_mirror
+      - name: Prove research/rocq/Partition.v
+        timeout-minutes: 1
+        run: |
+          echo "$(coqc --version | head -1), from Ubuntu's coq package"
           start=$(date +%s)
           if ! coqc research/rocq/Partition.v > partition.out 2>&1; then
             cat partition.out
