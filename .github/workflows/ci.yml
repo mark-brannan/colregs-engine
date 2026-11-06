@@ -132,7 +132,8 @@ jobs:
   # Reading a failure: every red step prints one ::error:: line naming its
   # cause -- the mirror (rerun), coqc rejecting the file, or an assumption.
   partition-proof:
-    runs-on: ubuntu-latest
+    # Pinned to the codename the cache key names; bump both together.
+    runs-on: ubuntu-24.04
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v7
@@ -160,7 +161,8 @@ jobs:
             fi
             echo "Mirror download took $(( $(date +%s) - start )) s; about 15 s is normal."
             rm -rf "$debs" && mkdir -p "$debs" && cp /var/cache/apt/archives/*.deb "$debs"/
-            sudo apt-get install -y -qq --no-install-recommends "$debs"/*.deb >/dev/null
+            sudo apt-get install -y -qq --no-install-recommends "$debs"/*.deb >/dev/null \
+              || { echo "::error::the downloaded .deb files did not install (apt output above): a packaging conflict on this runner image, not Partition.v."; exit 1; }
           }
           from_cache || from_mirror
       - name: Prove research/rocq/Partition.v
