@@ -147,7 +147,7 @@ jobs:
           from_cache() {
             ls "$debs"/*.deb >/dev/null 2>&1 || return 1
             echo "Installing Coq from $(ls "$debs"/*.deb | wc -l) cached .deb files; the mirror is not used."
-            sudo apt-get install -y -qq --no-install-recommends "$debs"/*.deb >/dev/null \
+            sudo apt-get install -y -qq --no-install-recommends --no-download "$debs"/*.deb >/dev/null \
               || { echo "::warning::the cached .deb files no longer install on this runner image; falling back to the mirror. Bump the cache key in ci.yml."; return 1; }
           }
           from_mirror() {
@@ -159,7 +159,7 @@ jobs:
               exit 1
             fi
             echo "Mirror download took $(( $(date +%s) - start )) s; about 15 s is normal."
-            mkdir -p "$debs" && cp /var/cache/apt/archives/*.deb "$debs"/
+            rm -rf "$debs" && mkdir -p "$debs" && cp /var/cache/apt/archives/*.deb "$debs"/
             sudo apt-get install -y -qq --no-install-recommends "$debs"/*.deb >/dev/null
           }
           from_cache || from_mirror
