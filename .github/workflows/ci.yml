@@ -118,18 +118,46 @@ jobs:
 
   # Ladder step 4 (research/rocq/): the partition-soundness lemma the
   # conformance job's representatives rest on, compiled by the distribution's
-  # Coq/Rocq -- the proof is a single stdlib-only file, so the apt package is
-  # lighter than an opam switch or the rocq-prover image. Fails on a compile
-  # or proof error, or on the generic theorem acquiring an assumption; the
-  # stdlib deprecation warnings a newer Rocq prints do not fail it.
+  # Coq 8.18 from an image pinned by digest, so no step downloads packages:
+  # `apt-get install coq` from the runner's mirror stalled past a 10-minute
+  # cap on every attempt for colregs-engine#183 while the proof takes ~1 s.
+  # A newer Coq is a new tag and digest here. Fails on a compile or proof
+  # error, or on the generic theorem acquiring an assumption; the stdlib
+  # deprecation warnings a newer Rocq prints do not fail it.
+  #
+  # Reading a failure: "Initialize containers" red = the image pull (Docker
+  # Hub), not the proof; a timeout with no ::error:: line = the runner; an
+  # ::error:: line from the prove step says which of the two checks failed.
   partition-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
+    container:
+      image: coqorg/coq:8.18@sha256:b0ddec11e839ab96fd514040d6f2a3a1f47b9e2a3999cc5c7f2527d1925f9126
+      # The workspace GitHub mounts is not writable by the image's coq user.
+      options: --user root
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v7
-      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends coq
-      - run: coqc research/rocq/Partition.v > partition.out
-      - run: cat partition.out && grep -q "Closed under the global context" partition.out
+      - name: Prove research/rocq/Partition.v
+        timeout-minutes: 2
+        run: |
+          # GitHub bypasses the image's opam entrypoint, so put its coqc on PATH.
+          export PATH=/home/coq/.opam/4.13.1+flambda/bin:$PATH
+          echo "$(coqc --version | head -1), from the pinned coqorg/coq image"
+          start=$(date +%s)
+          if ! coqc research/rocq/Partition.v > partition.out 2>&1; then
+            cat partition.out
+            echo "::error::coqc rejected research/rocq/Partition.v (output above): the proof failed, not the runner."
+            exit 1
+          fi
+          cat partition.out
+          echo "coqc took $(( $(date +%s) - start )) s; about 1 s is normal."
+          if ! grep -q "Closed under the global context" partition.out; then
+            echo "::error::Partition.v compiles, but a theorem now rests on an assumption: no 'Closed under the global context' line in the output above."
+            exit 1
+          fi
 
   # Prose budgets (docs/budgets.json) through the shared prose-budget engine
   # in mark-brannan/dotfiles; test/docs.test.ts runs the same engine locally.
