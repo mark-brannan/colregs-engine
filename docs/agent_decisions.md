@@ -33,3 +33,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261031t003515z
 - E2: no PR; the card's step 2-6 targets are gone from main and the one commit is superseded by main's voice.allow trim Undo: redo steps on a fresh branch (no PR, branch main)
+
+### 20261106t011521z
+- Added a parse-and-keys test for .languette/ask-first.json rather than leaning on languette's deny message, since a bad list denies every Bash call Undo: delete test/ask-first-list.test.ts ([#183](https://github.com/mark-brannan/colregs-engine/pull/183))
