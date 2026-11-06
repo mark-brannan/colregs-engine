@@ -1,0 +1,10 @@
+{"commands": [{"id": "conformance",
+  "match": [{"cmd": "npm", "args": ["run", "conformance"]},
+            {"cmd": "tsx", "script": "research/conformance/run.ts"},
+            {"cmd": "node", "script": "research/conformance/run.ts"},
+            {"cmd": "ts-node", "script": "research/conformance/run.ts"},
+            {"cmd": "bun", "script": "research/conformance/run.ts"},
+            {"cmd": "deno", "script": "research/conformance/run.ts"}],
+  "cost": "the default sample is ~30 s on one core; --full is ~759M records, ~46 min on 16 cores",
+  "approve_label": "Run conformance",
+  "cheaper": "no flags (the default sample), --sample=N, or --jobs=N to lower the load of --full"}]}
