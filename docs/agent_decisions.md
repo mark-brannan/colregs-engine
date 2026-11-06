@@ -36,3 +36,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261106t011521z
 - Added a parse-and-keys test for .languette/ask-first.json rather than leaning on languette's deny message, since a bad list denies every Bash call Undo: delete test/ask-first-list.test.ts ([#183](https://github.com/mark-brannan/colregs-engine/pull/183))
+
+### 20261106t031724z
+- partition-proof job cap 10 to 5 min, prove step 2 min; --user root; Docker Hub over ghcr copy Undo: revert the ci.yml commit ([#184](https://github.com/mark-brannan/colregs-engine/pull/184))
