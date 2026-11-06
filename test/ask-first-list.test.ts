@@ -5,7 +5,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const list = JSON.parse(readFileSync(".languette/ask-first.json", "utf8"));
+type Match = { cmd?: unknown; args?: unknown; script?: unknown };
+type Command = Record<string, unknown> & { id: string; match: Match[] };
+const list: { commands: Command[] } = JSON.parse(readFileSync(".languette/ask-first.json", "utf8"));
 const COMMAND_KEYS = new Set(["id", "match", "cost", "approve_label", "cheaper"]);
 const nonEmpty = (v: unknown) => typeof v === "string" && v.length > 0;
 
@@ -15,7 +17,7 @@ describe(".languette/ask-first.json", () => {
     expect(Array.isArray(list.commands) && list.commands.length > 0).toBe(true);
   });
 
-  it.each(list.commands.map((c: { id: string }) => [c.id, c]))("%s is well formed", (_id, c) => {
+  for (const c of list.commands) it(`${c.id} is well formed`, () => {
     for (const k of Object.keys(c)) expect(COMMAND_KEYS).toContain(k);
     for (const k of ["id", "cost", "approve_label"]) expect(nonEmpty(c[k])).toBe(true);
     if ("cheaper" in c) expect(nonEmpty(c.cheaper)).toBe(true);
@@ -27,7 +29,7 @@ describe(".languette/ask-first.json", () => {
   });
 
   it("gives each command its own approve label", () => {
-    const labels = list.commands.map((c: { approve_label: string }) => c.approve_label);
+    const labels = list.commands.map((c) => c.approve_label);
     expect(new Set(labels).size).toBe(labels.length);
   });
 });
