@@ -2,8 +2,9 @@
 // ladder step 1-3, issue #1 Phase 0). One streaming pass over the
 // partitioned fact space -- see enumerate.ts for how it's built, walk.ts
 // for the per-record checks -- split across processes, then reduced.
-// `USAGE` below is the CLI's one description, and the one home of what a
-// local --full walk costs; `--help` prints it.
+// `USAGE` below is the CLI's one description; `--help` prints it. What a
+// local --full walk costs is stated there and again in
+// .languette/ask-first.json (the approval prompt), so a re-measure changes both.
 //
 // findings/ids.json is machine-written by this file and committed; nothing
 // hand-edits it. See ids.ts for the allocation rules.
