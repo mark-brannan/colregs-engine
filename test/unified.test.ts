@@ -75,12 +75,10 @@ describe('appraisal', () => {
     );
   });
 
-  it('an other given by observed alone rests on nothing and points at the indication', () => {
-    const c = circumstancesOf(crossing);
-    const { fact: _fact, ...observedOnly } = c.others![0];
+  it('an other known only by a radar note rests on nothing and points at the indication', () => {
     const { appraisal } = evaluate({
-      ...c,
-      others: [{ ...observedOnly, observed: { lights: ['masthead', 'red-sidelight'] } }],
+      self: { id: 'self', fact: sloop, observed: [{ means: 'radar', of: 'A' }] },
+      others: [{ id: 'A' }],
     });
     expect(appraisal?.others[0]).toEqual({
       restedOn: 'nothing',
@@ -131,12 +129,9 @@ describe('signals', () => {
 });
 
 describe('indicated', () => {
-  it('stub: every other indicates nothing yet, with the shape typed', () => {
-    const { indicated } = evaluate({
-      others: [{ detected: { visual: true }, observed: { lights: ['red-over-white'] } }],
-      conditions: {},
-    });
-    expect(indicated).toEqual([{ couldBe: [] }]);
+  it('with no notes of her, nothing is known of what she is', () => {
+    const { indicated } = evaluate({ others: [{ detected: { visual: true }, fact: sloop }] });
+    expect(indicated).toEqual([{ inSight: true, couldBe: [] }]);
   });
 });
 
@@ -156,9 +151,7 @@ describe('the evaluation', () => {
   });
 
   it('without self: appraisal and signals read undefined, indicated reads', () => {
-    const e = evaluate({
-      others: [{ detected: { sound: true }, observed: { sounds: ['one-prolonged'] } }],
-    });
+    const e = evaluate({ others: [{ detected: { sound: true }, fact: sloop }] });
     expect(e.appraisal).toBeUndefined();
     expect(e.signals).toBeUndefined();
     expect(e.indicated).toHaveLength(1);
@@ -195,11 +188,14 @@ describe('validation, in evaluate() before any reading', () => {
       /detected by no means/,
     ],
     [
-      'an other whose only detected is her own, of self',
+      'an other whose only detected is her own, of a vessel with no id',
       () =>
         evaluate({
-          self,
-          others: [{ id: 'A', fact: sloop, detected: { self: { visual: true } } }],
+          self: { fact: sloop },
+          others: [
+            { id: 'A', fact: sloop, detected: { B: { visual: true } } },
+            { id: 'B', fact: sloop, detected: { radar: true } },
+          ],
         }),
       /detected by no means/,
     ],
@@ -266,15 +262,72 @@ describe('validation, in evaluate() before any reading', () => {
     ],
     ['self without a fact', () => evaluate({ self: { id: 'self' } }), /self.fact is required/],
     [
-      'neither fact nor observed',
+      'neither fact nor a note of her',
       () => evaluate({ others: [{ detected: { visual: true } }] }),
-      /needs a fact, an observed/,
+      /needs a fact, a note of her/,
     ],
     [
-      'lights observed on a vessel heard',
+      'lights on a note heard',
       () =>
-        evaluate({ others: [{ detected: { sound: true }, observed: { lights: ['masthead'] } }] }),
-      /need detected\.visual true/,
+        evaluate({
+          self: { ...self, observed: [{ means: 'sound', lights: ['light:masthead'] }] },
+        }),
+      /made out by visual only/,
+    ],
+    [
+      'a signal on a note seen',
+      () =>
+        evaluate({
+          self: {
+            ...self,
+            observed: [{ means: 'visual', signal: [{ element: 'sound:prolonged_blast' }] }],
+          },
+        }),
+      /heard by sound only/,
+    ],
+    [
+      'a light colregs does not name',
+      () =>
+        evaluate({
+          self: { ...self, observed: [{ means: 'visual', lights: ['green-sidelight'] }] },
+        }),
+      /lights.json ids/,
+    ],
+    [
+      'a note of a vessel not in the record',
+      () => evaluate({ self: { ...self, observed: [{ means: 'radar', of: 'B' }] } }),
+      /names 'B'/,
+    ],
+    [
+      'a note inferred to be nobody',
+      () => evaluate({ self: { ...self, observed: [{ means: 'sound', inferred: true }] } }),
+      /needs an of/,
+    ],
+    [
+      'a note by a means detections do not have',
+      () => evaluate({ self: { ...self, observed: [{ means: 'assumed' as never }] } }),
+      /means is one of/,
+    ],
+    [
+      'a note that says a means the written detections say no to',
+      () =>
+        evaluate({
+          self: {
+            ...self,
+            detected: { A: { visual: false } },
+            observed: [{ means: 'visual', of: 'A' }],
+          },
+          others: [{ id: 'A', fact: sloop }],
+        }),
+      /visual is no, but self\.observed\[0\] says visual/,
+    ],
+    [
+      'a note key observing does not read',
+      () =>
+        evaluate({
+          self: { ...self, observed: [{ means: 'radar', trend: 'closing' } as never] },
+        }),
+      /unknown circumstances\.self\.observed\[0\] key 'trend'/,
     ],
     [
       'in_sight on geo, which detected already says',
@@ -309,9 +362,20 @@ describe('validation, in evaluate() before any reading', () => {
     expect(call).toThrow(message);
   });
 
-  it('a fact and an observed may coexist on one other', () => {
+  it('a fact and a note of her may coexist', () => {
     expect(() =>
-      evaluate({ others: [{ ...other, observed: { lights: ['masthead'] } }] }),
+      evaluate({
+        self: { ...self, observed: [{ means: 'visual', of: 'A', lights: ['light:masthead'] }] },
+        others: [{ id: 'A', fact: sloop }],
+      }),
     ).not.toThrow();
+  });
+
+  it('an other whose only detection is her own of self is in sight, by Rule 3(k)', () => {
+    const { indicated } = evaluate({
+      self,
+      others: [{ id: 'A', fact: sloop, detected: { self: { visual: true } } }],
+    });
+    expect(indicated[0].inSight).toBe(true);
   });
 });
