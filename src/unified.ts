@@ -5,6 +5,8 @@
 // nothing else. The appraisal and the signals delegate to
 // evaluateCircumstances and evaluateSignals over a Situation built per other
 // vessel; the indication and compliance are stubs with their shapes typed.
+// Self and every other are one shape; self's detections of each other are
+// read from self's map under her id, or from one set inline on her.
 // Validation runs in evaluate() itself: assertions that contradict each
 // other throw before any reading is pulled. Every `open:` line below marks a
 // question the design leaves undecided and the one place the code would
@@ -30,9 +32,17 @@ import type {
   Vessel,
 } from './types.js';
 
-/** The Rules' three ways self can know of another vessel: Rule 11, Rule
- * 19(d), Rule 19(e). Required on every other; there is no neutral way. */
-export type Known = 'in-sight' | 'radar-alone' | 'heard';
+/** One vessel's detections of another: a set of means, each yes or no, and
+ * nothing yet of what each means showed. Rule 3(k) in sight is `visual`;
+ * Rule 19(d) is `radar` without it. */
+export interface Detected {
+  visual?: boolean;
+  sound?: boolean;
+  radar?: boolean;
+  ais?: boolean;
+  vhf?: boolean;
+  assumed?: boolean;
+}
 
 /** What self sees or hears of her: never what she exhibits, which is hers. */
 export interface Observed {
@@ -42,24 +52,32 @@ export interface Observed {
 }
 
 /** Pairwise geometry about one other, carried on her rather than on a pair.
- * `in_sight` is said by `known` and `range_m` by `range_nm`, so neither is
- * a key here. */
+ * `in_sight` is said by `detected` and `range_m` by `range_nm`, so neither
+ * is a key here. */
 export type OtherGeometry = DirectionalGeometry &
   Omit<PairGeometry, 'geo:in_sight' | 'geo:range_m'>;
 
-/** One other vessel, as self knows her: asserted (`fact`), observed, or
- * both. */
-export interface Other {
-  known: Known;
-  /** Her bearing relative to self's heading, and her range, from self. */
-  bearing_deg?: number;
-  range_nm?: number;
+/** One shape for self and every other vessel; which one is self is only
+ * where she sits in the record. */
+export interface CircumstancesVessel {
+  /** What the others' `detected` maps key her by. */
+  id?: string;
   fact?: FactRecord;
-  observed?: Observed;
   kin?: Kinematics;
   geo?: OtherGeometry;
   act?: Acts;
   hist?: History;
+  /** Her detections of the others, keyed by each one's id. On an other it
+   * may instead be one set, inline: self's detections of her, read as
+   * self's `detected` under her id. */
+  detected?: Record<string, Detected> | Detected;
+  /** open: self's perception of her still rides on her, so these three are
+   * refused on self; moving them under self, keyed by her id, changes
+   * situationFor and the checks, nothing else. Bearing is relative to self's
+   * heading; range is from self. */
+  bearing_deg?: number;
+  range_nm?: number;
+  observed?: Observed;
 }
 
 /** The input: self, the other vessels, the conditions of the water. */
@@ -67,8 +85,8 @@ export interface Circumstances {
   /** open: optional, so the inverse question (observed lights, no self)
    * reads through the same call; the appraisal and signals then read
    * `undefined`. Requiring it is one line in validateCircumstances. */
-  self?: Vessel;
-  others?: Other[];
+  self?: CircumstancesVessel;
+  others?: CircumstancesVessel[];
   conditions?: Environment;
 }
 
@@ -98,7 +116,8 @@ export interface Indication {
   consistent?: boolean;
 }
 
-const KNOWN: readonly Known[] = ['in-sight', 'radar-alone', 'heard'];
+const MEANS: readonly (keyof Detected)[] = ['visual', 'sound', 'radar', 'ais', 'vhf', 'assumed'];
+const FROM_SELF = ['bearing_deg', 'range_nm', 'observed'] as const;
 const OBSERVED_KEYS = ['lights', 'shapes', 'sounds'] as const;
 const NM_IN_M = 1852;
 
@@ -130,12 +149,131 @@ function seen(observed: Observed | undefined): boolean {
  * validateSituation whether or not self was given. */
 const NO_SELF: Vessel = { fact: {} };
 
-function checkOther(other: unknown, i: number, conditions: Environment | undefined): void {
+/** An inline set has yes-or-no values; a map keyed by id has sets. */
+function isInline(detected: Record<string, unknown>): boolean {
+  const values = Object.values(detected);
+  return values.length > 0 && values.every((v) => typeof v === 'boolean');
+}
+
+function checkDetected(set: unknown, where: string): void {
+  if (!isRecord(set)) throw new Error(`${where} must be an object, got ${JSON.stringify(set)}.`);
+  for (const [means, value] of Object.entries(set)) {
+    if (!(MEANS as readonly string[]).includes(means)) {
+      throw new Error(`unknown means '${means}' in ${where}; means: ${MEANS.join(', ')}.`);
+    }
+    if (typeof value !== 'boolean') {
+      throw new Error(`${where}.${means} is yes or no, got ${JSON.stringify(value)}.`);
+    }
+  }
+}
+
+/** A map of detections, keyed by the id of a vessel in the record other than
+ * the one carrying it. */
+function checkKeyed(
+  detected: Record<string, unknown>,
+  where: string,
+  ids: ReadonlySet<string>,
+  own: unknown,
+): void {
+  for (const [id, set] of Object.entries(detected)) {
+    if (!ids.has(id) || id === own) {
+      throw new Error(
+        `${where} names '${id}', which is no other vessel's id in the circumstances.`,
+      );
+    }
+    checkDetected(set, `${where}.${id}`);
+  }
+}
+
+/** Every id in the record: strings, and no two vessels alike. */
+function idsOf(c: Circumstances): Set<string> {
+  const ids = new Set<string>();
+  const vessels: [string, unknown][] = [['circumstances.self', c.self]];
+  (c.others ?? []).forEach((o, i) => vessels.push([`circumstances.others[${i}]`, o]));
+  for (const [where, v] of vessels) {
+    if (!isRecord(v) || v.id === undefined) continue;
+    if (typeof v.id !== 'string') {
+      throw new Error(`${where}.id expects a string, got ${JSON.stringify(v.id)}.`);
+    }
+    if (ids.has(v.id)) throw new Error(`${where}.id '${v.id}' is another vessel's too.`);
+    ids.add(v.id);
+  }
+  return ids;
+}
+
+/** Self's detections of one other: under her id in self's map, or inline on
+ * her; the engine reads one set either way. */
+function detectionsOf(c: Circumstances, other: CircumstancesVessel): Detected | undefined {
+  const map = c.self?.detected as Record<string, Detected> | undefined;
+  if (other.id !== undefined && map !== undefined && Object.hasOwn(map, other.id)) {
+    return map[other.id];
+  }
+  return isRecord(other.detected) && isInline(other.detected) ? other.detected : undefined;
+}
+
+function vesselOf(v: CircumstancesVessel, geo: DirectionalGeometry | undefined): Vessel {
+  const vessel: Vessel = { fact: v.fact as FactRecord };
+  if (v.kin !== undefined) vessel.kin = v.kin;
+  if (v.act !== undefined) vessel.act = v.act;
+  if (v.hist !== undefined) vessel.hist = v.hist;
+  if (geo !== undefined) vessel.geo = geo;
+  return vessel;
+}
+
+function checkSelf(self: unknown, c: Circumstances, ids: ReadonlySet<string>): void {
+  const where = 'circumstances.self';
+  if (!isRecord(self)) throw new Error(`${where} must be an object, got ${JSON.stringify(self)}.`);
+  if (!isRecord(self.fact)) {
+    throw new Error(
+      `${where}.fact is required and must be an object, got ${JSON.stringify(self.fact)}.`,
+    );
+  }
+  for (const key of FROM_SELF) {
+    if (key in self)
+      throw new Error(`${where}.${key} is said from self, so only an other carries it.`);
+  }
+  if (self.detected !== undefined) {
+    if (!isRecord(self.detected) || isInline(self.detected)) {
+      throw new Error(`${where}.detected is a map keyed by each other vessel's id.`);
+    }
+    checkKeyed(self.detected, `${where}.detected`, ids, self.id);
+  }
+  const vessel = self as CircumstancesVessel;
+  validateSituation({
+    self: vesselOf(vessel, vessel.geo as DirectionalGeometry | undefined),
+    pair: { env: c.conditions },
+  });
+}
+
+function checkOther(other: unknown, i: number, c: Circumstances, ids: ReadonlySet<string>): void {
   const where = `circumstances.others[${i}]`;
   if (!isRecord(other))
     throw new Error(`${where} must be an object, got ${JSON.stringify(other)}.`);
-  if (!(KNOWN as readonly unknown[]).includes(other.known)) {
-    throw new Error(`${where}.known is required and must be one of ${KNOWN.join(', ')}.`);
+  if (other.detected !== undefined) {
+    if (!isRecord(other.detected)) {
+      throw new Error(
+        `${where}.detected must be an object, got ${JSON.stringify(other.detected)}.`,
+      );
+    }
+    if (isInline(other.detected)) checkDetected(other.detected, `${where}.detected`);
+    else checkKeyed(other.detected, `${where}.detected`, ids, other.id);
+  }
+  const vessel = other as CircumstancesVessel;
+  const inline = isRecord(other.detected) && isInline(other.detected);
+  const keyed =
+    vessel.id !== undefined &&
+    isRecord(c.self?.detected) &&
+    Object.hasOwn(c.self.detected, vessel.id);
+  if (inline && keyed) {
+    throw new Error(
+      `${where}: self's detections of her are given twice, in circumstances.self.detected['${vessel.id}'] and inline; give one.`,
+    );
+  }
+  const detected = detectionsOf(c, vessel);
+  if (detected === undefined) {
+    throw new Error(
+      `${where} is detected by no means: give self's detections of her in circumstances.self.detected under her id, or inline in her detected.`,
+    );
   }
   if (other.fact === undefined && other.observed === undefined) {
     throw new Error(`${where} needs a fact, an observed, or both.`);
@@ -145,9 +283,9 @@ function checkOther(other: unknown, i: number, conditions: Environment | undefin
   // disagreement between them is the indication's finding, not an error.
   // Forbidding it is one throw here.
   const observed = other.observed as Observed | undefined;
-  if (other.known !== 'in-sight' && seen(observed)) {
+  if (detected.visual !== true && seen(observed)) {
     throw new Error(
-      `${where}: lights or shapes observed on a vessel known '${other.known}' contradict it; Rule 11 reads in sight only.`,
+      `${where}: lights or shapes observed on a vessel self has no visual detection of contradict it; Rule 11 reads in sight only.`,
     );
   }
   for (const key of ['bearing_deg', 'range_nm'] as const) {
@@ -162,12 +300,12 @@ function checkOther(other: unknown, i: number, conditions: Environment | undefin
     for (const key of ['geo:in_sight', 'geo:range_m'] as const) {
       if (key in other.geo) {
         throw new Error(
-          `${where}.geo must not carry '${key}'; say it with ${key === 'geo:in_sight' ? 'known' : 'range_nm'}.`,
+          `${where}.geo must not carry '${key}'; say it with ${key === 'geo:in_sight' ? 'detected' : 'range_nm'}.`,
         );
       }
     }
   }
-  validateSituation(situationFor(NO_SELF, other as unknown as Other, conditions));
+  validateSituation(situationFor(NO_SELF, vessel, detected, c.conditions));
 }
 
 /** Throws unless the record is well formed and its assertions agree with
@@ -177,13 +315,14 @@ export function validateCircumstances(c: Circumstances): Circumstances {
   if (typeof c !== 'object' || c === null || Array.isArray(c)) {
     throw new Error(`circumstances must be an object, got ${JSON.stringify(c)}.`);
   }
-  if (c.self !== undefined) validateSituation({ self: c.self, pair: { env: c.conditions } });
+  if (c.others !== undefined && !Array.isArray(c.others)) {
+    throw new Error('circumstances.others must be a list.');
+  }
+  const ids = idsOf(c);
+  if (c.self !== undefined) checkSelf(c.self, c, ids);
   else if (c.conditions !== undefined)
     validateSituation({ self: NO_SELF, pair: { env: c.conditions } });
-  if (c.others !== undefined) {
-    if (!Array.isArray(c.others)) throw new Error('circumstances.others must be a list.');
-    c.others.forEach((o, i) => checkOther(o, i, c.conditions));
-  }
+  (c.others ?? []).forEach((o, i) => checkOther(o, i, c, ids));
   return c;
 }
 
@@ -194,8 +333,8 @@ const OWN_GEO: Record<keyof DirectionalGeometry, true> = {
   'geo:windward': true,
 };
 
-function pairGeo(other: Other): PairGeometry {
-  const geo: PairGeometry = { 'geo:in_sight': other.known === 'in-sight' };
+function pairGeo(other: CircumstancesVessel, detected: Detected): PairGeometry {
+  const geo: PairGeometry = { 'geo:in_sight': detected.visual === true };
   if (other.range_nm !== undefined) geo['geo:range_m'] = other.range_nm * NM_IN_M;
   // Every key not in her own frame is the pair's, unknown ones included, so
   // validateSituation names them instead of this dropping them.
@@ -205,28 +344,29 @@ function pairGeo(other: Other): PairGeometry {
   return geo;
 }
 
-function ownGeo(other: Other): DirectionalGeometry | undefined {
+function ownGeo(other: CircumstancesVessel): DirectionalGeometry | undefined {
   const own: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(other.geo ?? {})) if (key in OWN_GEO) own[key] = value;
   return Object.keys(own).length > 0 ? (own as DirectionalGeometry) : undefined;
 }
 
 /** Today's two-vessel Situation over self and one other: her bearing lands
- * in self's own frame, her range and how she is known in the pair's. */
-export function situationFor(self: Vessel, other: Other, conditions?: Environment): Situation {
+ * in self's own frame, her range and whether self has her in sight in the
+ * pair's. Ids and detection maps stay out of it. */
+export function situationFor(
+  self: CircumstancesVessel,
+  other: CircumstancesVessel,
+  detected: Detected,
+  conditions?: Environment,
+): Situation {
+  const ownSelf = self.geo as DirectionalGeometry | undefined;
   const selfGeo: DirectionalGeometry | undefined =
     other.bearing_deg === undefined
-      ? self.geo
-      : { ...self.geo, 'geo:rel_bearing_deg': other.bearing_deg };
-  const otherVessel: Vessel = { fact: other.fact ?? {} };
-  if (other.kin !== undefined) otherVessel.kin = other.kin;
-  if (other.act !== undefined) otherVessel.act = other.act;
-  if (other.hist !== undefined) otherVessel.hist = other.hist;
-  const own = ownGeo(other);
-  if (own !== undefined) otherVessel.geo = own;
-  const s: Situation = { self: selfGeo === undefined ? self : { ...self, geo: selfGeo } };
-  s.other = otherVessel;
-  s.pair = { geo: pairGeo(other) };
+      ? ownSelf
+      : { ...ownSelf, 'geo:rel_bearing_deg': other.bearing_deg };
+  const s: Situation = { self: vesselOf(self, selfGeo) };
+  s.other = vesselOf({ ...other, fact: other.fact ?? {} }, ownGeo(other));
+  s.pair = { geo: pairGeo(other, detected) };
   if (conditions !== undefined) s.pair.env = conditions;
   return s;
 }
@@ -237,7 +377,7 @@ export function situationFor(self: Vessel, other: Other, conditions?: Environmen
  * the indication instead (one candidate, or the duty every candidate
  * shares) plugs in here and nowhere else. */
 function restingFact(
-  other: Other,
+  other: CircumstancesVessel,
   _indication: () => Indication,
 ): { fact?: FactRecord; restedOn: RestedOn } {
   if (other.fact !== undefined) return { fact: other.fact, restedOn: 'asserted' };
@@ -246,7 +386,7 @@ function restingFact(
 
 /** Stub: Parts C and D are not yet read backwards, so every other indicates
  * nothing, and `consistent` is unknown even when a fact is asserted. */
-function readIndication(_other: Other): Indication {
+function readIndication(_other: CircumstancesVessel): Indication {
   return { couldBe: [] };
 }
 
@@ -278,11 +418,14 @@ export class Evaluation {
         if (fact === undefined) {
           return { restedOn, because: `other vessel not asserted; see indicated[${i}]` };
         }
-        const situation = situationFor(self, { ...other, fact }, this.#c.conditions);
+        // Validation guarantees a set per other, so the fallback never runs.
+        const detected = detectionsOf(this.#c, other) ?? {};
+        const situation = situationFor(self, { ...other, fact }, detected, this.#c.conditions);
         return { restedOn, evaluation: evaluateCircumstances(situation, this.#opts) };
       });
+      const alone = vesselOf(self, self.geo as DirectionalGeometry | undefined);
       return {
-        self: evaluateCircumstances({ self, pair: { env: this.#c.conditions } }, this.#opts),
+        self: evaluateCircumstances({ self: alone, pair: { env: this.#c.conditions } }, this.#opts),
         others,
       };
     });
@@ -292,7 +435,9 @@ export class Evaluation {
    * it. Sound signals are not read here yet. */
   get signals(): DisplayEvaluation | undefined {
     return this.#once('signals', () =>
-      this.#c.self === undefined ? undefined : evaluateSignals(this.#c.self.fact, this.#opts),
+      this.#c.self === undefined
+        ? undefined
+        : evaluateSignals(this.#c.self.fact as FactRecord, this.#opts),
     );
   }
 

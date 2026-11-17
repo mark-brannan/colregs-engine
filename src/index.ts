@@ -51,7 +51,13 @@ import type { ColregsEngine } from './generated/colregs-engine.js';
 
 // Inputs.
 export type { FactRecord } from './generated/fact-record.js';
-export type { Circumstances, Known, Observed, Other, OtherGeometry } from './unified.js';
+export type {
+  Circumstances,
+  CircumstancesVessel,
+  Detected,
+  Observed,
+  OtherGeometry,
+} from './unified.js';
 export type {
   DepartureModel,
   DepartureRegion,

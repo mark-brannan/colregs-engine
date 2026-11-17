@@ -11,7 +11,7 @@ import {
   evaluateCircumstances,
   evaluateSignals,
 } from '../src/index';
-import type { Circumstances, Other, Situation } from '../src/index';
+import type { Circumstances, CircumstancesVessel, Situation } from '../src/index';
 import type { ApplicabilityData } from '../src/types';
 
 const fixtures = situationFixturesJson as unknown as {
@@ -24,12 +24,13 @@ const fixture = (prefix: string): Situation => {
 };
 
 /** A two-vessel fixture as circumstances: the other's bearing moves from
- * self's own frame to her, the pair's range and in_sight to her too. */
+ * self's own frame to her, the pair's range to her too, and in_sight to a
+ * detection inline on her. */
 function circumstancesOf(s: Situation): Circumstances {
   const { 'geo:in_sight': inSight, 'geo:range_m': rangeM, ...rest } = s.pair?.geo ?? {};
   const { 'geo:rel_bearing_deg': bearing, ...selfGeo } = s.self.geo ?? {};
-  const other: Other = {
-    known: inSight === false ? 'radar-alone' : 'in-sight',
+  const other: CircumstancesVessel = {
+    detected: inSight === false ? { radar: true } : { visual: true },
     fact: s.other!.fact,
     geo: { ...s.other!.geo, ...rest },
   };
@@ -88,6 +89,40 @@ describe('appraisal', () => {
   });
 });
 
+describe('detections', () => {
+  const inline = circumstancesOf(crossing);
+  const { detected: selfOfHer, ...her } = inline.others![0];
+  const keyed: Circumstances = {
+    ...inline,
+    self: { ...inline.self, id: 'self', detected: { A: selfOfHer as never } },
+    others: [{ ...her, id: 'A', detected: { self: { visual: true, radar: true } } }],
+  };
+
+  it("self's map keyed by her id reads as the same set inline on her", () => {
+    expect(evaluate(keyed).appraisal).toEqual(evaluate(inline).appraisal);
+  });
+
+  it("her own detections of self are accepted and leave self's appraisal alone", () => {
+    const { appraisal } = evaluate(keyed);
+    expect(appraisal?.others[0].evaluation).toEqual(evaluateCircumstances(crossing));
+  });
+
+  it.each<[string, CircumstancesVessel['detected'], boolean]>([
+    ['visual', { visual: true }, true],
+    ['radar alone', { radar: true }, false],
+    ['sound alone', { sound: true }, false],
+    ['visual said no', { visual: false, radar: true }, false],
+  ])('in sight follows visual: %s', (_name, detected, inSight) => {
+    const c = circumstancesOf(crossing);
+    const { appraisal } = evaluate({ ...c, others: [{ ...c.others![0], detected }] });
+    const expected = evaluateCircumstances({
+      ...crossing,
+      pair: { ...crossing.pair, geo: { ...crossing.pair?.geo, 'geo:in_sight': inSight } },
+    });
+    expect(appraisal?.others[0].evaluation).toEqual(expected);
+  });
+});
+
 describe('signals', () => {
   it('reads what evaluateSignals reads for self', () => {
     const { signals } = evaluate({ self: { fact: sloop } });
@@ -98,7 +133,7 @@ describe('signals', () => {
 describe('indicated', () => {
   it('stub: every other indicates nothing yet, with the shape typed', () => {
     const { indicated } = evaluate({
-      others: [{ known: 'in-sight', observed: { lights: ['red-over-white'] } }],
+      others: [{ detected: { visual: true }, observed: { lights: ['red-over-white'] } }],
       conditions: {},
     });
     expect(indicated).toEqual([{ couldBe: [] }]);
@@ -121,7 +156,9 @@ describe('the evaluation', () => {
   });
 
   it('without self: appraisal and signals read undefined, indicated reads', () => {
-    const e = evaluate({ others: [{ known: 'heard', observed: { sounds: ['one-prolonged'] } }] });
+    const e = evaluate({
+      others: [{ detected: { sound: true }, observed: { sounds: ['one-prolonged'] } }],
+    });
     expect(e.appraisal).toBeUndefined();
     expect(e.signals).toBeUndefined();
     expect(e.indicated).toHaveLength(1);
@@ -148,32 +185,94 @@ describe('the evaluation', () => {
 });
 
 describe('validation, in evaluate() before any reading', () => {
-  const other: Other = { known: 'in-sight', fact: sloop };
+  const other: CircumstancesVessel = { detected: { visual: true }, fact: sloop };
+  const self = { id: 'self', fact: sloop };
 
   it.each<[string, () => unknown, RegExp]>([
     [
-      'known missing',
-      () => evaluate({ others: [{ fact: sloop } as unknown as Other] }),
-      /known is required/,
+      'an other detected by no means',
+      () => evaluate({ others: [{ fact: sloop }] }),
+      /detected by no means/,
     ],
     [
+      'an other whose only detected is her own, of self',
+      () =>
+        evaluate({
+          self,
+          others: [{ id: 'A', fact: sloop, detected: { self: { visual: true } } }],
+        }),
+      /detected by no means/,
+    ],
+    [
+      'an unknown means',
+      () => evaluate({ others: [{ ...other, detected: { sight: true } as never }] }),
+      /unknown means 'sight'/,
+    ],
+    [
+      'a detection that is not yes or no',
+      () =>
+        evaluate({
+          self: { ...self, detected: { A: { visual: 'yes' } as never } },
+          others: [{ id: 'A', fact: sloop }],
+        }),
+      /is yes or no/,
+    ],
+    [
+      'a map key that names no vessel',
+      () =>
+        evaluate({
+          self: { ...self, detected: { B: { visual: true } } },
+          others: [{ id: 'A', fact: sloop }],
+        }),
+      /names 'B'/,
+    ],
+    [
+      "self's detections of her given twice",
+      () =>
+        evaluate({
+          self: { ...self, detected: { A: { visual: true } } },
+          others: [{ ...other, id: 'A' }],
+        }),
+      /given twice/,
+    ],
+    [
+      'two vessels with one id',
+      () => evaluate({ self, others: [{ ...other, id: 'self' }] }),
+      /another vessel's too/,
+    ],
+    [
+      'a bearing on self, which is said from self',
+      () => evaluate({ self: { ...self, bearing_deg: 10 } }),
+      /said from self/,
+    ],
+    [
+      'an inline set on self',
+      () => evaluate({ self: { ...self, detected: { visual: true } } }),
+      /map keyed by each other vessel's id/,
+    ],
+    ['self without a fact', () => evaluate({ self: { id: 'self' } }), /self.fact is required/],
+    [
       'neither fact nor observed',
-      () => evaluate({ others: [{ known: 'in-sight' }] }),
+      () => evaluate({ others: [{ detected: { visual: true } }] }),
       /needs a fact, an observed/,
     ],
     [
       'lights observed on a vessel heard',
-      () => evaluate({ others: [{ known: 'heard', observed: { lights: ['masthead'] } }] }),
+      () =>
+        evaluate({ others: [{ detected: { sound: true }, observed: { lights: ['masthead'] } }] }),
       /contradict/,
     ],
     [
-      'in_sight on geo, which known already says',
+      'in_sight on geo, which detected already says',
       () => evaluate({ others: [{ ...other, geo: { 'geo:in_sight': true } as never }] }),
-      /say it with known/,
+      /say it with detected/,
     ],
     [
       "a mistyped fact key on an other, on the operations' terms",
-      () => evaluate({ others: [{ known: 'in-sight', fact: { propulsion: 'sail' } as never }] }),
+      () =>
+        evaluate({
+          others: [{ detected: { visual: true }, fact: { propulsion: 'sail' } as never }],
+        }),
       /did you mean 'fact:propulsion'/,
     ],
     [
