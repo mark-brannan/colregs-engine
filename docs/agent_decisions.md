@@ -42,3 +42,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261117t111023z
 - unified evaluate accepts self's detection set inline on the other as well as keyed under her id in self.detected; told apart by value type Undo: drop the inline reading in detectionsOf and checkOther ([#187](https://github.com/mark-brannan/colregs-engine/pull/187))
+
+### 20261117t111030z
+- the six detection means are visual, sound, radar, ais, vhf, assumed, the worked example's names; each yes or no Undo: edit Detected and MEANS in src/unified.ts ([#187](https://github.com/mark-brannan/colregs-engine/pull/187))
