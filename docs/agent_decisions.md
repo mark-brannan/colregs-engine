@@ -39,3 +39,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261106t031724z
 - partition-proof job cap 10 to 5 min, prove step 2 min; --user root; Docker Hub over ghcr copy Undo: revert the ci.yml commit ([#184](https://github.com/mark-brannan/colregs-engine/pull/184))
+
+### 20261117t111023z
+- unified evaluate accepts self's detection set inline on the other as well as keyed under her id in self.detected; told apart by value type Undo: drop the inline reading in detectionsOf and checkOther ([#187](https://github.com/mark-brannan/colregs-engine/pull/187))
