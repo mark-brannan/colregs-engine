@@ -102,7 +102,8 @@ function check(readings: Readings, checks: string[]): Outcome {
       ],
       { cwd: dir, encoding: 'utf8', timeout: RUN_TIMEOUT_MS, maxBuffer: 256 * 1024 * 1024 },
     );
-    const log = `${tlc.stdout ?? ''}${tlc.stderr ?? ''}`;
+    const reason = tlc.error ? `\n${tlc.error.message}\n` : '';
+    const log = `${tlc.stdout ?? ''}${tlc.stderr ?? ''}${reason}`;
     const violated = new Set(
       [...log.matchAll(/(?:Invariant|Action property) (\w+) is violated/g)].map((m) => m[1]),
     );
@@ -139,7 +140,12 @@ function report(ok: boolean, label: string, got: Outcome, expected: string): voi
 // per expected violation, which TLC ends at its first counterexample.
 let failed = 0;
 const all = [...expectations.invariants, ...expectations.properties];
-for (const run of expectations.runs.filter((r) => !only || r.name === only)) {
+const runs = expectations.runs.filter((r) => !only || r.name === only);
+if (runs.length === 0) {
+  console.error(`no run named ${only}; runs: ${expectations.runs.map((r) => r.name).join(', ')}`);
+  process.exit(2);
+}
+for (const run of runs) {
   const readings = { ...expectations.base, ...run.set } as Readings;
   const holding = all.filter((c) => !run.violated.includes(c));
   const full = check(readings, holding);

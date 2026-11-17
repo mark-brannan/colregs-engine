@@ -229,8 +229,11 @@ Spec == Init /\ [][Next]_vars
 (* Classification and precedence, over any conduct.                      *)
 
 TypeOK ==
-  /\ geo \in Sectors /\ vis \in {"sight", "fog"} /\ phase \in [V -> 0..3]
-  /\ r19 \in [V -> {"todo", "cq", "nocq", "acted"}] /\ age \in 0..2
+  /\ geo \in Sectors /\ fwd \in [V -> BOOLEAN] /\ stb \in [V -> BOOLEAN]
+  /\ vis \in {"sight", "fog"} /\ admits \in BOOLEAN /\ due \in BOOLEAN
+  /\ hist \in [V -> BOOLEAN] /\ ever \in [V -> BOOLEAN] /\ phase \in [V -> 0..3]
+  /\ acted \in [V -> BOOLEAN] /\ r19 \in [V -> {"todo", "cq", "nocq", "acted"}]
+  /\ settling \in BOOLEAN /\ age \in 0..2
 
 InvPartition == vis = "sight" /\ geo # Clear => Type \in {"overtaking", "head-on", "crossing"}
 InvRolesExclusive == \A v \in V : Role(v) \in {"give-way", "stand-on"} => Role(Other(v)) # Role(v)
