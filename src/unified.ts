@@ -229,7 +229,7 @@ function checkSelf(self: unknown, c: Circumstances, ids: ReadonlySet<string>): v
     );
   }
   for (const key of FROM_SELF) {
-    if (key in self)
+    if (self[key] !== undefined)
       throw new Error(`${where}.${key} is said from self, so only an other carries it.`);
   }
   if (self.detected !== undefined) {
@@ -285,7 +285,7 @@ function checkOther(other: unknown, i: number, c: Circumstances, ids: ReadonlySe
   const observed = other.observed as Observed | undefined;
   if (detected.visual !== true && seen(observed)) {
     throw new Error(
-      `${where}: lights or shapes observed on a vessel self has no visual detection of contradict it; Rule 11 reads in sight only.`,
+      `${where}: lights or shapes observed need detected.visual true; Rule 11 reads in sight only.`,
     );
   }
   for (const key of ['bearing_deg', 'range_nm'] as const) {
