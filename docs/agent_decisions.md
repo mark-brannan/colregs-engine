@@ -51,3 +51,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261117t111037z
 - self's perception of her (bearing_deg, range_nm, observed) stays on the other and is refused on self, marked open Undo: move them under self keyed by her id, in situationFor and the checks ([#187](https://github.com/mark-brannan/colregs-engine/pull/187))
+
+### 20261117t111041z
+- the unified form's types are named Detected and CircumstancesVessel, replacing Known and Other one for one; Vessel stays the three operations' Undo: rename the two types ([#187](https://github.com/mark-brannan/colregs-engine/pull/187))
