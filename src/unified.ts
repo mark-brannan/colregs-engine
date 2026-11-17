@@ -713,14 +713,16 @@ function merge(into: Map<string, Candidate>, from: Candidate[]): void {
 
 /** Self's notes of one other read backwards. A note whose owner is only
  * inferred is read both ways, as hers and as not; the candidates of every
- * way are returned together. */
+ * way are returned together. `sighted` holds the candidates read in a world
+ * where she is in sight: the pair's view says so, or a visual note held to be
+ * hers does. */
 function readIndication(
   other: CircumstancesVessel,
   i: number,
   view: View,
   read: (fact: FactRecord) => DisplayEvaluation,
   opts: EvaluateOptions,
-): Indication {
+): { indication: Indication; sighted: Set<string> } {
   const sure = view.notes.filter((n) => n.entry.inferred !== true).map((n) => n.entry);
   const doubt = view.notes.filter((n) => n.entry.inferred === true);
   const worlds: { mask: number; cands: Candidate[] }[] = [];
@@ -728,6 +730,7 @@ function readIndication(
   // only in them read alike: each distinct set of readable notes is read once.
   const readable = (n: Observed) => (n.lights?.length ?? 0) > 0 || n.signal !== undefined;
   const readOnce = new Map<string, Candidate[]>();
+  const sighted = new Set<string>();
   for (let mask = 0; mask < 1 << doubt.length; mask++) {
     const held = doubt.filter((_, k) => mask & (1 << k));
     const world = [...sure, ...held.map((n) => n.entry)];
@@ -737,7 +740,10 @@ function readIndication(
       .map((n) => n.path)
       .join('|')}#${means.join(',')}`;
     if (!readOnce.has(key)) readOnce.set(key, readWorld(world, view.herBearing, read, opts));
-    worlds.push({ mask, cands: readOnce.get(key)! });
+    const cands = readOnce.get(key)!;
+    // open: a candidate read both in sight and not is read in sight.
+    if (view.inSight || means.includes('visual')) cands.forEach((c) => sighted.add(factId(c.fact)));
+    worlds.push({ mask, cands });
   }
   const all = new Map<string, Candidate>();
   worlds.forEach((w) => merge(all, w.cands));
@@ -772,7 +778,7 @@ function readIndication(
       Object.entries(c.fact).every(([k, v]) => !(k in asserted) || valueOf(asserted, k) === v),
     );
   }
-  return indication;
+  return { indication, sighted };
 }
 
 /** One evaluation of the circumstances. Each reading is computed on first
@@ -805,11 +811,26 @@ export class Evaluation {
     return memo.get(fact)!;
   };
 
-  #envelope(other: CircumstancesVessel, i: number, fact: FactRecord): CircumstancesEvaluation {
+  /** Per other vessel, the indication and the candidates read in sight. */
+  #readings(): ReturnType<typeof readIndication>[] {
+    return this.#once('readings', () =>
+      (this.#c.others ?? []).map((other, i) =>
+        readIndication(other, i, this.#views()[i], this.#signalsOf, this.#opts),
+      ),
+    );
+  }
+
+  #envelope(
+    other: CircumstancesVessel,
+    i: number,
+    fact: FactRecord,
+    inSight?: boolean,
+  ): CircumstancesEvaluation {
+    const view = this.#views()[i];
     const situation = situationFor(
       this.#c.self!,
       { ...other, fact },
-      this.#views()[i],
+      inSight === undefined ? view : { ...view, inSight },
       this.#c.conditions,
     );
     return evaluateCircumstances(situation, this.#opts);
@@ -837,9 +858,10 @@ export class Evaluation {
           }
           return { restedOn: 'asserted', evaluation: this.#envelope(other, i, asserted) };
         }
+        const { sighted } = this.#readings()[i];
         const candidates = couldBe.map((c) => ({
           fact: c.fact,
-          evaluation: this.#envelope(other, i, c.fact),
+          evaluation: this.#envelope(other, i, c.fact, sighted.has(factId(c.fact))),
         }));
         const one = JSON.stringify(candidates[0].evaluation);
         if (candidates.every((c) => JSON.stringify(c.evaluation) === one)) {
@@ -867,11 +889,7 @@ export class Evaluation {
 
   /** Per other vessel, what self's notes of her say she could be. */
   get indicated(): Indication[] {
-    return this.#once('indicated', () =>
-      (this.#c.others ?? []).map((other, i) =>
-        readIndication(other, i, this.#views()[i], this.#signalsOf, this.#opts),
-      ),
-    );
+    return this.#once('indicated', () => this.#readings().map((r) => r.indication));
   }
 
   /** Over time only: an instant has no compliance to read. */

@@ -161,6 +161,30 @@ describe('indicated', () => {
     });
   });
 
+  it('a candidate born of an inferred visual note is appraised with her in sight', () => {
+    const c: Circumstances = {
+      self: {
+        id: 'self',
+        fact: { ...sloop, 'fact:visibility': 'visibility:good' },
+        observed: [
+          { means: 'radar', of: 'A' },
+          { means: 'visual', of: 'A', inferred: true, lights: ['light:sidelight_starboard'] },
+        ],
+      },
+      others: [{ id: 'A' }],
+    };
+    const e = evaluate(c);
+    expect(e.indicated[0].inSight).toBe(false);
+    const other = e.appraisal!.others[0];
+    const lit = (other.candidates ?? [{ fact: {}, evaluation: other.evaluation! }]).filter(
+      (x) => Object.keys(x.fact).length > 0,
+    );
+    expect(lit.length).toBeGreaterThan(0);
+    for (const x of lit) expect(x.evaluation.scope).toContain('rule:11');
+    const unlit = other.candidates?.find((x) => Object.keys(x.fact).length === 0);
+    if (unlit) expect(unlit.evaluation.scope).not.toContain('rule:11');
+  });
+
   it('resolves an entry id among those in force: a suppressed intl entry is not read', () => {
     const data = structuredClone(applicabilityJson) as unknown as ApplicabilityData;
     data.suppressions = [
