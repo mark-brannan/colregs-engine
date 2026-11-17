@@ -227,6 +227,20 @@ describe('validation, in evaluate() before any reading', () => {
       /names 'B'/,
     ],
     [
+      "an other's own map that names no vessel",
+      () =>
+        evaluate({
+          self,
+          others: [{ ...other, id: 'A', detected: { Z: { visual: true } } as never }],
+        }),
+      /names 'Z'/,
+    ],
+    [
+      'an empty detected on an other, which is an empty map',
+      () => evaluate({ self, others: [{ id: 'A', fact: sloop, detected: {} }] }),
+      /detected by no means/,
+    ],
+    [
       "self's detections of her given twice",
       () =>
         evaluate({

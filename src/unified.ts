@@ -203,12 +203,23 @@ function idsOf(c: Circumstances): Set<string> {
 
 /** Self's detections of one other: under her id in self's map, or inline on
  * her; the engine reads one set either way. */
-function detectionsOf(c: Circumstances, other: CircumstancesVessel): Detected | undefined {
+function sourcesOf(
+  c: Circumstances,
+  other: CircumstancesVessel,
+): { keyed?: Detected; inline?: Detected } {
   const map = c.self?.detected as Record<string, Detected> | undefined;
-  if (other.id !== undefined && map !== undefined && Object.hasOwn(map, other.id)) {
-    return map[other.id];
-  }
-  return isRecord(other.detected) && isInline(other.detected) ? other.detected : undefined;
+  const keyed =
+    other.id !== undefined && map !== undefined && Object.hasOwn(map, other.id)
+      ? map[other.id]
+      : undefined;
+  const inline =
+    isRecord(other.detected) && isInline(other.detected) ? other.detected : undefined;
+  return { keyed, inline };
+}
+
+function detectionsOf(c: Circumstances, other: CircumstancesVessel): Detected | undefined {
+  const { keyed, inline } = sourcesOf(c, other);
+  return keyed ?? inline;
 }
 
 function vesselOf(v: CircumstancesVessel, geo: DirectionalGeometry | undefined): Vessel {
@@ -259,17 +270,13 @@ function checkOther(other: unknown, i: number, c: Circumstances, ids: ReadonlySe
     else checkKeyed(other.detected, `${where}.detected`, ids, other.id);
   }
   const vessel = other as CircumstancesVessel;
-  const inline = isRecord(other.detected) && isInline(other.detected);
-  const keyed =
-    vessel.id !== undefined &&
-    isRecord(c.self?.detected) &&
-    Object.hasOwn(c.self.detected, vessel.id);
+  const { keyed, inline } = sourcesOf(c, vessel);
   if (inline && keyed) {
     throw new Error(
       `${where}: self's detections of her are given twice, in circumstances.self.detected['${vessel.id}'] and inline; give one.`,
     );
   }
-  const detected = detectionsOf(c, vessel);
+  const detected = keyed ?? inline;
   if (detected === undefined) {
     throw new Error(
       `${where} is detected by no means: give self's detections of her in circumstances.self.detected under her id, or inline in her detected.`,
