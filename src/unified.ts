@@ -15,9 +15,11 @@
 
 import lightsJson from 'colregs/data/lights.json' with { type: 'json' };
 import {
+  DEFAULT_JURISDICTION,
   RESOLVED_DATA,
   checkDataVersion,
   evaluateSignals,
+  jurisdictionEntries,
   type EvaluateOptions,
 } from './evaluate.js';
 import { evaluateCircumstances } from './circumstances.js';
@@ -537,16 +539,18 @@ function situationFor(
 
 // Observing, read backwards: which fact records would show what was made
 // out. open: the hypotheses are a power-driven and a sailing vessel underway
-// with no activity; letting in the vessels Rules 24, 26 and 27 light is
-// widening this list, nothing else.
+// with no activity, in good visibility and in restricted; letting in the
+// vessels Rules 24, 26 and 27 light is widening this list, nothing else.
 const HYPOTHESES: FactRecord[] = (['propulsion:power', 'propulsion:sail'] as const).flatMap((p) =>
-  [true, false].map((mw) => ({
-    'fact:propulsion': p,
-    'fact:activity': 'activity:none',
-    'fact:position': 'position:underway',
-    'fact:making_way': mw,
-    'fact:visibility': 'visibility:restricted',
-  })),
+  (['visibility:good', 'visibility:restricted'] as const).flatMap((vis) =>
+    [true, false].map((mw) => ({
+      'fact:propulsion': p,
+      'fact:activity': 'activity:none',
+      'fact:position': 'position:underway',
+      'fact:making_way': mw,
+      'fact:visibility': vis,
+    })),
+  ),
 );
 
 /** Quarter-degree points off every boundary, where an arc reads one way. */
@@ -563,14 +567,18 @@ function expand(light: string): string[] {
   return LIGHTS[light]?.components ?? [light];
 }
 
+/** An entry by id among those in force, the set `evaluateSignals` displays
+ * from: the jurisdiction's own over an `intl` one of the same id, suppressed
+ * `intl` entries absent. */
 function entryOf(id: string, opts: EvaluateOptions): Entry | undefined {
-  const entries = (opts.data ?? RESOLVED_DATA).entries;
-  const base = entries.find((e) => e.id === id && e.jurisdiction === 'intl');
-  const own =
-    opts.jurisdiction && opts.jurisdiction !== 'intl'
-      ? entries.find((e) => e.id === id && e.jurisdiction === opts.jurisdiction)
-      : undefined;
-  return base || own ? ({ ...base, ...own } as Entry) : undefined;
+  const inForce = jurisdictionEntries(
+    opts.data ?? RESOLVED_DATA,
+    opts.jurisdiction ?? DEFAULT_JURISDICTION,
+  );
+  return (
+    inForce.find((e) => e.id === id && e.jurisdiction !== 'intl') ??
+    inForce.find((e) => e.id === id)
+  );
 }
 
 function sameSignal(heard: NonNullable<Observed['signal']>, entry: Entry | undefined): boolean {

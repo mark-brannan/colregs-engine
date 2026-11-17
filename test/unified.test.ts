@@ -133,6 +133,53 @@ describe('indicated', () => {
     const { indicated } = evaluate({ others: [{ detected: { visual: true }, fact: sloop }] });
     expect(indicated).toEqual([{ inSight: true, couldBe: [] }]);
   });
+
+  const blast: Circumstances = {
+    self: { id: 'self', fact: sloop },
+    others: [{ id: 'A', detected: { sound: true } }],
+  };
+  const heard = (data: ApplicabilityData) =>
+    evaluate(
+      {
+        ...blast,
+        self: {
+          ...blast.self,
+          observed: [{ means: 'sound', of: 'A', signal: [{ element: 'sound:prolonged_blast' }] }],
+        },
+      } as Circumstances,
+      { data },
+    ).indicated[0].couldBe;
+
+  it('reads visibility both ways: an entry that needs good visibility can be borne out', () => {
+    const data = structuredClone(applicabilityJson) as unknown as ApplicabilityData;
+    const e = data.entries.find((x) => x.id === 'rule:35a')!;
+    (e.when as Record<string, unknown>)['fact:visibility'] = 'visibility:good';
+    const couldBe = heard(data);
+    expect(couldBe.some((c) => c.by.includes('rule:35a'))).toBe(true);
+    expect(couldBe.find((c) => c.by.includes('rule:35a'))?.fact).toMatchObject({
+      'fact:visibility': 'visibility:good',
+    });
+  });
+
+  it('resolves an entry id among those in force: a suppressed intl entry is not read', () => {
+    const data = structuredClone(applicabilityJson) as unknown as ApplicabilityData;
+    data.suppressions = [
+      ...(data.suppressions ?? []),
+      { jurisdiction: 'us/inland', suppresses: 'rule:35a', cite: '35', why: 'test' },
+    ] as ApplicabilityData['suppressions'];
+    const couldBe = evaluate(
+      {
+        self: {
+          id: 'self',
+          fact: sloop,
+          observed: [{ means: 'sound', of: 'A', signal: [{ element: 'sound:prolonged_blast' }] }],
+        },
+        others: [{ id: 'A', detected: { sound: true } }],
+      } as Circumstances,
+      { data, jurisdiction: 'us/inland' },
+    ).indicated[0].couldBe;
+    expect(couldBe.some((c) => c.by.includes('rule:35a'))).toBe(false);
+  });
 });
 
 describe('compliance', () => {
