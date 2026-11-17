@@ -1,0 +1,62 @@
+{
+  "about": "What TLC finds of TwoVessel.tla under each reading. A run varies one open reading from base; violated lists every check expected to fail under it, and every other check must hold. Each reach check fails under every reading.",
+  "tlc": "tla2tools.jar v1.7.4, sha256 936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88",
+  "base": { "Q31": "excusable", "Q55": "persist", "Q57": "attachment", "Trigger": "lag" },
+  "invariants": [
+    "TypeOK",
+    "InvPartition",
+    "InvRolesExclusive",
+    "Inv17a1Scope",
+    "Inv19aNoroles",
+    "Inv13d",
+    "Inv13dDuty",
+    "Inv14a",
+    "Inv16",
+    "Inv16Scope",
+    "Inv17a2Permission",
+    "Inv17b",
+    "Inv17Phases",
+    "Inv19dDetermine",
+    "Inv19dAction",
+    "Inv15aNotAhead",
+    "Inv17c",
+    "Inv19d1",
+    "Inv19d2",
+    "Inv17a1",
+    "Inv17a2TriggerReal",
+    "Satisfiable"
+  ],
+  "properties": ["Prop17d", "Prop17PhasesMonotone", "Prop17a2TriggerLag"],
+  "reach": [
+    "NeverDrawnOut",
+    "NeverHeadOnDue",
+    "NeverGiveWayDue",
+    "NeverPhase2",
+    "NeverPhase3",
+    "NeverCloseQuarters19"
+  ],
+  "runs": [
+    { "name": "base", "set": {}, "violated": [] },
+    {
+      "name": "Q31-binding",
+      "set": { "Q31": "binding" },
+      "violated": ["Inv15aNotAhead", "Inv17c", "Inv19d1", "Inv19d2", "Satisfiable"]
+    },
+    {
+      "name": "Q55-reset",
+      "set": { "Q55": "reset" },
+      "violated": ["Inv13d", "Inv13dDuty", "Prop17PhasesMonotone"]
+    },
+    { "name": "Q57-steady", "set": { "Q57": "steady" }, "violated": ["Inv17a1"] },
+    {
+      "name": "trigger-perfect",
+      "set": { "Trigger": "perfect" },
+      "violated": ["Prop17a2TriggerLag"]
+    },
+    {
+      "name": "trigger-free",
+      "set": { "Trigger": "free" },
+      "violated": ["Inv17a2TriggerReal", "Prop17a2TriggerLag"]
+    }
+  ]
+}
