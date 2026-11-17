@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.13](https://github.com/mark-brannan/colregs-engine/compare/v0.1.12...v0.1.13) (2026-11-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* **unified:** `Known` and `Other` are gone from the unified form's types; `Detected` and `CircumstancesVessel` take their places.
+
+### Added
+
+* **unified:** detections as a set, one shape for every vessel ([#187](https://github.com/mark-brannan/colregs-engine/issues/187)) ([7798bf2](https://github.com/mark-brannan/colregs-engine/commit/7798bf20f35d554ff510cdc1b13f02ec1544b9a0))
+
 ## [0.1.12](https://github.com/mark-brannan/colregs-engine/compare/v0.1.11...v0.1.12) (2026-10-31)
 
 
