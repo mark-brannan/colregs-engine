@@ -60,3 +60,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261117t113959z
 - In sight when either vessel observes the other visually (3(k)), not self's own visual only Undo: one || in viewOf; rests on the sitting's question 1, api-examples 8a reads both ([#189](https://github.com/mark-brannan/colregs-engine/pull/189))
+
+### 20261117t114004z
+- Reading notes backwards tries a power-driven and a sailing vessel underway with no activity, the two the pencil names Undo: widen the HYPOTHESES list (the sitting's question 2) ([#189](https://github.com/mark-brannan/colregs-engine/pull/189))
