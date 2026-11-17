@@ -45,3 +45,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261117t111030z
 - the six detection means are visual, sound, radar, ais, vhf, assumed, the worked example's names; each yes or no Undo: edit Detected and MEANS in src/unified.ts ([#187](https://github.com/mark-brannan/colregs-engine/pull/187))
+
+### 20261117t111033z
+- every other still needs a detection set from self, as known was required Undo: drop the throw in checkOther ([#187](https://github.com/mark-brannan/colregs-engine/pull/187))
