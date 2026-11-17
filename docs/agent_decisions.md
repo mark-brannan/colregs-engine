@@ -63,3 +63,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261117t114004z
 - Reading notes backwards tries a power-driven and a sailing vessel underway with no activity, the two the pencil names Undo: widen the HYPOTHESES list (the sitting's question 2) ([#189](https://github.com/mark-brannan/colregs-engine/pull/189))
+
+### 20261117t114009z
+- Appraisal: a non-empty asserted fact is rested on as given; otherwise the candidates, one answer when every envelope is equal, else candidates with decides, a list of paths into the circumstances; Indication key inSight Undo: change appraisal in src/unified.ts ([#189](https://github.com/mark-brannan/colregs-engine/pull/189))
