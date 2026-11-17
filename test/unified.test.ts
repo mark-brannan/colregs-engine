@@ -274,7 +274,7 @@ describe('validation, in evaluate() before any reading', () => {
       'lights observed on a vessel heard',
       () =>
         evaluate({ others: [{ detected: { sound: true }, observed: { lights: ['masthead'] } }] }),
-      /contradict/,
+      /need detected\.visual true/,
     ],
     [
       'in_sight on geo, which detected already says',
