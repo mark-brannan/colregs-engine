@@ -58,7 +58,7 @@ export interface Detected {
 /** An arc relative to the observer's heading, in colregs lights.json's
  * convention: clockwise from right ahead, wrapping through 0 when
  * `from_deg` exceeds `to_deg`. */
-export interface Arc {
+interface Arc {
   from_deg: number;
   to_deg: number;
 }
@@ -162,6 +162,12 @@ const NM_IN_M = 1852;
 
 type LightDef = { arc?: Arc; components?: string[] };
 const LIGHTS = (lightsJson as unknown as { lights: Record<string, LightDef> }).lights;
+/** The signal elements the data's entries sound. */
+const ELEMENTS: ReadonlySet<string> = new Set(
+  RESOLVED_DATA.entries
+    .flatMap((e) => e.signal ?? [])
+    .flatMap((s) => s.sequence.map((el) => el.element)),
+);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -263,6 +269,9 @@ function checkNote(note: unknown, where: string, ids: ReadonlySet<string>, own: 
           (s.count === undefined || typeof s.count === 'number'),
       );
     if (!ok) throw new Error(`${where}.signal is a list of { element, count }.`);
+    if ((note.signal as { element: string }[]).some((s) => !ELEMENTS.has(s.element))) {
+      throw new Error(`${where}.signal elements are the data's: ${[...ELEMENTS].join(', ')}.`);
+    }
   }
 }
 
@@ -308,16 +317,17 @@ function notesOf(
 /** Written detections, filled from the notes that name a vessel surely; a
  * note and a written no for the same means throw. */
 function filled(written: Detected | undefined, notes: Note[], where: string): Detected | undefined {
-  if (written === undefined && notes.length === 0) return undefined;
   const set: Detected = { ...written };
+  let any = written !== undefined;
   for (const { entry, path } of notes) {
     if (entry.inferred === true) continue;
     if (set[entry.means] === false) {
       throw new Error(`${where}.${entry.means} is no, but ${path} says ${entry.means}.`);
     }
     set[entry.means] = true;
+    any = true;
   }
-  return set;
+  return any ? set : undefined;
 }
 
 function mod360(x: number): number {
@@ -387,9 +397,10 @@ function viewOf(c: Circumstances, i: number): View {
     b === undefined || from === undefined || to === undefined
       ? undefined
       : mod360(from + b + 180 - to);
+  const wrap = (b: number | undefined) => (b === undefined ? undefined : mod360(b));
   const said = {
-    self: other.bearing_deg ?? firstBearing(notes),
-    her: other.geo?.['geo:rel_bearing_deg'] ?? firstBearing(herNotes),
+    self: wrap(other.bearing_deg ?? firstBearing(notes)),
+    her: wrap(other.geo?.['geo:rel_bearing_deg'] ?? firstBearing(herNotes)),
   };
   return {
     inSight,
@@ -556,8 +567,8 @@ const HYPOTHESES: FactRecord[] = (['propulsion:power', 'propulsion:sail'] as con
 /** Quarter-degree points off every boundary, where an arc reads one way. */
 const AROUND = Array.from({ length: 720 }, (_, k) => k * 0.5 + 0.25);
 
-function inArc(x: number, arc: Arc | undefined): boolean {
-  if (arc === undefined) return true;
+function inArc(x: number, arc: Arc | null | undefined): boolean {
+  if (arc == null) return true;
   return arc.from_deg <= arc.to_deg
     ? x >= arc.from_deg && x <= arc.to_deg
     : x >= arc.from_deg || x <= arc.to_deg;
@@ -585,9 +596,11 @@ function sameSignal(heard: NonNullable<Observed['signal']>, entry: Entry | undef
   return (entry?.signal ?? []).some(
     (ref) =>
       ref.sequence.length === heard.length &&
-      ref.sequence.every(
-        (el, k) => el.element === heard[k].element && (el.count ?? 1) === (heard[k].count ?? 1),
-      ),
+      ref.sequence.every((el, k) => {
+        const want = el.count ?? 1;
+        const got = heard[k].count ?? 1;
+        return el.element === heard[k].element && (el.at_least ? got >= want : got === want);
+      }),
   );
 }
 
@@ -711,9 +724,20 @@ function readIndication(
   const sure = view.notes.filter((n) => n.entry.inferred !== true).map((n) => n.entry);
   const doubt = view.notes.filter((n) => n.entry.inferred === true);
   const worlds: { mask: number; cands: Candidate[] }[] = [];
+  // Notes with no lights and no signal read as nothing, so worlds differing
+  // only in them read alike: each distinct set of readable notes is read once.
+  const readable = (n: Observed) => (n.lights?.length ?? 0) > 0 || n.signal !== undefined;
+  const readOnce = new Map<string, Candidate[]>();
   for (let mask = 0; mask < 1 << doubt.length; mask++) {
-    const world = [...sure, ...doubt.filter((_, k) => mask & (1 << k)).map((n) => n.entry)];
-    worlds.push({ mask, cands: readWorld(world, view.herBearing, read, opts) });
+    const held = doubt.filter((_, k) => mask & (1 << k));
+    const world = [...sure, ...held.map((n) => n.entry)];
+    const means = [...new Set(held.map((n) => n.entry.means))].sort();
+    const key = `${held
+      .filter((n) => readable(n.entry))
+      .map((n) => n.path)
+      .join('|')}#${means.join(',')}`;
+    if (!readOnce.has(key)) readOnce.set(key, readWorld(world, view.herBearing, read, opts));
+    worlds.push({ mask, cands: readOnce.get(key)! });
   }
   const all = new Map<string, Candidate>();
   worlds.forEach((w) => merge(all, w.cands));
@@ -735,12 +759,10 @@ function readIndication(
     const decides = doubt.flatMap((n, k) =>
       ids(true, k) === ids(false, k) ? [] : [`${n.path}.of`],
     );
-    const [first, ...rest] = couldBe;
-    for (const key of Object.keys(first.fact)) {
-      const v = valueOf(first.fact, key);
-      if (rest.every((c) => key in c.fact) && rest.some((c) => valueOf(c.fact, key) !== v)) {
-        decides.push(`others[${i}].fact.${key}`);
-      }
+    const keys = new Set(couldBe.flatMap((c) => Object.keys(c.fact)));
+    for (const key of keys) {
+      const values = new Set(couldBe.filter((c) => key in c.fact).map((c) => valueOf(c.fact, key)));
+      if (values.size > 1) decides.push(`others[${i}].fact.${key}`);
     }
     indication.decides = decides;
   }

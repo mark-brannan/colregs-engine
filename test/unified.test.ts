@@ -180,6 +180,46 @@ describe('indicated', () => {
     ).indicated[0].couldBe;
     expect(couldBe.some((c) => c.by.includes('rule:35a'))).toBe(false);
   });
+
+  it('a signal element outside the data is refused, not read as nothing heard', () => {
+    expect(() =>
+      evaluate({
+        self: {
+          id: 'self',
+          fact: sloop,
+          observed: [{ means: 'sound', of: 'A', signal: [{ element: 'sound:prolonged' }] }],
+        },
+        others: [{ id: 'A', detected: { sound: true } }],
+      } as Circumstances),
+    ).toThrow(/signal elements are the data's/);
+  });
+
+  it('a contact noted only as inferred is detected by no sure means', () => {
+    expect(() =>
+      evaluate({
+        self: {
+          id: 'self',
+          fact: sloop,
+          observed: [{ means: 'sound', of: 'A', inferred: true }],
+        },
+        others: [{ id: 'A' }],
+      } as Circumstances),
+    ).toThrow(/detected by no means/);
+  });
+
+  it('a bearing written below 0 reads as the same bearing wrapped', () => {
+    const at = (rel: number) =>
+      evaluate({
+        self: {
+          id: 'self',
+          fact: sloop,
+          observed: [{ means: 'visual', of: 'A', lights: ['light:sidelight_port'] }],
+        },
+        others: [{ id: 'A', geo: { 'geo:rel_bearing_deg': rel } }],
+      } as Circumstances).indicated;
+    expect(at(330)[0].couldBe.length).toBeGreaterThan(0);
+    expect(at(-30)).toEqual(at(330));
+  });
 });
 
 describe('compliance', () => {
