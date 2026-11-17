@@ -69,3 +69,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261117t114014z
 - Notes fill detections (sure notes only; a note against a written no throws) and bearings (written field first, then a sure note, else worked across from the other bearing and both headings); shapes not read Undo: change viewOf and filled in src/unified.ts ([#189](https://github.com/mark-brannan/colregs-engine/pull/189))
+
+### 20261117t121142z
+- The unified evaluate's hypotheses read her visibility both ways, good and restricted, apart from self's, so an entry that needs good visibility can be borne out by an in-sight signal. Undo: drop the visibility loop in HYPOTHESES ([#189](https://github.com/mark-brannan/colregs-engine/pull/189))
