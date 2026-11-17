@@ -54,3 +54,6 @@ heading is the UTC stamp, so `agent_decisions.md#<stamp>` links one entry.
 
 ### 20261117t111041z
 - the unified form's types are named Detected and CircumstancesVessel, replacing Known and Other one for one; Vessel stays the three operations' Undo: rename the two types ([#187](https://github.com/mark-brannan/colregs-engine/pull/187))
+
+### 20261117t113949z
+- The observation entry: observed is a list of notes on the vessel that made them; keys means, of (optional), inferred, bearing_rel_deg (a number or an {from_deg,to_deg} arc for a rough direction), range_nm, lights (lights.json ids), signal (the data's sound elements); unread keys refused Undo: reshape it in the unified form ([#189](https://github.com/mark-brannan/colregs-engine/pull/189))
