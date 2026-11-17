@@ -549,7 +549,7 @@ export function resolveOverrides(
  * entry not named by one of the jurisdiction's own `suppressions`, plus the
  * jurisdiction's own entries. `intl` itself needs no suppression lookup —
  * it is the base the patch applies over, never patched itself. */
-function jurisdictionEntries(data: ApplicabilityData, jurisdiction: string): Entry[] {
+export function jurisdictionEntries(data: ApplicabilityData, jurisdiction: string): Entry[] {
   if (jurisdiction === 'intl') {
     return data.entries.filter((e) => e.jurisdiction === 'intl');
   }
